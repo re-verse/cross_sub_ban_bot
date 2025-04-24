@@ -7,7 +7,7 @@ import base64
 import json
 
 # --- CONFIGURATION ---
-SUBREDDIT_NAME = "xsubpacttest1"  # The sub this bot is running for
+SUBREDDIT_NAME = "xsubpacttest2"  # The sub this bot is running for
 CROSS_SUB_BAN_REASON = "Auto XSub Pact Ban"
 EXEMPT_USERS = {"AutoModerator", "xsub-pact-bot"}
 DAILY_BAN_LIMIT = 10
