@@ -124,7 +124,7 @@ def check_modmail_for_overrides():
             for state in ["new", "mod", "all"]:
                 for convo in subreddit.modmail.conversations(state=state):
                     if not convo.messages:
-                    print(f"[SKIP] No messages in conversation ID {convo.id}")
+                        print(f"[SKIP] No messages in conversation ID {convo.id}")
                         continue
 
                     last_message = convo.messages[-1]
