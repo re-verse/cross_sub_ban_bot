@@ -46,15 +46,22 @@ mod_cache = {}
 def is_mod(subreddit, user):
     subname = subreddit.display_name.lower()
     if subname not in mod_cache:
-        mod_cache[subname] = {mod.name.lower() for mod in subreddit.moderator()}
-    return user.lower() in mod_cache[subname]
+        try:
+            mod_cache[subname] = {mod.name.lower() for mod in subreddit.moderator()}
+        except Exception as e:
+            print(f"[ERROR] Failed to fetch moderators for {subname}: {e}")
+            return False
+    return user.lower() in mod_cache.get(subname, set())
 
 def is_trusted_mod(user):
     user = user.lower()
     for sub in TRUSTED_SUBS:
-        subreddit = reddit.subreddit(sub)
-        if user in {mod.name.lower() for mod in subreddit.moderator()}:
-            return True
+        try:
+            subreddit = reddit.subreddit(sub)
+            if user in {mod.name.lower() for mod in subreddit.moderator()}:
+                return True
+        except Exception as e:
+            print(f"[ERROR] Failed to check mod status in {sub}: {e}")
     return False
 
 # --- Sheet helpers ---
@@ -110,9 +117,11 @@ def apply_override(username, mod_name, mod_sub):
 # --- Modmail override check ---
 def check_modmail_for_overrides():
     try:
+        print("[DEBUG] Starting modmail override check...")
         for sub in TRUSTED_SUBS:
             subreddit = reddit.subreddit(sub)
             for state in ["new", "mod", "all"]:
+                print(f"[DEBUG] Checking modmail with state '{state}'")
                 for convo in subreddit.modmail.conversations(state=state):
                     if not convo.messages:
                         continue
@@ -125,6 +134,7 @@ def check_modmail_for_overrides():
                         continue
 
                     sender = author.name.lower()
+                    print(f"[DEBUG] Modmail from {sender}: {body}")
 
                     if not is_trusted_mod(sender):
                         continue
@@ -135,6 +145,7 @@ def check_modmail_for_overrides():
                             username = parts[2].lstrip("u/").strip()
                             if apply_override(username, sender, sub):
                                 convo.reply(body=f"✅ u/{username} has been marked as forgiven. They will not be banned again.")
+                                print(f"[OVERRIDE] {username} set by {sender} in {sub}")
                             else:
                                 convo.reply(body=f"⚠️ u/{username} was not found in the sheet. No action taken.")
     except Exception as e:
@@ -142,32 +153,36 @@ def check_modmail_for_overrides():
 
 # --- Sync bans from modlogs into sheet ---
 def sync_bans_from_sub(sub_name):
-    subreddit = reddit.subreddit(sub_name)
-    for log in subreddit.mod.log(action='banuser', limit=50):
-        user = log.target_author
-        source_sub = f"r/{log.subreddit}"
-        log_id = log.id
-        timestamp = datetime.utcfromtimestamp(log.created_utc).strftime('%Y-%m-%d %H:%M:%S')
-        description = log.description or ""
+    try:
+        subreddit = reddit.subreddit(sub_name)
+        for log in subreddit.mod.log(action='banuser', limit=50):
+            user = log.target_author
+            source_sub = f"r/{log.subreddit}"
+            log_id = log.id
+            timestamp = datetime.utcfromtimestamp(log.created_utc).strftime('%Y-%m-%d %H:%M:%S')
+            description = log.description or ""
 
-        created_time = datetime.utcfromtimestamp(log.created_utc)
-        if datetime.utcnow() - created_time > timedelta(minutes=MAX_LOG_AGE_MINUTES):
-            continue
+            created_time = datetime.utcfromtimestamp(log.created_utc)
+            if datetime.utcnow() - created_time > timedelta(minutes=MAX_LOG_AGE_MINUTES):
+                continue
 
-        if description.strip().lower() != CROSS_SUB_BAN_REASON.lower():
-            continue
-        if source_sub not in TRUSTED_SOURCES:
-            continue
-        if user in EXEMPT_USERS or is_mod(subreddit, user):
-            continue
-        if already_logged_action(log_id):
-            continue
-        if already_listed(user):
-            continue
-        if get_recent_sheet_entries(source_sub) >= DAILY_BAN_LIMIT:
-            continue
+            if description.strip().lower() != CROSS_SUB_BAN_REASON.lower():
+                continue
+            if source_sub not in TRUSTED_SOURCES:
+                continue
+            if user in EXEMPT_USERS or is_mod(subreddit, user):
+                continue
+            if already_logged_action(log_id):
+                continue
+            if already_listed(user):
+                continue
+            if get_recent_sheet_entries(source_sub) >= DAILY_BAN_LIMIT:
+                continue
 
-        sheet.append_row([user, source_sub, "", timestamp, "", log_id, "", "", ""])
+            sheet.append_row([user, source_sub, "", timestamp, "", log_id, "", "", ""])
+            print(f"[LOGGED] {user} from {source_sub} — modlog ID: {log_id}")
+    except Exception as e:
+        print(f"[ERROR] Failed to fetch modlog for {sub_name}: {e}")
 
 # --- Enforce bans locally based on sheet entries ---
 def enforce_bans_on_sub(sub_name):
@@ -190,7 +205,8 @@ def enforce_bans_on_sub(sub_name):
                 ban_reason_text = getattr(ban_obj, "note", "") or ""
                 if CROSS_SUB_BAN_REASON.lower() in ban_reason_text.lower():
                     subreddit.banned.remove(user)
-                continue
+                    print(f"[UNBANNED] {user} in {sub_name} (forgiven and ban matched reason)")
+            continue
 
         if already_banned or is_exempt or is_mod_user:
             continue
@@ -200,13 +216,16 @@ def enforce_bans_on_sub(sub_name):
             ban_reason=CROSS_SUB_BAN_REASON,
             note=f"Cross-sub ban from {source_sub}"
         )
+        print(f"[BANNED] {user} in {sub_name}")
 
 # --- Main execution ---
 if __name__ == "__main__":
     check_modmail_for_overrides()
 
     for sub in TRUSTED_SUBS:
+        print(f"--- Checking modlog for {sub}")
         sync_bans_from_sub(sub)
 
     for sub in TRUSTED_SUBS:
+        print(f"--- Enforcing bans in {sub}")
         enforce_bans_on_sub(sub)
