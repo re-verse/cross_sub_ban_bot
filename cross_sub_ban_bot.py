@@ -109,15 +109,12 @@ def apply_override(username, mod_name, mod_sub):
 
 # --- Modmail override check ---
 def check_modmail_for_overrides():
-    print("[DEBUG] Starting modmail override check...")
     try:
         for sub in TRUSTED_SUBS:
             subreddit = reddit.subreddit(sub)
             for state in ["new", "mod", "all"]:
-                print(f"[DEBUG] Checking modmail with state '{state}'")
                 for convo in subreddit.modmail.conversations(state=state):
                     if not convo.messages:
-                        print(f"[DEBUG] Skipping empty conversation ID {convo.id}")
                         continue
 
                     last_message = convo.messages[-1]
@@ -125,14 +122,11 @@ def check_modmail_for_overrides():
                     author = last_message.author
 
                     if not author:
-                        print(f"[DEBUG] Skipping message with no author in convo ID {convo.id}")
                         continue
 
                     sender = author.name.lower()
-                    print(f"[DEBUG] Modmail from {sender}: {body}")
 
                     if not is_trusted_mod(sender):
-                        print(f"[DENIED] Modmail from non-mod user: {sender}")
                         continue
 
                     if body.lower().startswith("/xsub pardon"):
@@ -140,11 +134,9 @@ def check_modmail_for_overrides():
                         if len(parts) >= 3:
                             username = parts[2].lstrip("u/").strip()
                             if apply_override(username, sender, sub):
-                                convo.reply(f"✅ u/{username} has been marked as forgiven. They will not be banned again.")
-                                print(f"[OVERRIDE] {username} set by {sender} in {sub}")
+                                convo.reply(body=f"✅ u/{username} has been marked as forgiven. They will not be banned again.")
                             else:
-                                convo.reply(f"⚠️ u/{username} was not found in the sheet. No action taken.")
-                                print(f"[NOT FOUND] {username} from modmail")
+                                convo.reply(body=f"⚠️ u/{username} was not found in the sheet. No action taken.")
     except Exception as e:
         print(f"[ERROR] Modmail check failed: {e}")
 
@@ -160,7 +152,6 @@ def sync_bans_from_sub(sub_name):
 
         created_time = datetime.utcfromtimestamp(log.created_utc)
         if datetime.utcnow() - created_time > timedelta(minutes=MAX_LOG_AGE_MINUTES):
-            print(f"[SKIP] Modlog too old for {user}, ignoring ID {log_id}")
             continue
 
         if description.strip().lower() != CROSS_SUB_BAN_REASON.lower():
@@ -170,17 +161,13 @@ def sync_bans_from_sub(sub_name):
         if user in EXEMPT_USERS or is_mod(subreddit, user):
             continue
         if already_logged_action(log_id):
-            print(f"[SKIP] Already processed modlog ID {log_id}")
             continue
         if already_listed(user):
-            print(f"[SKIP] User {user} already listed — skipping duplicate log")
             continue
         if get_recent_sheet_entries(source_sub) >= DAILY_BAN_LIMIT:
-            print(f"[SKIP] {source_sub} hit daily limit for {user}")
             continue
 
         sheet.append_row([user, source_sub, "", timestamp, "", log_id, "", "", ""])
-        print(f"[LOGGED] {user} from {source_sub} — modlog ID: {log_id}")
 
 # --- Enforce bans locally based on sheet entries ---
 def enforce_bans_on_sub(sub_name):
@@ -203,12 +190,7 @@ def enforce_bans_on_sub(sub_name):
                 ban_reason_text = getattr(ban_obj, "note", "") or ""
                 if CROSS_SUB_BAN_REASON.lower() in ban_reason_text.lower():
                     subreddit.banned.remove(user)
-                    print(f"[UNBANNED] {user} in {sub_name} (forgiven and ban matched reason)")
-                else:
-                    print(f"[SKIP] {user} is forgiven, but existing ban doesn't match bot reason")
-            else:
-                print(f"[SKIP] {user} is globally forgiven and not banned in {sub_name}")
-            continue
+                continue
 
         if already_banned or is_exempt or is_mod_user:
             continue
@@ -218,16 +200,13 @@ def enforce_bans_on_sub(sub_name):
             ban_reason=CROSS_SUB_BAN_REASON,
             note=f"Cross-sub ban from {source_sub}"
         )
-        print(f"[BANNED] {user} in {sub_name}")
 
 # --- Main execution ---
 if __name__ == "__main__":
     check_modmail_for_overrides()
 
     for sub in TRUSTED_SUBS:
-        print(f"--- Checking modlog for {sub}")
         sync_bans_from_sub(sub)
 
     for sub in TRUSTED_SUBS:
-        print(f"--- Enforcing bans in {sub}")
         enforce_bans_on_sub(sub)
