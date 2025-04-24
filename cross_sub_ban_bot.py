@@ -92,7 +92,7 @@ def apply_override(username):
 
     # If user not found, append new row
     now = datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
-    sheet.append_row([username, "manual", now, "yes", "", reddit.user.me().name, "manual"])
+    sheet.append_row([username, "manual", "", now, "yes", "", reddit.user.me().name, "manual"])
     return True
 
 # --- Modmail override check ---
