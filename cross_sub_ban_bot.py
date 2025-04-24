@@ -69,7 +69,7 @@ def sync_bans_from_sub(sub_name):
     subreddit = reddit.subreddit(sub_name)
     for log in subreddit.mod.log(action='banuser', limit=50):
         user = log.target_author
-        reason = log.details or ''
+        reason = log.description or log.details or ''
         source_sub = f"r/{log.subreddit}"
 
         timestamp = datetime.utcfromtimestamp(log.created_utc).strftime('%Y-%m-%d %H:%M:%S')
