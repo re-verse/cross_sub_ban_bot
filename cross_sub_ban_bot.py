@@ -128,7 +128,7 @@ def check_modmail_for_overrides():
 
                     if not is_trusted_mod(sender):
                         print(f"[DENIED] Modmail from non-mod user: {sender}")
-                    continue
+                        continue
 
                 if body.lower().startswith("/xsub pardon"):
                     parts = body.strip().split()
