@@ -121,7 +121,7 @@ def check_modmail_for_overrides():
                         continue
 
                     last_message = convo.messages[-1]
-                    body = last_message.body_markdown.strip() if last_message.body_markdown else ""
+                    body = last_message.body_markdown.strip()
                     author = last_message.author
 
                     if not author:
