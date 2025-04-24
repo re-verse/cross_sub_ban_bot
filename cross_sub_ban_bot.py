@@ -61,7 +61,7 @@ def sync_bans():
     for log in modlog:
         user = log.target_author
         reason = log.details or ''
-        source_sub = f"r/{log.subreddit.display_name}"
+        source_sub = f"r/{log.subreddit}"
         timestamp = datetime.utcfromtimestamp(log.created_utc).strftime('%Y-%m-%d %H:%M:%S')
 
         if reason.strip().lower() != "Auto XSub Pact Ban":
