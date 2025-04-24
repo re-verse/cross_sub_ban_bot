@@ -91,24 +91,27 @@ def apply_override(username):
 
 # --- Modmail override check ---
 def check_modmail_for_overrides():
-    for convo in reddit.subreddit("mod").modmail.conversations(state="new"):
-        body = convo.messages[-1].body_markdown.strip()
-        sender = convo.user.name.lower()
+    try:
+        for convo in reddit.subreddit("mod").modmail.conversations(state="new"):
+            body = convo.messages[-1].body_markdown.strip()
+            sender = convo.user.name.lower()
 
-        if not is_trusted_mod(sender):
-            print(f"[DENIED] Modmail from non-mod user: {sender}")
-            continue
+            if not is_trusted_mod(sender):
+                print(f"[DENIED] Modmail from non-mod user: {sender}")
+                continue
 
-        if body.lower().startswith("/xsub pardon"):
-            parts = body.strip().split()
-            if len(parts) >= 3:
-                username = parts[2].lstrip("u/").strip()
-                if apply_override(username):
-                    convo.reply(f"✅ u/{username} has been marked as forgiven. They will not be banned again.")
-                    print(f"[OVERRIDE] {username} set by {sender}")
-                else:
-                    convo.reply(f"⚠️ u/{username} was not found in the sheet. No action taken.")
-                    print(f"[NOT FOUND] {username} from modmail")
+            if body.lower().startswith("/xsub pardon"):
+                parts = body.strip().split()
+                if len(parts) >= 3:
+                    username = parts[2].lstrip("u/").strip()
+                    if apply_override(username):
+                        convo.reply(f"✅ u/{username} has been marked as forgiven. They will not be banned again.")
+                        print(f"[OVERRIDE] {username} set by {sender}")
+                    else:
+                        convo.reply(f"⚠️ u/{username} was not found in the sheet. No action taken.")
+                        print(f"[NOT FOUND] {username} from modmail")
+    except Exception as e:
+        print(f"[ERROR] Modmail check failed: {e}")
 
 # --- Sync bans from modlogs into sheet ---
 def sync_bans_from_sub(sub_name):
