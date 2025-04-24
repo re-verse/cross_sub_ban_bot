@@ -1,0 +1,6 @@
+{
+  "CROSS_SUB_BAN_REASON": "Auto XSub Pact Ban",
+  "EXEMPT_USERS": ["AutoModerator", "xsub-pact-bot"],
+  "DAILY_BAN_LIMIT": 30,
+  "MAX_LOG_AGE_MINUTES": 10
+}
