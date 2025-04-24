@@ -1,20 +1,21 @@
+import json
+import base64
+import os
 import praw
 import gspread
-import os
 from oauth2client.service_account import ServiceAccountCredentials
 from datetime import datetime, timedelta
-import base64
-import json
 
-# --- CONFIG ---
+# --- Load config from JSON file ---
+with open("config.json") as config_file:
+    config = json.load(config_file)
 
-CROSS_SUB_BAN_REASON = "Auto XSub Pact Ban"
-EXEMPT_USERS = {"AutoModerator", "xsub-pact-bot"}
-DAILY_BAN_LIMIT = 30
-MAX_LOG_AGE_MINUTES = 10  # ✅ ← Configurable modlog age limit
+CROSS_SUB_BAN_REASON = config["CROSS_SUB_BAN_REASON"]
+EXEMPT_USERS = set(config["EXEMPT_USERS"])
+DAILY_BAN_LIMIT = config["DAILY_BAN_LIMIT"]
+MAX_LOG_AGE_MINUTES = config["MAX_LOG_AGE_MINUTES"]
 
 # --- Load trusted subreddits ---
-
 def load_trusted_subs(file_path="trusted_subs.txt"):
     with open(file_path, "r") as f:
         return [line.strip() for line in f if line.strip()]
@@ -23,17 +24,14 @@ TRUSTED_SUBS = load_trusted_subs()
 TRUSTED_SOURCES = {"r/" + sub for sub in TRUSTED_SUBS}
 
 # --- Google Sheets setup ---
-
 creds_json = base64.b64decode(os.environ['GOOGLE_SERVICE_ACCOUNT_JSON'])
 creds_dict = json.loads(creds_json)
-
 scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
 creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_dict, scope)
 client = gspread.authorize(creds)
 sheet = client.open_by_key(os.environ['GOOGLE_SHEET_ID']).sheet1
 
 # --- Reddit API setup ---
-
 reddit = praw.Reddit(
     client_id=os.environ['CLIENT_ID'],
     client_secret=os.environ['CLIENT_SECRET'],
@@ -51,8 +49,15 @@ def is_mod(subreddit, user):
         mod_cache[subname] = {mod.name.lower() for mod in subreddit.moderator()}
     return user.lower() in mod_cache[subname]
 
-# --- Sheet helpers ---
+def is_trusted_mod(user):
+    user = user.lower()
+    for sub in TRUSTED_SUBS:
+        subreddit = reddit.subreddit(sub)
+        if user in {mod.name.lower() for mod in subreddit.moderator()}:
+            return True
+    return False
 
+# --- Sheet helpers ---
 def get_recent_sheet_entries(source_sub):
     now = datetime.utcnow()
     return sum(1 for row in sheet.get_all_records()
@@ -76,8 +81,36 @@ def is_forgiven(user):
                 return True
     return False
 
-# --- Sync bans from modlogs into sheet ---
+def apply_override(username):
+    records = sheet.get_all_records()
+    for i, row in enumerate(records, start=2):  # row 2+ because of headers
+        if row['Username'].lower() == username.lower():
+            sheet.update_cell(i, 4, "yes")
+            return True
+    return False
 
+# --- Modmail override check ---
+def check_modmail_for_overrides():
+    for convo in reddit.subreddit("mod").modmail.conversations(state="new"):
+        body = convo.messages[-1].body_markdown.strip()
+        sender = convo.user.name.lower()
+
+        if not is_trusted_mod(sender):
+            print(f"[DENIED] Modmail from non-mod user: {sender}")
+            continue
+
+        if body.lower().startswith("/xsub pardon"):
+            parts = body.strip().split()
+            if len(parts) >= 3:
+                username = parts[2].lstrip("u/").strip()
+                if apply_override(username):
+                    convo.reply(f"✅ u/{username} has been marked as forgiven. They will not be banned again.")
+                    print(f"[OVERRIDE] {username} set by {sender}")
+                else:
+                    convo.reply(f"⚠️ u/{username} was not found in the sheet. No action taken.")
+                    print(f"[NOT FOUND] {username} from modmail")
+
+# --- Sync bans from modlogs into sheet ---
 def sync_bans_from_sub(sub_name):
     subreddit = reddit.subreddit(sub_name)
 
@@ -113,7 +146,6 @@ def sync_bans_from_sub(sub_name):
         print(f"[LOGGED] {user} from {source_sub} — modlog ID: {log_id}")
 
 # --- Enforce bans locally based on sheet entries ---
-
 def enforce_bans_on_sub(sub_name):
     subreddit = reddit.subreddit(sub_name)
     current_bans = {ban.name.lower(): ban for ban in subreddit.banned(limit=None)}
@@ -152,8 +184,9 @@ def enforce_bans_on_sub(sub_name):
         print(f"[BANNED] {user} in {sub_name}")
 
 # --- Main execution ---
-
 if __name__ == "__main__":
+    check_modmail_for_overrides()
+
     for sub in TRUSTED_SUBS:
         print(f"--- Checking modlog for {sub}")
         sync_bans_from_sub(sub)
