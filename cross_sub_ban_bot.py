@@ -74,6 +74,7 @@ def sync_bans_from_sub(sub_name):
 
         timestamp = datetime.utcfromtimestamp(log.created_utc).strftime('%Y-%m-%d %H:%M:%S')
 
+        print(f"[MODLOG] {user} from {log.subreddit} — reason: {reason}")
         if reason.strip().lower() != CROSS_SUB_BAN_REASON.lower():
             continue
         if source_sub not in TRUSTED_SOURCES:
