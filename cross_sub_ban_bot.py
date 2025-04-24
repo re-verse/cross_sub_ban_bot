@@ -129,7 +129,6 @@ def check_modmail_for_overrides():
 
                     last_message = convo.messages[-1]
                     body = last_message.body_markdown.strip()
-                    print(f"[MODMAIL] Message from {sender}: {body}")
                     sender = last_message.author.name.lower()
 
                     if not is_trusted_mod(sender):
