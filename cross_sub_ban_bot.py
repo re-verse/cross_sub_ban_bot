@@ -6,21 +6,22 @@ from datetime import datetime, timedelta
 import base64
 import json
 
-# --- CONFIGURATION ---
-SUBREDDIT_NAME = "xsubpacttest2"  # The sub this bot is running for
+# --- CONFIG ---
+
 CROSS_SUB_BAN_REASON = "Auto XSub Pact Ban"
 EXEMPT_USERS = {"AutoModerator", "xsub-pact-bot"}
 DAILY_BAN_LIMIT = 10
 
-# --- TRUSTED SOURCE LOADER ---
+# --- Load trusted subreddits ---
 
 def load_trusted_subs(file_path="trusted_subs.txt"):
     with open(file_path, "r") as f:
-        return {"r/" + line.strip() for line in f if line.strip()}
+        return [line.strip() for line in f if line.strip()]
 
-TRUSTED_SOURCES = load_trusted_subs()
+TRUSTED_SUBS = load_trusted_subs()
+TRUSTED_SOURCES = {"r/" + sub for sub in TRUSTED_SUBS}
 
-# --- GOOGLE SHEETS AUTH ---
+# --- Google Sheets setup ---
 
 creds_json = base64.b64decode(os.environ['GOOGLE_SERVICE_ACCOUNT_JSON'])
 creds_dict = json.loads(creds_json)
@@ -30,7 +31,7 @@ creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_dict, scope)
 client = gspread.authorize(creds)
 sheet = client.open_by_key(os.environ['GOOGLE_SHEET_ID']).sheet1
 
-# --- REDDIT AUTH ---
+# --- Reddit API setup ---
 
 reddit = praw.Reddit(
     client_id=os.environ['CLIENT_ID'],
@@ -40,7 +41,7 @@ reddit = praw.Reddit(
     user_agent='NHL Cross-Sub Ban Bot'
 )
 
-# --- UTILS ---
+# --- Utilities ---
 
 def get_recent_sheet_entries(source_sub):
     now = datetime.utcnow()
@@ -53,17 +54,15 @@ def already_listed(user):
     rows = sheet.col_values(1)
     return user.lower() in (u.lower() for u in rows)
 
-def is_mod(user):
-    mods = [mod.name.lower() for mod in reddit.subreddit(SUBREDDIT_NAME).moderator()]
+def is_mod(subreddit, user):
+    mods = [mod.name.lower() for mod in subreddit.moderator()]
     return user.lower() in mods
 
-# --- SYNC NEW BANS TO SHEET ---
+# --- Sync bans from modlogs into sheet ---
 
-def sync_bans():
-    subreddit = reddit.subreddit(SUBREDDIT_NAME)
-    modlog = subreddit.mod.log(action='banuser', limit=50)
-
-    for log in modlog:
+def sync_bans_from_sub(sub_name):
+    subreddit = reddit.subreddit(sub_name)
+    for log in subreddit.mod.log(action='banuser', limit=50):
         user = log.target_author
         reason = log.details or ''
         source_sub = f"r/{log.subreddit}"
@@ -74,19 +73,19 @@ def sync_bans():
             continue
         if source_sub not in TRUSTED_SOURCES:
             continue
-        if user in EXEMPT_USERS or is_mod(user) or already_listed(user):
+        if user in EXEMPT_USERS or is_mod(subreddit, user) or already_listed(user):
             continue
         if get_recent_sheet_entries(source_sub) >= DAILY_BAN_LIMIT:
             print(f"[SKIP] {source_sub} hit daily limit for {user}")
             continue
 
         sheet.append_row([user, source_sub, reason, timestamp, ""])
-        print(f"[LOGGED] Added {user} for {CROSS_SUB_BAN_REASON}")
+        print(f"[LOGGED] {user} from {source_sub}")
 
-# --- ENFORCE SHEET BANS LOCALLY ---
+# --- Enforce bans locally based on sheet entries ---
 
-def enforce_sheet_bans():
-    subreddit = reddit.subreddit(SUBREDDIT_NAME)
+def enforce_bans_on_sub(sub_name):
+    subreddit = reddit.subreddit(sub_name)
     current_bans = {ban.name.lower() for ban in subreddit.banned(limit=None)}
     rows = sheet.get_all_records()
 
@@ -102,12 +101,4 @@ def enforce_sheet_bans():
             continue
         if override in {'true', 'yes'}:
             continue
-        if user.lower() not in current_bans and user.lower() not in EXEMPT_USERS and not is_mod(user):
-            subreddit.banned.add(user, reason=f"Cross-sub ban from {source_sub} – {reason}")
-            print(f"[BANNED] {user} from {SUBREDDIT_NAME}")
-
-# --- MAIN ---
-
-if __name__ == "__main__":
-    sync_bans()
-    enforce_sheet_bans()
+        if user.lower() not in current_bans and user.lower() not in EXEMPT_USERS and not is
