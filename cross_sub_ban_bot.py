@@ -87,7 +87,7 @@ def sync_bans():
 
 def enforce_sheet_bans():
     subreddit = reddit.subreddit(SUBREDDIT_NAME)
-    current_bans = {ban.user.name.lower() for ban in subreddit.banned(limit=None)}
+    current_bans = {ban.name.lower() for ban in subreddit.banned(limit=None)}
     rows = sheet.get_all_records()
 
     for row in rows:
