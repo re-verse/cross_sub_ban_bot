@@ -69,12 +69,16 @@ def sync_bans_from_sub(sub_name):
     subreddit = reddit.subreddit(sub_name)
     for log in subreddit.mod.log(action='banuser', limit=50):
         user = log.target_author
-        reason = log.description or log.details or ''
+        reason = getattr(log, "description", "") or getattr(log, "details", "")
+        moderator = getattr(log, "mod", "unknown")
         source_sub = f"r/{log.subreddit}"
 
         timestamp = datetime.utcfromtimestamp(log.created_utc).strftime('%Y-%m-%d %H:%M:%S')
 
-        print(f"[MODLOG] {user} from {log.subreddit} — reason: {reason}")
+        # --- DEBUG: Show raw modlog entry ---
+        print(f"[MODLOG DEBUG] log.__dict__ = {log.__dict__}")
+        print(f"[MODLOG] {user} from {source_sub} — reason: {reason} — mod: {moderator}")
+
         if reason.strip().lower() != CROSS_SUB_BAN_REASON.lower():
             continue
         if source_sub not in TRUSTED_SOURCES:
