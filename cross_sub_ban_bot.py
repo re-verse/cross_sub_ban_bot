@@ -52,6 +52,7 @@ def is_mod(subreddit, user):
 def is_trusted_mod(user):
     user = user.lower()
     for sub in TRUSTED_SUBS:
+        print(f"[DEBUG] Checking modmail in {sub}")
         subreddit = reddit.subreddit(sub)
         if user in {mod.name.lower() for mod in subreddit.moderator()}:
             return True
@@ -61,34 +62,55 @@ def is_trusted_mod(user):
 def get_recent_sheet_entries(source_sub):
     now = datetime.utcnow()
     return sum(1 for row in sheet.get_all_records()
-                    if row['SourceSub'] == source_sub and
-                    'Timestamp' in row and
-                    datetime.strptime(row['Timestamp'], '%Y-%m-%d %H:%M:%S') > now - timedelta(days=1))
+               if row['SourceSub'] == source_sub and
+               'Timestamp' in row and
+               datetime.strptime(row['Timestamp'], '%Y-%m-%d %H:%M:%S') > now - timedelta(days=1))
 
 def already_listed(user):
     rows = sheet.col_values(1)
     return user.lower() in (u.lower() for u in rows)
 
 def already_logged_action(log_id):
-    ids = sheet.col_values(6)  # Column F = ModLogID
+    ids = sheet.col_values(5)  # Column E = ModLogID
     return log_id in ids
 
 def is_forgiven(user):
-    records = sheet.get_all_records()
-    for row in records:
+    rows = sheet.get_all_records()
+    latest_ban = None
+    for row in rows:
         if row['Username'].lower() == user.lower():
-            if str(row.get('ManualOverride', '')).strip().lower() in {'yes', 'true'}:
-                return True
+            ban_time = row.get('Timestamp', '').strip()
+            forgive_time = row.get('ForgiveTimestamp', '').strip()
+
+            if str(row.get('ManualOverride', '')).strip().lower() not in {'yes', 'true'}:
+                continue
+
+            if forgive_time:
+                if ban_time:
+                    try:
+                        ban_dt = datetime.strptime(ban_time, '%Y-%m-%d %H:%M:%S')
+                        forgive_dt = datetime.strptime(forgive_time, '%Y-%m-%d %H:%M:%S')
+                        if forgive_dt >= ban_dt:
+                            return True
+                    except Exception:
+                        continue
+                else:
+                    return True  # Forgiven without a timestamped ban
     return False
 
 def apply_override(username):
     records = sheet.get_all_records()
+    now = datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
     for i, row in enumerate(records, start=2):  # row 2+ because of headers
         if row['Username'].lower() == username.lower():
-            sheet.update_cell(i, 5, "yes")  # ManualOverride column
-            sheet.update_cell(i, 7, reddit.user.me().name)  # OverriddenBy column
-            sheet.update_cell(i, 8, "manual")  # ModSub column
+            sheet.update_cell(i, 4, "yes")  # ManualOverride
+            sheet.update_cell(i, 7, reddit.user.me().name)  # OverriddenBy
+            sheet.update_cell(i, 8, "manual")  # ModSub
+            sheet.update_cell(i, 9, now)  # ForgiveTimestamp  # ForgiveTimestamp
             return True
+
+    sheet.append_row([username, "manual", "", now, "yes", "", reddit.user.me().name, "manual", now])  # includes ForgiveTimestamp
+    return True
 
     # If user not found, append new row
     now = datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
@@ -97,17 +119,21 @@ def apply_override(username):
 
 # --- Modmail override check ---
 def check_modmail_for_overrides():
+    print("[DEBUG] Starting modmail override check...")
     try:
         for sub in TRUSTED_SUBS:
             subreddit = reddit.subreddit(sub)
             for state in ["new", "mod", "all"]:
+                print(f"[DEBUG] Checking modmail with state '{state}'")
                 for convo in subreddit.modmail.conversations(state=state):
                     if not convo.messages:
+                        print(f"[DEBUG] Skipping empty conversation ID {convo.id}")
                         print(f"[SKIP] No messages in conversation ID {convo.id}")
                         continue
 
                     last_message = convo.messages[-1]
                     body = last_message.body_markdown.strip()
+                    print(f"[DEBUG] Modmail from {sender}: {body}")
                     sender = last_message.author.name.lower()
 
                     if not is_trusted_mod(sender):
@@ -126,8 +152,6 @@ def check_modmail_for_overrides():
                                 print(f"[NOT FOUND] {username} from modmail")
     except Exception as e:
         print(f"[ERROR] Modmail check failed: {e}")
-
-
 
 # --- Sync bans from modlogs into sheet ---
 def sync_bans_from_sub(sub_name):
@@ -161,7 +185,7 @@ def sync_bans_from_sub(sub_name):
             print(f"[SKIP] {source_sub} hit daily limit for {user}")
             continue
 
-        sheet.append_row([user, source_sub, CROSS_SUB_BAN_REASON, timestamp, "", log_id, "", ""])
+        sheet.append_row([user, source_sub, "", timestamp, "", log_id, "", ""])
         print(f"[LOGGED] {user} from {source_sub} — modlog ID: {log_id}")
 
 # --- Enforce bans locally based on sheet entries ---
