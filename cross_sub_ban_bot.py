@@ -70,7 +70,7 @@ def already_listed(user):
     return user.lower() in (u.lower() for u in rows)
 
 def already_logged_action(log_id):
-    ids = sheet.col_values(6)  # Column F = ModLogID
+    ids = sheet.col_values(6)
     return log_id in ids
 
 def is_forgiven(user):
@@ -94,17 +94,17 @@ def is_forgiven(user):
                     return True
     return False
 
-def apply_override(username):
+def apply_override(username, mod_name, mod_sub):
     records = sheet.get_all_records()
     now = datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
     for i, row in enumerate(records, start=2):
         if row['Username'].lower() == username.lower():
             sheet.update_cell(i, 5, "yes")
-            sheet.update_cell(i, 7, reddit.user.me().name)
-            sheet.update_cell(i, 8, "manual")
+            sheet.update_cell(i, 7, mod_name)
+            sheet.update_cell(i, 8, mod_sub)
             sheet.update_cell(i, 9, now)
             return True
-    sheet.append_row([username, "manual", "", now, "yes", "", reddit.user.me().name, "manual", now])
+    sheet.append_row([username, "manual", "", now, "yes", "", mod_name, mod_sub, now])
     return True
 
 # --- Modmail override check ---
@@ -119,9 +119,16 @@ def check_modmail_for_overrides():
                     if not convo.messages:
                         print(f"[DEBUG] Skipping empty conversation ID {convo.id}")
                         continue
+
                     last_message = convo.messages[-1]
                     body = last_message.body_markdown.strip()
-                    sender = last_message.author.name.lower()
+                    author = last_message.author
+
+                    if not author:
+                        print(f"[DEBUG] Skipping message with no author in convo ID {convo.id}")
+                        continue
+
+                    sender = author.name.lower()
                     print(f"[DEBUG] Modmail from {sender}: {body}")
 
                     if not is_trusted_mod(sender):
@@ -132,9 +139,9 @@ def check_modmail_for_overrides():
                         parts = body.strip().split()
                         if len(parts) >= 3:
                             username = parts[2].lstrip("u/").strip()
-                            if apply_override(username):
+                            if apply_override(username, sender, sub):
                                 convo.reply(f"✅ u/{username} has been marked as forgiven. They will not be banned again.")
-                                print(f"[OVERRIDE] {username} set by {sender}")
+                                print(f"[OVERRIDE] {username} set by {sender} in {sub}")
                             else:
                                 convo.reply(f"⚠️ u/{username} was not found in the sheet. No action taken.")
                                 print(f"[NOT FOUND] {username} from modmail")
@@ -196,31 +203,4 @@ def enforce_bans_on_sub(sub_name):
                 ban_reason_text = getattr(ban_obj, "note", "") or ""
                 if CROSS_SUB_BAN_REASON.lower() in ban_reason_text.lower():
                     subreddit.banned.remove(user)
-                    print(f"[UNBANNED] {user} in {sub_name} (forgiven and ban matched reason)")
-                else:
-                    print(f"[SKIP] {user} is forgiven, but existing ban doesn't match bot reason")
-            else:
-                print(f"[SKIP] {user} is globally forgiven and not banned in {sub_name}")
-            continue
-
-        if already_banned or is_exempt or is_mod_user:
-            continue
-
-        subreddit.banned.add(
-            user,
-            ban_reason=CROSS_SUB_BAN_REASON,
-            note=f"Cross-sub ban from {source_sub}"
-        )
-        print(f"[BANNED] {user} in {sub_name}")
-
-# --- Main execution ---
-if __name__ == "__main__":
-    check_modmail_for_overrides()
-
-    for sub in TRUSTED_SUBS:
-        print(f"--- Checking modlog for {sub}")
-        sync_bans_from_sub(sub)
-
-    for sub in TRUSTED_SUBS:
-        print(f"--- Enforcing bans in {sub}")
-        enforce_bans_on_sub(sub)
+                    print(f"[UNBANNED] {user} in {sub_name} (for
