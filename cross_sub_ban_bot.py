@@ -7,16 +7,21 @@ import base64
 import json
 
 # --- CONFIGURATION ---
-
-SUBREDDIT_NAME = "xsubpacttest1"  # Change this if running on test2
-
-TRUSTED_SOURCES = {'r/xsubpacttest1', 'r/xsubpacttest2'}
-EXEMPT_USERS = {'AutoModerator', 'xsub-pact-bot'}
+SUBREDDIT_NAME = "xsubpacttest1"  # The sub this bot is running for
+CROSS_SUB_BAN_REASON = "Auto XSub Pact Ban"
+EXEMPT_USERS = {"AutoModerator", "xsub-pact-bot"}
 DAILY_BAN_LIMIT = 10
 
-# --- SETUP GOOGLE SHEETS API ---
+# --- TRUSTED SOURCE LOADER ---
 
-# Decode service account JSON from environment
+def load_trusted_subs(file_path="trusted_subs.txt"):
+    with open(file_path, "r") as f:
+        return {"r/" + line.strip() for line in f if line.strip()}
+
+TRUSTED_SOURCES = load_trusted_subs()
+
+# --- GOOGLE SHEETS AUTH ---
+
 creds_json = base64.b64decode(os.environ['GOOGLE_SERVICE_ACCOUNT_JSON'])
 creds_dict = json.loads(creds_json)
 
@@ -25,7 +30,7 @@ creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_dict, scope)
 client = gspread.authorize(creds)
 sheet = client.open_by_key(os.environ['GOOGLE_SHEET_ID']).sheet1
 
-# --- SETUP REDDIT API (PRAW) ---
+# --- REDDIT AUTH ---
 
 reddit = praw.Reddit(
     client_id=os.environ['CLIENT_ID'],
@@ -35,7 +40,7 @@ reddit = praw.Reddit(
     user_agent='NHL Cross-Sub Ban Bot'
 )
 
-# --- UTILITY FUNCTIONS ---
+# --- UTILS ---
 
 def get_recent_sheet_entries(source_sub):
     now = datetime.utcnow()
@@ -52,7 +57,7 @@ def is_mod(user):
     mods = [mod.name.lower() for mod in reddit.subreddit(SUBREDDIT_NAME).moderator()]
     return user.lower() in mods
 
-# --- MAIN BAN SYNC LOGIC ---
+# --- SYNC NEW BANS TO SHEET ---
 
 def sync_bans():
     subreddit = reddit.subreddit(SUBREDDIT_NAME)
@@ -62,9 +67,10 @@ def sync_bans():
         user = log.target_author
         reason = log.details or ''
         source_sub = f"r/{log.subreddit}"
+
         timestamp = datetime.utcfromtimestamp(log.created_utc).strftime('%Y-%m-%d %H:%M:%S')
 
-        if reason.strip().lower() != "Auto XSub Pact Ban":
+        if reason.strip().lower() != CROSS_SUB_BAN_REASON.lower():
             continue
         if source_sub not in TRUSTED_SOURCES:
             continue
@@ -75,7 +81,9 @@ def sync_bans():
             continue
 
         sheet.append_row([user, source_sub, reason, timestamp, ""])
-        print(f"[LOGGED] Added {user} for cross-sub trolling")
+        print(f"[LOGGED] Added {user} for {CROSS_SUB_BAN_REASON}")
+
+# --- ENFORCE SHEET BANS LOCALLY ---
 
 def enforce_sheet_bans():
     subreddit = reddit.subreddit(SUBREDDIT_NAME)
@@ -88,7 +96,7 @@ def enforce_sheet_bans():
         reason = row['Reason']
         override = str(row.get('ManualOverride', '')).strip().lower()
 
-        if reason.strip().lower() != "cross-sub trolling":
+        if reason.strip().lower() != CROSS_SUB_BAN_REASON.lower():
             continue
         if source_sub not in TRUSTED_SOURCES:
             continue
