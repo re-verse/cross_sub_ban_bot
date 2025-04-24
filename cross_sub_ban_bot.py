@@ -124,7 +124,7 @@ def check_modmail_for_overrides():
             for state in ["new", "mod"]:
                 for convo in subreddit.modmail.conversations(state=state):
                     body = convo.messages[-1].body_markdown.strip()
-                sender = convo.user.name.lower()
+                    sender = convo.user.name.lower()
 
                 if not is_trusted_mod(sender):
                     print(f"[DENIED] Modmail from non-mod user: {sender}")
