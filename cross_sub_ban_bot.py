@@ -67,6 +67,14 @@ def already_logged_action(log_id):
     ids = sheet.col_values(6)  # Column F = ModLogID
     return log_id in ids
 
+def is_forgiven(user):
+    records = sheet.get_all_records()
+    for row in records:
+        if row['Username'].lower() == user.lower():
+            if str(row.get('ManualOverride', '')).strip().lower() in {'yes', 'true'}:
+                return True
+    return False
+
 # --- Sync bans from modlogs into sheet ---
 
 def sync_bans_from_sub(sub_name):
@@ -83,13 +91,17 @@ def sync_bans_from_sub(sub_name):
             print(f"[SKIP] Already processed modlog ID {log_id}")
             continue
 
+        if already_listed(user):
+            print(f"[SKIP] User {user} already listed — skipping duplicate log")
+            continue
+
         print(f"[MODLOG] {user} from {source_sub} — reason: {reason} — mod: {moderator}")
 
         if reason.strip().lower() != CROSS_SUB_BAN_REASON.lower():
             continue
         if source_sub not in TRUSTED_SOURCES:
             continue
-        if user in EXEMPT_USERS or is_mod(subreddit, user) or already_listed(user):
+        if user in EXEMPT_USERS or is_mod(subreddit, user):
             continue
         if get_recent_sheet_entries(source_sub) >= DAILY_BAN_LIMIT:
             print(f"[SKIP] {source_sub} hit daily limit for {user}")
@@ -109,18 +121,23 @@ def enforce_bans_on_sub(sub_name):
         user = row['Username']
         source_sub = row['SourceSub']
         reason = row['Reason']
-        override = str(row.get('ManualOverride', '')).strip().lower()
 
         if reason.strip().lower() != CROSS_SUB_BAN_REASON.lower():
             continue
         if source_sub not in TRUSTED_SOURCES:
             continue
-        if override in {'true', 'yes'}:
-            print(f"[SKIP] ManualOverride is set for {user}")
+        if is_forgiven(user):
+            print(f"[SKIP] {user} is globally forgiven (ManualOverride = yes)")
             continue
-        if user.lower() not in current_bans and user.lower() not in EXEMPT_USERS and not is_mod(subreddit, user):
-            subreddit.banned.add(user, reason=f"Cross-sub ban from {source_sub} – {reason}")
-            print(f"[BANNED] {user} in {sub_name}")
+        if user.lower() in current_bans:
+            continue
+        if user.lower() in EXEMPT_USERS:
+            continue
+        if is_mod(subreddit, user):
+            continue
+
+        subreddit.banned.add(user, reason=f"Cross-sub ban from {source_sub} – {reason}")
+        print(f"[BANNED] {user} in {sub_name}")
 
 # --- Main execution ---
 
