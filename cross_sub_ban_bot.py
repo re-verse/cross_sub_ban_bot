@@ -121,7 +121,7 @@ def check_modmail_for_overrides():
                         continue
 
                     last_message = convo.messages[-1]
-                    body = last_message.body_markdown.strip()
+                    body = last_message.body_markdown.strip() if last_message.body_markdown else ""
                     author = last_message.author
 
                     if not author:
@@ -203,4 +203,31 @@ def enforce_bans_on_sub(sub_name):
                 ban_reason_text = getattr(ban_obj, "note", "") or ""
                 if CROSS_SUB_BAN_REASON.lower() in ban_reason_text.lower():
                     subreddit.banned.remove(user)
-                    print(f"[UNBANNED] {user} in {sub_name} (for
+                    print(f"[UNBANNED] {user} in {sub_name} (forgiven and ban matched reason)")
+                else:
+                    print(f"[SKIP] {user} is forgiven, but existing ban doesn't match bot reason")
+            else:
+                print(f"[SKIP] {user} is globally forgiven and not banned in {sub_name}")
+            continue
+
+        if already_banned or is_exempt or is_mod_user:
+            continue
+
+        subreddit.banned.add(
+            user,
+            ban_reason=CROSS_SUB_BAN_REASON,
+            note=f"Cross-sub ban from {source_sub}"
+        )
+        print(f"[BANNED] {user} in {sub_name}")
+
+# --- Main execution ---
+if __name__ == "__main__":
+    check_modmail_for_overrides()
+
+    for sub in TRUSTED_SUBS:
+        print(f"--- Checking modlog for {sub}")
+        sync_bans_from_sub(sub)
+
+    for sub in TRUSTED_SUBS:
+        print(f"--- Enforcing bans in {sub}")
+        enforce_bans_on_sub(sub)
