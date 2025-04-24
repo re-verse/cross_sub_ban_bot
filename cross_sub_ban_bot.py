@@ -50,7 +50,7 @@ def is_mod(subreddit, user):
         mod_cache[subname] = {mod.name.lower() for mod in subreddit.moderator()}
     return user.lower() in mod_cache[subname]
 
-# --- Utility functions ---
+# --- Sheet helpers ---
 
 def get_recent_sheet_entries(source_sub):
     now = datetime.utcnow()
@@ -63,6 +63,10 @@ def already_listed(user):
     rows = sheet.col_values(1)
     return user.lower() in (u.lower() for u in rows)
 
+def already_logged_action(log_id):
+    ids = sheet.col_values(6)  # Column F = ModLogID
+    return log_id in ids
+
 # --- Sync bans from modlogs into sheet ---
 
 def sync_bans_from_sub(sub_name):
@@ -72,7 +76,12 @@ def sync_bans_from_sub(sub_name):
         reason = log.description or ""
         moderator = getattr(log, "mod", "unknown")
         source_sub = f"r/{log.subreddit}"
+        log_id = log.id
         timestamp = datetime.utcfromtimestamp(log.created_utc).strftime('%Y-%m-%d %H:%M:%S')
+
+        if already_logged_action(log_id):
+            print(f"[SKIP] Already processed modlog ID {log_id}")
+            continue
 
         print(f"[MODLOG] {user} from {source_sub} — reason: {reason} — mod: {moderator}")
 
@@ -86,8 +95,8 @@ def sync_bans_from_sub(sub_name):
             print(f"[SKIP] {source_sub} hit daily limit for {user}")
             continue
 
-        sheet.append_row([user, source_sub, reason, timestamp, ""])
-        print(f"[LOGGED] {user} from {source_sub}")
+        sheet.append_row([user, source_sub, reason, timestamp, "", log_id])
+        print(f"[LOGGED] {user} from {source_sub} — modlog ID: {log_id}")
 
 # --- Enforce bans locally based on sheet entries ---
 
