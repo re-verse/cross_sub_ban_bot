@@ -100,7 +100,8 @@ def check_modmail_for_overrides():
     try:
         for sub in TRUSTED_SUBS:
             subreddit = reddit.subreddit(sub)
-            for convo in subreddit.modmail.conversations(state="new"):
+            for state in ["new", "mod"]:
+                for convo in subreddit.modmail.conversations(state=state):
                 body = convo.messages[-1].body_markdown.strip()
                 sender = convo.user.name.lower()
 
