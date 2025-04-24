@@ -41,7 +41,16 @@ reddit = praw.Reddit(
     user_agent='NHL Cross-Sub Ban Bot'
 )
 
-# --- Utilities ---
+# --- Caching mod lists for performance ---
+mod_cache = {}
+
+def is_mod(subreddit, user):
+    subname = subreddit.display_name.lower()
+    if subname not in mod_cache:
+        mod_cache[subname] = {mod.name.lower() for mod in subreddit.moderator()}
+    return user.lower() in mod_cache[subname]
+
+# --- Utility functions ---
 
 def get_recent_sheet_entries(source_sub):
     now = datetime.utcnow()
@@ -53,10 +62,6 @@ def get_recent_sheet_entries(source_sub):
 def already_listed(user):
     rows = sheet.col_values(1)
     return user.lower() in (u.lower() for u in rows)
-
-def is_mod(subreddit, user):
-    mods = [mod.name.lower() for mod in subreddit.moderator()]
-    return user.lower() in mods
 
 # --- Sync bans from modlogs into sheet ---
 
@@ -101,4 +106,17 @@ def enforce_bans_on_sub(sub_name):
             continue
         if override in {'true', 'yes'}:
             continue
-        if user.lower() not in current_bans and user.lower() not in EXEMPT_USERS and not is
+        if user.lower() not in current_bans and user.lower() not in EXEMPT_USERS and not is_mod(subreddit, user):
+            subreddit.banned.add(user, reason=f"Cross-sub ban from {source_sub} – {reason}")
+            print(f"[BANNED] {user} in {sub_name}")
+
+# --- Main execution ---
+
+if __name__ == "__main__":
+    for sub in TRUSTED_SUBS:
+        print(f"--- Checking modlog for {sub}")
+        sync_bans_from_sub(sub)
+
+    for sub in TRUSTED_SUBS:
+        print(f"--- Enforcing bans in {sub}")
+        enforce_bans_on_sub(sub)
