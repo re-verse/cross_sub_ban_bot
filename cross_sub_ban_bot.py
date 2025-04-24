@@ -153,7 +153,7 @@ def sync_bans_from_sub(sub_name):
             print(f"[SKIP] {source_sub} hit daily limit for {user}")
             continue
 
-        sheet.append_row([user, source_sub, timestamp, "", log_id])
+        sheet.append_row([user, source_sub, "", timestamp, "", log_id, "", ""])
         print(f"[LOGGED] {user} from {source_sub} — modlog ID: {log_id}")
 
 # --- Enforce bans locally based on sheet entries ---
