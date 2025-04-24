@@ -74,21 +74,42 @@ def already_logged_action(log_id):
     return log_id in ids
 
 def is_forgiven(user):
-    records = sheet.get_all_records()
-    for row in records:
+    rows = sheet.get_all_records()
+    latest_ban = None
+    for row in rows:
         if row['Username'].lower() == user.lower():
-            if str(row.get('ManualOverride', '')).strip().lower() in {'yes', 'true'}:
-                return True
+            ban_time = row.get('Timestamp', '').strip()
+            forgive_time = row.get('ForgiveTimestamp', '').strip()
+
+            if str(row.get('ManualOverride', '')).strip().lower() not in {'yes', 'true'}:
+                continue
+
+            if forgive_time:
+                if ban_time:
+                    try:
+                        ban_dt = datetime.strptime(ban_time, '%Y-%m-%d %H:%M:%S')
+                        forgive_dt = datetime.strptime(forgive_time, '%Y-%m-%d %H:%M:%S')
+                        if forgive_dt >= ban_dt:
+                            return True
+                    except Exception:
+                        continue
+                else:
+                    return True  # Forgiven without a timestamped ban
     return False
 
 def apply_override(username):
     records = sheet.get_all_records()
+    now = datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
     for i, row in enumerate(records, start=2):  # row 2+ because of headers
         if row['Username'].lower() == username.lower():
-            sheet.update_cell(i, 4, "yes")  # ManualOverride column
-            sheet.update_cell(i, 7, reddit.user.me().name)  # OverriddenBy column
-            sheet.update_cell(i, 8, "manual")  # ModSub column
+            sheet.update_cell(i, 4, "yes")  # ManualOverride
+            sheet.update_cell(i, 7, reddit.user.me().name)  # OverriddenBy
+            sheet.update_cell(i, 8, "manual")  # ModSub
+            sheet.update_cell(i, 9, now)  # ForgiveTimestamp  # ForgiveTimestamp
             return True
+
+    sheet.append_row([username, "manual", "", now, "yes", "", reddit.user.me().name, "manual", now])  # includes ForgiveTimestamp
+    return True
 
     # If user not found, append new row
     now = datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
