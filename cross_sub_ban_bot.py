@@ -127,7 +127,7 @@ def check_modmail_for_overrides():
                     sender = convo.user.name.lower()
 
                     if not is_trusted_mod(sender):
-                    print(f"[DENIED] Modmail from non-mod user: {sender}")
+                        print(f"[DENIED] Modmail from non-mod user: {sender}")
                     continue
 
                 if body.lower().startswith("/xsub pardon"):
