@@ -64,7 +64,7 @@ def already_listed(user):
     return user.lower() in (u.lower() for u in rows)
 
 def already_logged_action(log_id):
-    ids = sheet.col_values(6)  # Column F = ModLogID
+    ids = sheet.col_values(5)  # Column E = ModLogID
     return log_id in ids
 
 def is_forgiven(user):
@@ -81,33 +81,28 @@ def sync_bans_from_sub(sub_name):
     subreddit = reddit.subreddit(sub_name)
     for log in subreddit.mod.log(action='banuser', limit=50):
         user = log.target_author
-        reason = log.description or ""
-        moderator = getattr(log, "mod", "unknown")
         source_sub = f"r/{log.subreddit}"
         log_id = log.id
         timestamp = datetime.utcfromtimestamp(log.created_utc).strftime('%Y-%m-%d %H:%M:%S')
+        description = log.description or ""
 
-        if already_logged_action(log_id):
-            print(f"[SKIP] Already processed modlog ID {log_id}")
-            continue
-
-        if already_listed(user):
-            print(f"[SKIP] User {user} already listed — skipping duplicate log")
-            continue
-
-        print(f"[MODLOG] {user} from {source_sub} — reason: {reason} — mod: {moderator}")
-
-        if reason.strip().lower() != CROSS_SUB_BAN_REASON.lower():
+        if description.strip().lower() != CROSS_SUB_BAN_REASON.lower():
             continue
         if source_sub not in TRUSTED_SOURCES:
             continue
         if user in EXEMPT_USERS or is_mod(subreddit, user):
             continue
+        if already_logged_action(log_id):
+            print(f"[SKIP] Already processed modlog ID {log_id}")
+            continue
+        if already_listed(user):
+            print(f"[SKIP] User {user} already listed — skipping duplicate log")
+            continue
         if get_recent_sheet_entries(source_sub) >= DAILY_BAN_LIMIT:
             print(f"[SKIP] {source_sub} hit daily limit for {user}")
             continue
 
-        sheet.append_row([user, source_sub, reason, timestamp, "", log_id])
+        sheet.append_row([user, source_sub, timestamp, "", log_id])
         print(f"[LOGGED] {user} from {source_sub} — modlog ID: {log_id}")
 
 # --- Enforce bans locally based on sheet entries ---
@@ -120,13 +115,6 @@ def enforce_bans_on_sub(sub_name):
     for row in rows:
         user = row['Username']
         source_sub = row['SourceSub']
-        reason = row['Reason']
-
-        if reason.strip().lower() != CROSS_SUB_BAN_REASON.lower():
-            continue
-        if source_sub not in TRUSTED_SOURCES:
-            continue
-
         user_lower = user.lower()
         already_banned = user_lower in current_bans
         is_mod_user = is_mod(subreddit, user)
