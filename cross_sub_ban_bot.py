@@ -85,12 +85,15 @@ def apply_override(username):
     records = sheet.get_all_records()
     for i, row in enumerate(records, start=2):  # row 2+ because of headers
         if row['Username'].lower() == username.lower():
-            # Add override info in a new column (e.g., column F and G for 'OverriddenBy' and 'ModSub')
             sheet.update_cell(i, 4, "yes")  # ManualOverride column
-            sheet.update_cell(i, 7, reddit.user.me().name)  # OverriddenBy column (assumes bot is acting as mod)
-            sheet.update_cell(i, 8, "manual")  # ModSub as "manual" or can be set by caller
+            sheet.update_cell(i, 7, reddit.user.me().name)  # OverriddenBy column
+            sheet.update_cell(i, 8, "manual")  # ModSub column
             return True
-    return False
+
+    # If user not found, append new row
+    now = datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
+    sheet.append_row([username, "manual", now, "yes", "", reddit.user.me().name, "manual"])
+    return True
 
 # --- Modmail override check ---
 def check_modmail_for_overrides():
