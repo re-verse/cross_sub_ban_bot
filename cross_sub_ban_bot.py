@@ -114,7 +114,7 @@ def sync_bans_from_sub(sub_name):
 
 def enforce_bans_on_sub(sub_name):
     subreddit = reddit.subreddit(sub_name)
-    current_bans = {ban.name.lower() for ban in subreddit.banned(limit=None)}
+    current_bans = {ban.name.lower(): ban for ban in subreddit.banned(limit=None)}
     rows = sheet.get_all_records()
 
     for row in rows:
@@ -126,17 +126,34 @@ def enforce_bans_on_sub(sub_name):
             continue
         if source_sub not in TRUSTED_SOURCES:
             continue
-        if is_forgiven(user):
-            print(f"[SKIP] {user} is globally forgiven (ManualOverride = yes)")
-            continue
-        if user.lower() in current_bans:
-            continue
-        if user.lower() in EXEMPT_USERS:
-            continue
-        if is_mod(subreddit, user):
+
+        user_lower = user.lower()
+        already_banned = user_lower in current_bans
+        is_mod_user = is_mod(subreddit, user)
+        is_exempt = user_lower in EXEMPT_USERS
+        is_override = is_forgiven(user)
+
+        if is_override:
+            if already_banned:
+                ban_obj = current_bans[user_lower]
+                ban_reason_text = getattr(ban_obj, "note", "") or ""
+                if CROSS_SUB_BAN_REASON.lower() in ban_reason_text.lower():
+                    subreddit.banned.remove(user)
+                    print(f"[UNBANNED] {user} in {sub_name} (forgiven and ban matched reason)")
+                else:
+                    print(f"[SKIP] {user} is forgiven, but existing ban doesn't match bot reason")
+            else:
+                print(f"[SKIP] {user} is globally forgiven and not banned in {sub_name}")
             continue
 
-        subreddit.banned.add(user, reason=f"Cross-sub ban from {source_sub} – {reason}")
+        if already_banned or is_exempt or is_mod_user:
+            continue
+
+        subreddit.banned.add(
+            user,
+            ban_reason=CROSS_SUB_BAN_REASON,
+            note=f"Cross-sub ban from {source_sub}"
+        )
         print(f"[BANNED] {user} in {sub_name}")
 
 # --- Main execution ---
