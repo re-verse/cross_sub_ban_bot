@@ -61,55 +61,34 @@ def is_trusted_mod(user):
 def get_recent_sheet_entries(source_sub):
     now = datetime.utcnow()
     return sum(1 for row in sheet.get_all_records()
-               if row['SourceSub'] == source_sub and
-               'Timestamp' in row and
-               datetime.strptime(row['Timestamp'], '%Y-%m-%d %H:%M:%S') > now - timedelta(days=1))
+                    if row['SourceSub'] == source_sub and
+                    'Timestamp' in row and
+                    datetime.strptime(row['Timestamp'], '%Y-%m-%d %H:%M:%S') > now - timedelta(days=1))
 
 def already_listed(user):
     rows = sheet.col_values(1)
     return user.lower() in (u.lower() for u in rows)
 
 def already_logged_action(log_id):
-    ids = sheet.col_values(5)  # Column E = ModLogID
+    ids = sheet.col_values(6)  # Column F = ModLogID
     return log_id in ids
 
 def is_forgiven(user):
-    rows = sheet.get_all_records()
-    latest_ban = None
-    for row in rows:
+    records = sheet.get_all_records()
+    for row in records:
         if row['Username'].lower() == user.lower():
-            ban_time = row.get('Timestamp', '').strip()
-            forgive_time = row.get('ForgiveTimestamp', '').strip()
-
-            if str(row.get('ManualOverride', '')).strip().lower() not in {'yes', 'true'}:
-                continue
-
-            if forgive_time:
-                if ban_time:
-                    try:
-                        ban_dt = datetime.strptime(ban_time, '%Y-%m-%d %H:%M:%S')
-                        forgive_dt = datetime.strptime(forgive_time, '%Y-%m-%d %H:%M:%S')
-                        if forgive_dt >= ban_dt:
-                            return True
-                    except Exception:
-                        continue
-                else:
-                    return True  # Forgiven without a timestamped ban
+            if str(row.get('ManualOverride', '')).strip().lower() in {'yes', 'true'}:
+                return True
     return False
 
 def apply_override(username):
     records = sheet.get_all_records()
-    now = datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
     for i, row in enumerate(records, start=2):  # row 2+ because of headers
         if row['Username'].lower() == username.lower():
-            sheet.update_cell(i, 4, "yes")  # ManualOverride
-            sheet.update_cell(i, 7, reddit.user.me().name)  # OverriddenBy
-            sheet.update_cell(i, 8, "manual")  # ModSub
-            sheet.update_cell(i, 9, now)  # ForgiveTimestamp  # ForgiveTimestamp
+            sheet.update_cell(i, 5, "yes")  # ManualOverride column
+            sheet.update_cell(i, 7, reddit.user.me().name)  # OverriddenBy column
+            sheet.update_cell(i, 8, "manual")  # ModSub column
             return True
-
-    sheet.append_row([username, "manual", "", now, "yes", "", reddit.user.me().name, "manual", now])  # includes ForgiveTimestamp
-    return True
 
     # If user not found, append new row
     now = datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
@@ -148,6 +127,8 @@ def check_modmail_for_overrides():
     except Exception as e:
         print(f"[ERROR] Modmail check failed: {e}")
 
+
+
 # --- Sync bans from modlogs into sheet ---
 def sync_bans_from_sub(sub_name):
     subreddit = reddit.subreddit(sub_name)
@@ -180,7 +161,7 @@ def sync_bans_from_sub(sub_name):
             print(f"[SKIP] {source_sub} hit daily limit for {user}")
             continue
 
-        sheet.append_row([user, source_sub, "", timestamp, "", log_id, "", ""])
+        sheet.append_row([user, source_sub, CROSS_SUB_BAN_REASON, timestamp, "", log_id, "", ""])
         print(f"[LOGGED] {user} from {source_sub} — modlog ID: {log_id}")
 
 # --- Enforce bans locally based on sheet entries ---
