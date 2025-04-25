@@ -18,7 +18,7 @@ CROSS_SUB_BAN_REASON = config.get("CROSS_SUB_BAN_REASON", "Auto XSub Pact Ban")
 EXEMPT_USERS = set(u.lower() for u in config.get("EXEMPT_USERS", []))
 DAILY_BAN_LIMIT = config.get("DAILY_BAN_LIMIT", 30)
 MAX_LOG_AGE_MINUTES = config.get("MAX_LOG_AGE_MINUTES", 60)
-ROW_RETENTION_DAYS = config.get("ROW_RETENTION_DAYS", 30)  # Only process sheet entries newer than this
+ROW_RETENTION_DAYS = config.get("ROW_RETENTION_DAYS", 30)
 
 # --- Trusted subreddits ---
 def load_trusted_subs(path="trusted_subs.txt"):
@@ -54,6 +54,7 @@ if not sheet_key:
     print("[FATAL] Missing GOOGLE_SHEET_ID env var.")
     sys.exit(1)
 sheet = client.open_by_key(sheet_key).sheet1
+print(f"[INFO] Google Sheet '{sheet_key}' opened, worksheet '{sheet.title}' loaded.")
 
 # --- Reddit API setup ---
 reddit = praw.Reddit(
@@ -114,8 +115,9 @@ def apply_override(username, moderator, modsub):
 
 # --- Modmail override check ---
 def check_modmail_for_overrides():
-    print("Checking for pardon messages...")
+    print("[STEP] Checking for pardon messages...")
     for sub in TRUSTED_SUBS:
+        print(f"[INFO] Reading modmail in r/{sub}")
         try:
             sr = reddit.subreddit(sub)
         except Exception:
@@ -143,6 +145,7 @@ def check_modmail_for_overrides():
 
 # --- Sync bans from modlog ---
 def sync_bans_from_sub(sub):
+    print(f"[STEP] Checking modlog for r/{sub}")
     try:
         sr = reddit.subreddit(sub)
         for log in sr.mod.log(action='banuser', limit=50):
@@ -163,19 +166,18 @@ def sync_bans_from_sub(sub):
             if get_recent_sheet_entries(source) >= DAILY_BAN_LIMIT:
                 continue
             sheet.append_row([user,source,CROSS_SUB_BAN_REASON,ts.strftime('%Y-%m-%d %H:%M:%S'),'',lid,'',''])
-    except prawcore.exceptions.Forbidden:
-        pass
-    except prawcore.exceptions.NotFound:
-        pass
+    except (prawcore.exceptions.Forbidden, prawcore.exceptions.NotFound):
+        print(f"[WARN] Cannot access modlog for r/{sub}, skipping.")
 
 # --- Enforce bans ---
 def enforce_bans_on_sub(sub):
+    print(f"[STEP] Enforcing bans/unbans in r/{sub}")
     try:
         sr = reddit.subreddit(sub)
         bans = {b.name.lower(): b for b in sr.banned(limit=None)}
     except Exception:
+        print(f"[WARN] Cannot fetch ban list for r/{sub}, skipping.")
         return
-    # filter recent rows only
     cutoff = datetime.utcnow() - timedelta(days=ROW_RETENTION_DAYS)
     records = []
     for r in sheet.get_all_records():
@@ -187,6 +189,7 @@ def enforce_bans_on_sub(sub):
         except:
             continue
 
+    any_action = False
     for r in records:
         user = r.get('Username','')
         src = r.get('SourceSub','')
@@ -200,6 +203,8 @@ def enforce_bans_on_sub(sub):
             if ul in bans and CROSS_SUB_BAN_REASON.lower() in (getattr(bans[ul],'note','') or '').lower():
                 try:
                     sr.banned.remove(user)
+                    print(f"[UNBANNED] Forgiven u/{user} in r/{sub}")
+                    any_action = True
                 except:
                     pass
             continue
@@ -207,6 +212,8 @@ def enforce_bans_on_sub(sub):
             continue
         try:
             sr.banned.add(user, ban_reason=CROSS_SUB_BAN_REASON, note=f"Cross-sub ban from {src}")
+            print(f"[BANNED] u/{user} in r/{sub} from {src}")
+            any_action = True
         except praw.exceptions.APIException as e:
             err = getattr(e, '_raw', {}).get('error_type','')
             if err == 'USER_DOESNT_EXIST':
@@ -214,16 +221,20 @@ def enforce_bans_on_sub(sub):
                     for idx,row in enumerate(sheet.get_all_records(), start=2):
                         if row.get('Username','').lower() == ul:
                             sheet.update_cell(idx,9,datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S') + ' deleted')
+                            print(f"[INFO] Marked u/{user} as deleted in sheet, skipping future attempts.")
                             break
                 except:
                     pass
-            else:
-                pass
+        # end for each row
+    if not any_action:
+        print(f"[INFO] No bans or unbans needed in r/{sub}.")
 
 # --- Main ---
 if __name__=='__main__':
+    print("=== Running Cross-Sub Ban Bot ===")
     check_modmail_for_overrides()
     for s in TRUSTED_SUBS:
         sync_bans_from_sub(s)
     for s in TRUSTED_SUBS:
         enforce_bans_on_sub(s)
+    print("=== Bot run complete ===")
