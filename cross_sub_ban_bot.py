@@ -215,6 +215,17 @@ def enforce_bans_on_sub(sub_name):
                     print(f"[ERROR] Failed to unban {user} in {sub_name}: {e}")
             continue
 
+        if not already_banned:
+            # Check if this user *was* banned by bot but now no longer is and no override
+            if str(row.get('ManualOverride', '')).strip().lower() not in {'yes', 'true'}:
+                print(f"[NOTICE] {user} was manually unbanned in {sub_name} without override")
+                try:
+                    now = datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
+                    sheet.append_row([user, source_sub, "Manual unban detected", now, "", "", "", sub_name, now])
+                except Exception as e:
+                    print(f"[ERROR] Failed to log manual unban for {user}: {e}")
+            continue
+
         if already_banned or is_exempt or is_mod_user:
             continue
 
