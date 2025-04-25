@@ -19,14 +19,20 @@ jobs:
           pip install praw
       - name: Set environment variables
         run: |
-          echo "CLIENT_ID=$REDDIT_CLIENT_ID" >> $GITHUB_ENV
-          echo "CLIENT_SECRET=$REDDIT_CLIENT_SECRET" >> $GITHUB_ENV
-          echo "USERNAME=$REDDIT_USERNAME" >> $GITHUB_ENV
-          echo "PASSWORD=$REDDIT_PASSWORD" >> $GITHUB_ENV
-        env:
-          CLIENT_ID: ${{ secrets.REDDIT_CLIENT_ID }}
-          CLIENT_SECRET: ${{ secrets.REDDIT_CLIENT_SECRET }}
-          USERNAME: ${{ secrets.REDDIT_USERNAME }}
-          PASSWORD: ${{ secrets.REDDIT_PASSWORD }}
+          echo "CLIENT_ID=${{ secrets.REDDIT_CLIENT_ID }}" >> $GITHUB_ENV
+          echo "CLIENT_SECRET=${{ secrets.REDDIT_CLIENT_SECRET }}" >> $GITHUB_ENV
+          echo "USERNAME=${{ secrets.REDDIT_USERNAME }}" >> $GITHUB_ENV
+          echo "PASSWORD=${{ secrets.REDDIT_PASSWORD }}" >> $GITHUB_ENV
+      - name: Debug environment variables
+        run: |
+          echo "CLIENT_ID: $CLIENT_ID"
+          echo "CLIENT_SECRET: $CLIENT_SECRET"
+          echo "USERNAME: $USERNAME"
+          echo "PASSWORD: $PASSWORD"
       - name: Run Reddit API test
         run: python reddit_test.py
+    env:
+      CLIENT_ID: ${{ secrets.REDDIT_CLIENT_ID }}
+      CLIENT_SECRET: ${{ secrets.REDDIT_CLIENT_SECRET }}
+      USERNAME: ${{ secrets.REDDIT_USERNAME }}
+      PASSWORD: ${{ secrets.REDDIT_PASSWORD }}
