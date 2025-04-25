@@ -28,13 +28,22 @@ TRUSTED_SUBS = load_trusted_subs()
 TRUSTED_SOURCES = {f"r/{sub}" for sub in TRUSTED_SUBS}
 
 # --- Google Sheets setup ---
-# Service account JSON is stored as base64-encoded env var
-creds_json_b64 = os.environ.get('GOOGLE_SERVICE_ACCOUNT_JSON')
-if not creds_json_b64:
+# Service account JSON is stored as either raw JSON or base64-encoded env var
+creds_env = os.environ.get('GOOGLE_SERVICE_ACCOUNT_JSON')
+if not creds_env:
     print("[FATAL] Missing GOOGLE_SERVICE_ACCOUNT_JSON env var.")
     sys.exit(1)
-creds_json = base64.b64decode(creds_json_b64)
-creds_dict = json.loads(creds_json)
+# try base64 decode, else use raw
+try:
+    decoded = base64.b64decode(creds_env)
+    creds_str = decoded.decode('utf-8')
+    creds_dict = json.loads(creds_str)
+except Exception:
+    try:
+        creds_dict = json.loads(creds_env)
+    except Exception as e:
+        print(f"[FATAL] Failed to parse Google service account JSON: {e}")
+        sys.exit(1)
 
 scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
 creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_dict, scope)
