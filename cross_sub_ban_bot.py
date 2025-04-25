@@ -20,6 +20,10 @@ DAILY_BAN_LIMIT = config.get("DAILY_BAN_LIMIT", 30)
 MAX_LOG_AGE_MINUTES = config.get("MAX_LOG_AGE_MINUTES", 60)
 ROW_RETENTION_DAYS = config.get("ROW_RETENTION_DAYS", 30)
 
+# --- Public log files ---
+PUBLIC_LOG_JSON = "public_ban_log.json"
+PUBLIC_LOG_MD = "public_ban_log.md"
+
 # --- Trusted subreddits ---
 def load_trusted_subs(path="trusted_subs.txt"):
     with open(path) as f:
@@ -78,8 +82,10 @@ def is_mod(subreddit, user):
             mod_cache[sub] = set()
     return user.lower() in mod_cache[sub]
 
+
 def already_logged_action(log_id):
     return log_id in sheet.col_values(6)
+
 
 def get_recent_sheet_entries(source_sub):
     cutoff = datetime.utcnow() - timedelta(days=1)
@@ -95,11 +101,13 @@ def get_recent_sheet_entries(source_sub):
                 pass
     return count
 
+
 def is_forgiven(user):
     for r in sheet.get_all_records():
         if r.get('Username','').lower() == user.lower() and str(r.get('ManualOverride','')).lower() in ('yes','true'):
             return True
     return False
+
 
 def apply_override(username, moderator, modsub):
     records = sheet.get_all_records()
@@ -112,6 +120,41 @@ def apply_override(username, moderator, modsub):
     now = datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
     sheet.append_row([username,'manual','',now,'yes','',moderator,modsub,''])
     return True
+
+
+def log_public_action(action, username, subreddit, source_sub="", actor="", note=""):
+    entry = {
+        "timestamp": datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S'),
+        "action": action,
+        "username": username,
+        "subreddit": subreddit,
+        "source_sub": source_sub,
+        "actor": actor,
+        "note": note
+    }
+    try:
+        # JSON log
+        if os.path.exists(PUBLIC_LOG_JSON):
+            with open(PUBLIC_LOG_JSON,'r') as f:
+                data = json.load(f)
+        else:
+            data = []
+        data.append(entry)
+        with open(PUBLIC_LOG_JSON,'w') as f:
+            json.dump(data, f, indent=2)
+        # Markdown log
+        with open(PUBLIC_LOG_MD,'a') as f:
+            f.write(f"### [{entry['timestamp']}] {'✅' if action=='UNBANNED' else '❌'} {action} u/{username}\n")
+            f.write(f"- **Subreddit**: r/{subreddit}\n")
+            if source_sub:
+                f.write(f"- **Source Sub**: {source_sub}\n")
+            if actor:
+                f.write(f"- **Actor**: {actor}\n")
+            if note:
+                f.write(f"- **Note**: {note}\n")
+            f.write("\n")
+    except Exception as e:
+        print(f"[ERROR] Failed to write public log: {e}")
 
 # --- Modmail override check ---
 def check_modmail_for_overrides():
@@ -169,7 +212,7 @@ def sync_bans_from_sub(sub):
     except (prawcore.exceptions.Forbidden, prawcore.exceptions.NotFound):
         print(f"[WARN] Cannot access modlog for r/{sub}, skipping.")
 
-# --- Enforce bans ---
+# --- Enforce bans/unbans ---
 def enforce_bans_on_sub(sub):
     print(f"[STEP] Enforcing bans/unbans in r/{sub}")
     try:
@@ -178,6 +221,7 @@ def enforce_bans_on_sub(sub):
     except Exception:
         print(f"[WARN] Cannot fetch ban list for r/{sub}, skipping.")
         return
+    # prune old rows
     cutoff = datetime.utcnow() - timedelta(days=ROW_RETENTION_DAYS)
     records = []
     for r in sheet.get_all_records():
@@ -204,8 +248,9 @@ def enforce_bans_on_sub(sub):
                 try:
                     sr.banned.remove(user)
                     print(f"[UNBANNED] Forgiven u/{user} in r/{sub}")
+                    log_public_action("UNBANNED", user, sub, src, "Bot", "Forgiven override")
                     any_action = True
-                except:
+                except Exception:
                     pass
             continue
         if ul in bans or ul in EXEMPT_USERS or is_mod(sr, user):
@@ -213,19 +258,16 @@ def enforce_bans_on_sub(sub):
         try:
             sr.banned.add(user, ban_reason=CROSS_SUB_BAN_REASON, note=f"Cross-sub ban from {src}")
             print(f"[BANNED] u/{user} in r/{sub} from {src}")
+            log_public_action("BANNED", user, sub, src, "Bot", "")
             any_action = True
         except praw.exceptions.APIException as e:
-            err = getattr(e, '_raw', {}).get('error_type','')
+            err = getattr(e._raw, 'error_type', '')
             if err == 'USER_DOESNT_EXIST':
-                try:
-                    for idx,row in enumerate(sheet.get_all_records(), start=2):
-                        if row.get('Username','').lower() == ul:
-                            sheet.update_cell(idx,9,datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S') + ' deleted')
-                            print(f"[INFO] Marked u/{user} as deleted in sheet, skipping future attempts.")
-                            break
-                except:
-                    pass
-        # end for each row
+                for idx,row in enumerate(sheet.get_all_records(), start=2):
+                    if row.get('Username','').lower() == ul:
+                        sheet.update_cell(idx,9,datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S') + ' deleted')
+                        print(f"[INFO] Marked u/{user} as deleted in sheet, skipping future attempts.")
+                        break
     if not any_action:
         print(f"[INFO] No bans or unbans needed in r/{sub}.")
 
