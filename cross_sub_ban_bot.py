@@ -123,7 +123,7 @@ def check_modmail_for_overrides():
         except Exception as e:
             print(f"[WARN] Cannot access r/{sub} modmail: {e}")
             continue
-        for state in ("new","mod","all"):
+        for state in ("new","mod","all"): 
             print(f"[DEBUG] Checking modmail with state '{state}'")
             try:
                 for convo in sr.modmail.conversations(state=state):
@@ -227,6 +227,16 @@ def enforce_bans_on_sub(sub):
         except praw.exceptions.APIException as e:
             if e.error_type == 'USER_DOESNT_EXIST':
                 print(f"[WARN] Cannot ban {user} in {sub}: user doesn't exist, skipping.")
+                # mark the sheet so we don’t keep retrying
+                try:
+                    records = sheet.get_all_records()
+                    for idx, row in enumerate(records, start=2):
+                        if row.get('Username','').lower() == user.lower():
+                            sheet.update_cell(idx, 9, datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S') + " deleted")
+                            print(f"[INFO] Marked row {idx} for {user} as deleted in sheet.")
+                            break
+                except Exception as se:
+                    print(f"[ERROR] Couldn’t mark deletion for {user} in sheet: {se}")
             else:
                 print(f"[ERROR] Failed to ban {user} in {sub}: {e}")
         except Exception as e:
