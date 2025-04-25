@@ -158,7 +158,6 @@ def sync_bans_from_sub(sub):
             source = f"r/{log.subreddit}"
             lid = log.id
             ts = datetime.utcfromtimestamp(log.created_utc)
-            # skip old logs or non-matching reasons
             if datetime.utcnow()-ts > timedelta(minutes=MAX_LOG_AGE_MINUTES):
                 continue
             if (log.description or '').strip().lower() != CROSS_SUB_BAN_REASON.lower():
@@ -213,6 +212,8 @@ def enforce_bans_on_sub(sub):
                 try:
                     sr.banned.remove(user)
                     print(f"[UNBANNED] {user} in {sub} (forgiven)")
+                except praw.exceptions.APIException as e:
+                    print(f"[ERROR] Unban failed for {user} in {sub}: {e}")
                 except Exception as e:
                     print(f"[ERROR] Failed to unban {user} in {sub}: {e}")
             continue
@@ -223,6 +224,11 @@ def enforce_bans_on_sub(sub):
         try:
             sr.banned.add(user, ban_reason=CROSS_SUB_BAN_REASON, note=f"Cross-sub ban from {src}")
             print(f"[BANNED] {user} in {sub}")
+        except praw.exceptions.APIException as e:
+            if e.error_type == 'USER_DOESNT_EXIST':
+                print(f"[WARN] Cannot ban {user} in {sub}: user doesn't exist, skipping.")
+            else:
+                print(f"[ERROR] Failed to ban {user} in {sub}: {e}")
         except Exception as e:
             print(f"[ERROR] Failed to ban {user} in {sub}: {e}")
 
