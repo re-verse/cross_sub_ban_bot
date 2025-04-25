@@ -5,10 +5,10 @@ def test_reddit_connection():
     """Tests the connection to the Reddit API using provided credentials."""
     try:
         reddit = praw.Reddit(
-            client_id=os.environ['CLIENT_ID'],
-            client_secret=os.environ['CLIENT_SECRET'],
-            username=os.environ['USERNAME'],
-            password=os.environ['PASSWORD'],
+            client_id=os.environ.get('CLIENT_ID'),
+            client_secret=os.environ.get('CLIENT_SECRET'),
+            username=os.environ.get('USERNAME'),
+            password=os.environ.get('PASSWORD'),
             user_agent='NHL Cross-Sub Ban Bot'  # Important: Use a descriptive user agent
         )
         #  Try to fetch the currently authenticated user.
