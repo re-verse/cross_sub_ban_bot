@@ -28,12 +28,11 @@ TRUSTED_SUBS = load_trusted_subs()
 TRUSTED_SOURCES = {f"r/{sub}" for sub in TRUSTED_SUBS}
 
 # --- Google Sheets setup ---
-# Service account JSON is stored as either raw JSON or base64-encoded env var
 creds_env = os.environ.get('GOOGLE_SERVICE_ACCOUNT_JSON')
 if not creds_env:
     print("[FATAL] Missing GOOGLE_SERVICE_ACCOUNT_JSON env var.")
     sys.exit(1)
-# try base64 decode, else use raw
+# decode either base64 or raw JSON
 try:
     decoded = base64.b64decode(creds_env)
     creds_str = decoded.decode('utf-8')
@@ -144,7 +143,8 @@ def check_modmail_for_overrides():
                             if apply_override(user, sender, sub):
                                 convo.reply(body=f"✅ u/{user} has been forgiven and will not be banned.")
                                 print(f"[OVERRIDE] {user} by {sender} in {sub}")
-            except Exception:
+            except Exception as e:
+                print(f"[WARN] Modmail error in r/{sub} state={state}: {e}")
                 continue
 
 # --- Sync bans ---
@@ -153,59 +153,73 @@ def sync_bans_from_sub(sub):
     try:
         sr = reddit.subreddit(sub)
         logs = sr.mod.log(action='banuser', limit=50)
+        for log in logs:
+            user = log.target_author
+            source = f"r/{log.subreddit}"
+            lid = log.id
+            ts = datetime.utcfromtimestamp(log.created_utc)
+            # skip old logs or non-matching reasons
+            if datetime.utcnow()-ts > timedelta(minutes=MAX_LOG_AGE_MINUTES):
+                continue
+            if (log.description or '').strip().lower() != CROSS_SUB_BAN_REASON.lower():
+                continue
+            if source not in TRUSTED_SOURCES:
+                continue
+            if user and (user.lower() in EXEMPT_USERS or is_mod(sr, user)):
+                continue
+            if already_logged_action(lid) or already_listed(user):
+                continue
+            if get_recent_sheet_entries(source) >= DAILY_BAN_LIMIT:
+                continue
+            row = [user,source,CROSS_SUB_BAN_REASON,ts.strftime('%Y-%m-%d %H:%M:%S'),'',lid,'','']
+            sheet.append_row(row)
+            print(f"[LOGGED] {user} from {source} — modlog ID: {lid}")
     except prawcore.exceptions.Forbidden:
         print(f"[WARN] Bot not a mod in r/{sub}, skipping sync")
-        return
+    except prawcore.exceptions.NotFound:
+        print(f"[WARN] Modlog endpoint not found for r/{sub} (bot not invited or sub missing), skipping sync")
     except Exception as e:
-        print(f"[ERROR] Unexpected error for r/{sub}: {e}")
-        return
-    for log in logs:
-        user = log.target_author
-        source = f"r/{log.subreddit}"
-        lid = log.id
-        ts = datetime.utcfromtimestamp(log.created_utc)
-        if datetime.utcnow()-ts > timedelta(minutes=MAX_LOG_AGE_MINUTES):
-            continue
-        if (log.description or '').strip().lower() != CROSS_SUB_BAN_REASON.lower():
-            continue
-        if source not in TRUSTED_SOURCES:
-            continue
-        if user.lower() in EXEMPT_USERS or is_mod(sr, user):
-            continue
-        if already_logged_action(lid) or already_listed(user):
-            continue
-        if get_recent_sheet_entries(source)>=DAILY_BAN_LIMIT:
-            continue
-        row = [user,source,CROSS_SUB_BAN_REASON,ts.strftime('%Y-%m-%d %H:%M:%S'),'',lid,'','']
-        sheet.append_row(row)
-        print(f"[LOGGED] {user} from {source} — modlog ID: {lid}")
+        print(f"[ERROR] Unexpected error syncing modlog for r/{sub}: {e}")
 
 # --- Enforce bans ---
 def enforce_bans_on_sub(sub):
     print(f"--- Enforcing bans in {sub}")
     try:
         sr = reddit.subreddit(sub)
-    except Exception:
-        print(f"[WARN] Cannot access r/{sub}, skipping enforcement")
+    except Exception as e:
+        print(f"[WARN] Cannot access r/{sub}, skipping enforcement: {e}")
         return
     try:
         bans = {b.name.lower(): b for b in sr.banned(limit=None)}
     except prawcore.exceptions.Forbidden:
         print(f"[WARN] Cannot list bans in r/{sub}, skipping enforcement")
         return
+    except prawcore.exceptions.NotFound:
+        print(f"[WARN] Ban list not found for r/{sub} (bot not invited or sub missing), skipping enforcement")
+        return
+    except Exception as e:
+        print(f"[ERROR] Unexpected error fetching ban list for r/{sub}: {e}")
+        return
+
     for r in sheet.get_all_records():
         user = r.get('Username','')
         src = r.get('SourceSub','')
         if not user or not src:
             continue
         ul = user.lower()
+        # forgiven
         if is_forgiven(user):
             if ul in bans and CROSS_SUB_BAN_REASON.lower() in (getattr(bans[ul],'note','') or '').lower():
-                sr.banned.remove(user)
-                print(f"[UNBANNED] {user} in {sub} (forgiven)")
+                try:
+                    sr.banned.remove(user)
+                    print(f"[UNBANNED] {user} in {sub} (forgiven)")
+                except Exception as e:
+                    print(f"[ERROR] Failed to unban {user} in {sub}: {e}")
             continue
+        # skip if already banned/exempt/mod
         if ul in bans or ul in EXEMPT_USERS or is_mod(sr, user):
             continue
+        # ban
         try:
             sr.banned.add(user, ban_reason=CROSS_SUB_BAN_REASON, note=f"Cross-sub ban from {src}")
             print(f"[BANNED] {user} in {sub}")
