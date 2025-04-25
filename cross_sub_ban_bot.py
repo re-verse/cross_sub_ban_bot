@@ -18,6 +18,7 @@ CROSS_SUB_BAN_REASON = config.get("CROSS_SUB_BAN_REASON", "Auto XSub Pact Ban")
 EXEMPT_USERS = set(u.lower() for u in config.get("EXEMPT_USERS", []))
 DAILY_BAN_LIMIT = config.get("DAILY_BAN_LIMIT", 30)
 MAX_LOG_AGE_MINUTES = config.get("MAX_LOG_AGE_MINUTES", 60)
+ROW_RETENTION_DAYS = config.get("ROW_RETENTION_DAYS", 30)  # Only process sheet entries newer than this
 
 # --- Trusted subreddits ---
 def load_trusted_subs(path="trusted_subs.txt"):
@@ -32,7 +33,7 @@ creds_env = os.environ.get('GOOGLE_SERVICE_ACCOUNT_JSON')
 if not creds_env:
     print("[FATAL] Missing GOOGLE_SERVICE_ACCOUNT_JSON env var.")
     sys.exit(1)
-# decode either base64 or raw JSON
+# decode base64 or raw JSON
 try:
     decoded = base64.b64decode(creds_env)
     creds_str = decoded.decode('utf-8')
@@ -41,7 +42,7 @@ except Exception:
     try:
         creds_dict = json.loads(creds_env)
     except Exception as e:
-        print(f"[FATAL] Failed to parse Google service account JSON: {e}")
+        print(f"[FATAL] Failed to parse service account JSON: {e}")
         sys.exit(1)
 
 scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
@@ -60,7 +61,7 @@ reddit = praw.Reddit(
     client_secret=os.environ.get('REDDIT_CLIENT_SECRET') or os.environ.get('CLIENT_SECRET'),
     username=os.environ.get('REDDIT_USERNAME') or os.environ.get('USERNAME'),
     password=os.environ.get('REDDIT_PASSWORD') or os.environ.get('PASSWORD'),
-    user_agent='Cross-Sub Ban Bot/1.0 by ' + (os.environ.get('REDDIT_USERNAME') or os.environ.get('USERNAME'))
+    user_agent='Cross-Sub Ban Bot/1.0'
 )
 
 # --- Caches ---
@@ -75,9 +76,6 @@ def is_mod(subreddit, user):
         except Exception:
             mod_cache[sub] = set()
     return user.lower() in mod_cache[sub]
-
-def already_listed(user):
-    return any(r['Username'].lower() == user.lower() for r in sheet.get_all_records())
 
 def already_logged_action(log_id):
     return log_id in sheet.col_values(6)
@@ -106,7 +104,7 @@ def apply_override(username, moderator, modsub):
     records = sheet.get_all_records()
     for i,r in enumerate(records, start=2):
         if r.get('Username','').lower() == username.lower():
-            sheet.update_cell(i,5,'yes')
+            sheet.update_cell(i,5,'yes')  # ManualOverride
             sheet.update_cell(i,7,moderator)
             sheet.update_cell(i,8,modsub)
             return True
@@ -116,16 +114,14 @@ def apply_override(username, moderator, modsub):
 
 # --- Modmail override check ---
 def check_modmail_for_overrides():
-    print("[DEBUG] Starting modmail override check...")
+    print("Checking for pardon messages...")
     for sub in TRUSTED_SUBS:
         try:
             sr = reddit.subreddit(sub)
-        except Exception as e:
-            print(f"[WARN] Cannot access r/{sub} modmail: {e}")
+        except Exception:
             continue
-        for state in ("new","mod","all"): 
-            print(f"[DEBUG] Checking modmail with state '{state}'")
-            try:
+        try:
+            for state in ("new","mod","all"): 
                 for convo in sr.modmail.conversations(state=state):
                     if not convo.messages:
                         continue
@@ -142,18 +138,14 @@ def check_modmail_for_overrides():
                             user = parts[2].lstrip('u/').strip()
                             if apply_override(user, sender, sub):
                                 convo.reply(body=f"✅ u/{user} has been forgiven and will not be banned.")
-                                print(f"[OVERRIDE] {user} by {sender} in {sub}")
-            except Exception as e:
-                print(f"[WARN] Modmail error in r/{sub} state={state}: {e}")
-                continue
+        except Exception:
+            continue
 
-# --- Sync bans ---
+# --- Sync bans from modlog ---
 def sync_bans_from_sub(sub):
-    print(f"--- Checking modlog for {sub}")
     try:
         sr = reddit.subreddit(sub)
-        logs = sr.mod.log(action='banuser', limit=50)
-        for log in logs:
+        for log in sr.mod.log(action='banuser', limit=50):
             user = log.target_author
             source = f"r/{log.subreddit}"
             lid = log.id
@@ -166,85 +158,67 @@ def sync_bans_from_sub(sub):
                 continue
             if user and (user.lower() in EXEMPT_USERS or is_mod(sr, user)):
                 continue
-            if already_logged_action(lid) or already_listed(user):
+            if already_logged_action(lid):
                 continue
             if get_recent_sheet_entries(source) >= DAILY_BAN_LIMIT:
                 continue
-            row = [user,source,CROSS_SUB_BAN_REASON,ts.strftime('%Y-%m-%d %H:%M:%S'),'',lid,'','']
-            sheet.append_row(row)
-            print(f"[LOGGED] {user} from {source} — modlog ID: {lid}")
+            sheet.append_row([user,source,CROSS_SUB_BAN_REASON,ts.strftime('%Y-%m-%d %H:%M:%S'),'',lid,'',''])
     except prawcore.exceptions.Forbidden:
-        print(f"[WARN] Bot not a mod in r/{sub}, skipping sync")
+        pass
     except prawcore.exceptions.NotFound:
-        print(f"[WARN] Modlog endpoint not found for r/{sub} (bot not invited or sub missing), skipping sync")
-    except Exception as e:
-        print(f"[ERROR] Unexpected error syncing modlog for r/{sub}: {e}")
+        pass
 
 # --- Enforce bans ---
 def enforce_bans_on_sub(sub):
-    print(f"--- Enforcing bans in {sub}")
     try:
         sr = reddit.subreddit(sub)
-    except Exception as e:
-        print(f"[WARN] Cannot access r/{sub}, skipping enforcement: {e}")
-        return
-    try:
         bans = {b.name.lower(): b for b in sr.banned(limit=None)}
-    except prawcore.exceptions.Forbidden:
-        print(f"[WARN] Cannot list bans in r/{sub}, skipping enforcement")
+    except Exception:
         return
-    except prawcore.exceptions.NotFound:
-        print(f"[WARN] Ban list not found for r/{sub} (bot not invited or sub missing), skipping enforcement")
-        return
-    except Exception as e:
-        print(f"[ERROR] Unexpected error fetching ban list for r/{sub}: {e}")
-        return
-
+    # filter recent rows only
+    cutoff = datetime.utcnow() - timedelta(days=ROW_RETENTION_DAYS)
+    records = []
     for r in sheet.get_all_records():
+        ts = r.get('Timestamp','')
+        try:
+            t = datetime.strptime(ts, '%Y-%m-%d %H:%M:%S')
+            if t > cutoff:
+                records.append(r)
+        except:
+            continue
+
+    for r in records:
         user = r.get('Username','')
         src = r.get('SourceSub','')
-        # skip empty rows
         if not user or not src:
             continue
         ul = user.lower()
-                # skip if marked deleted previously
-        deleted_marker = str(r.get('ForgiveTimestamp', '')).strip()
+        deleted_marker = str(r.get('ForgiveTimestamp','')).strip()
         if deleted_marker:
-            print(f"[SKIP] {user} already marked deleted in sheet: {deleted_marker}")
             continue
-        # forgiveness
         if is_forgiven(user):
             if ul in bans and CROSS_SUB_BAN_REASON.lower() in (getattr(bans[ul],'note','') or '').lower():
                 try:
                     sr.banned.remove(user)
-                    print(f"[UNBANNED] {user} in {sub} (forgiven)")
-                except Exception as e:
-                    print(f"[ERROR] Failed to unban {user} in {sub}: {e}")
+                except:
+                    pass
             continue
-        # skip if already banned/exempt/mod
         if ul in bans or ul in EXEMPT_USERS or is_mod(sr, user):
             continue
-        # attempt ban
         try:
             sr.banned.add(user, ban_reason=CROSS_SUB_BAN_REASON, note=f"Cross-sub ban from {src}")
-            print(f"[BANNED] {user} in {sub}")
         except praw.exceptions.APIException as e:
-            err_type = getattr(e, '_raw', {}).get('error_type') or ''
-            if err_type == 'USER_DOESNT_EXIST':
-                print(f"[WARN] Cannot ban {user} in {sub}: user doesn't exist, skipping.")
+            err = getattr(e, '_raw', {}).get('error_type','')
+            if err == 'USER_DOESNT_EXIST':
                 try:
-                    records = sheet.get_all_records()
-                    for idx, row in enumerate(records, start=2):
-                        if row.get('Username','').lower() == user.lower():
-                            sheet.update_cell(idx, 9, datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S') + " deleted")
-                            print(f"[INFO] Marked row {idx} for {user} as deleted in sheet.")
+                    for idx,row in enumerate(sheet.get_all_records(), start=2):
+                        if row.get('Username','').lower() == ul:
+                            sheet.update_cell(idx,9,datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S') + ' deleted')
                             break
-                except Exception as se:
-                    print(f"[ERROR] Couldn’t mark deletion for {user} in sheet: {se}")
+                except:
+                    pass
             else:
-                print(f"[ERROR] Failed to ban {user} in {sub}: {e}")
-        except Exception as e:
-            print(f"[ERROR] Failed to ban {user} in {sub}: {e}")
+                pass
 
 # --- Main ---
 if __name__=='__main__':
