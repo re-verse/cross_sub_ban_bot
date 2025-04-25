@@ -207,8 +207,8 @@ def enforce_bans_on_sub(sub):
         if not user or not src:
             continue
         ul = user.lower()
-        # skip if marked deleted previously
-        deleted_marker = str(r.get('DeletedTimestamp','')).strip()
+                # skip if marked deleted previously
+        deleted_marker = str(r.get('ForgiveTimestamp', '')).strip()
         if deleted_marker:
             print(f"[SKIP] {user} already marked deleted in sheet: {deleted_marker}")
             continue
