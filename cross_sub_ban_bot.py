@@ -130,7 +130,7 @@ def check_modmail_for_overrides():
                     body = last_message.body_markdown.strip()
                     author = last_message.author
 
-                    if not author:
+                    if not author or not body.lower().startswith("/xsub pardon"):
                         continue
 
                     sender = author.name.lower()
@@ -139,15 +139,14 @@ def check_modmail_for_overrides():
                     if not is_trusted_mod(sender):
                         continue
 
-                    if body.lower().startswith("/xsub pardon"):
-                        parts = body.strip().split()
-                        if len(parts) >= 3:
-                            username = parts[2].lstrip("u/").strip()
-                            if apply_override(username, sender, sub):
-                                convo.reply(body=f"✅ u/{username} has been marked as forgiven. They will not be banned again.")
-                                print(f"[OVERRIDE] {username} set by {sender} in {sub}")
-                            else:
-                                convo.reply(body=f"⚠️ u/{username} was not found in the sheet. No action taken.")
+                    parts = body.strip().split()
+                    if len(parts) >= 3:
+                        username = parts[2].lstrip("u/").strip()
+                        if apply_override(username, sender, sub):
+                            convo.reply(body=f"✅ u/{username} has been marked as forgiven. They will not be banned again.")
+                            print(f"[OVERRIDE] {username} set by {sender} in {sub}")
+                        else:
+                            convo.reply(body=f"⚠️ u/{username} was not found in the sheet. No action taken.")
     except Exception as e:
         print(f"[ERROR] Modmail check failed: {e}")
 
@@ -186,8 +185,13 @@ def sync_bans_from_sub(sub_name):
 
 # --- Enforce bans locally based on sheet entries ---
 def enforce_bans_on_sub(sub_name):
-    subreddit = reddit.subreddit(sub_name)
-    current_bans = {ban.name.lower(): ban for ban in subreddit.banned(limit=None)}
+    try:
+        subreddit = reddit.subreddit(sub_name)
+        current_bans = {ban.name.lower(): ban for ban in subreddit.banned(limit=None)}
+    except Exception as e:
+        print(f"[ERROR] Could not get ban list for {sub_name}: {e}")
+        return
+
     rows = sheet.get_all_records()
 
     for row in rows:
@@ -201,22 +205,28 @@ def enforce_bans_on_sub(sub_name):
 
         if is_override:
             if already_banned:
-                ban_obj = current_bans[user_lower]
-                ban_reason_text = getattr(ban_obj, "note", "") or ""
-                if CROSS_SUB_BAN_REASON.lower() in ban_reason_text.lower():
-                    subreddit.banned.remove(user)
-                    print(f"[UNBANNED] {user} in {sub_name} (forgiven and ban matched reason)")
+                try:
+                    ban_obj = current_bans[user_lower]
+                    ban_reason_text = getattr(ban_obj, "note", "") or ""
+                    if CROSS_SUB_BAN_REASON.lower() in ban_reason_text.lower():
+                        subreddit.banned.remove(user)
+                        print(f"[UNBANNED] {user} in {sub_name} (forgiven and ban matched reason)")
+                except Exception as e:
+                    print(f"[ERROR] Failed to unban {user} in {sub_name}: {e}")
             continue
 
         if already_banned or is_exempt or is_mod_user:
             continue
 
-        subreddit.banned.add(
-            user,
-            ban_reason=CROSS_SUB_BAN_REASON,
-            note=f"Cross-sub ban from {source_sub}"
-        )
-        print(f"[BANNED] {user} in {sub_name}")
+        try:
+            subreddit.banned.add(
+                user,
+                ban_reason=CROSS_SUB_BAN_REASON,
+                note=f"Cross-sub ban from {source_sub}"
+            )
+            print(f"[BANNED] {user} in {sub_name}")
+        except Exception as e:
+            print(f"[ERROR] Failed to ban {user} in {sub_name}: {e}")
 
 # --- Main execution ---
 if __name__ == "__main__":
