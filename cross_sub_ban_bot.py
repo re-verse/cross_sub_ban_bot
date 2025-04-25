@@ -203,30 +203,33 @@ def enforce_bans_on_sub(sub):
     for r in sheet.get_all_records():
         user = r.get('Username','')
         src = r.get('SourceSub','')
+        # skip empty rows
         if not user or not src:
             continue
         ul = user.lower()
-        # forgiven
+        # skip if marked deleted previously
+        deleted_marker = str(r.get('DeletedTimestamp','')).strip()
+        if deleted_marker:
+            print(f"[SKIP] {user} already marked deleted in sheet: {deleted_marker}")
+            continue
+        # forgiveness
         if is_forgiven(user):
             if ul in bans and CROSS_SUB_BAN_REASON.lower() in (getattr(bans[ul],'note','') or '').lower():
                 try:
                     sr.banned.remove(user)
                     print(f"[UNBANNED] {user} in {sub} (forgiven)")
-                except praw.exceptions.APIException as e:
-                    print(f"[ERROR] Unban failed for {user} in {sub}: {e}")
                 except Exception as e:
                     print(f"[ERROR] Failed to unban {user} in {sub}: {e}")
             continue
         # skip if already banned/exempt/mod
         if ul in bans or ul in EXEMPT_USERS or is_mod(sr, user):
             continue
-        # ban
+        # attempt ban
         try:
             sr.banned.add(user, ban_reason=CROSS_SUB_BAN_REASON, note=f"Cross-sub ban from {src}")
             print(f"[BANNED] {user} in {sub}")
         except praw.exceptions.APIException as e:
-            # use raw APIException data to avoid deprecation
-            err_type = getattr(e, '_raw', {}).get('error_type') or str(e)
+            err_type = getattr(e, '_raw', {}).get('error_type') or ''
             if err_type == 'USER_DOESNT_EXIST':
                 print(f"[WARN] Cannot ban {user} in {sub}: user doesn't exist, skipping.")
                 try:
