@@ -225,9 +225,10 @@ def enforce_bans_on_sub(sub):
             sr.banned.add(user, ban_reason=CROSS_SUB_BAN_REASON, note=f"Cross-sub ban from {src}")
             print(f"[BANNED] {user} in {sub}")
         except praw.exceptions.APIException as e:
-            if e.error_type == 'USER_DOESNT_EXIST':
+            # use raw APIException data to avoid deprecation
+            err_type = getattr(e, '_raw', {}).get('error_type') or str(e)
+            if err_type == 'USER_DOESNT_EXIST':
                 print(f"[WARN] Cannot ban {user} in {sub}: user doesn't exist, skipping.")
-                # mark the sheet so we don’t keep retrying
                 try:
                     records = sheet.get_all_records()
                     for idx, row in enumerate(records, start=2):
