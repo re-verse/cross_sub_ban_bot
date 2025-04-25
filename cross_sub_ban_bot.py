@@ -42,10 +42,82 @@ reddit = praw.Reddit(
     user_agent='NHL Cross-Sub Ban Bot'
 )
 
-# --- Caching mod lists for performance ---
 mod_cache = {}
 
-# --- Ban/unban public log ---
+def is_mod(subreddit, user):
+    subname = subreddit.display_name.lower()
+    if subname not in mod_cache:
+        mod_cache[subname] = {mod.name.lower() for mod in subreddit.moderator()}
+    return user.lower() in mod_cache[subname]
+
+def is_trusted_mod(user):
+    user = user.lower()
+    for sub in TRUSTED_SUBS:
+        subreddit = reddit.subreddit(sub)
+        if user in {mod.name.lower() for mod in subreddit.moderator()}:
+            return True
+    return False
+
+def already_logged_action(log_id):
+    ids = sheet.col_values(6)
+    return log_id in ids
+
+def already_listed(user):
+    rows = sheet.col_values(1)
+    return user.lower() in (u.lower() for u in rows)
+
+def is_forgiven(user):
+    records = sheet.get_all_records()
+    for row in records:
+        if row['Username'].lower() == user.lower():
+            if str(row.get('ManualOverride', '')).strip().lower() in {'yes', 'true'}:
+                return True
+    return False
+
+def apply_override(username):
+    records = sheet.get_all_records()
+    for i, row in enumerate(records, start=2):
+        if row['Username'].lower() == username.lower():
+            sheet.update_cell(i, 5, "yes")
+            sheet.update_cell(i, 7, reddit.user.me().name)
+            sheet.update_cell(i, 8, "manual")
+            now = datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
+            sheet.update_cell(i, 9, now)
+            return True
+    now = datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
+    sheet.append_row([username, "manual", "", now, "yes", "", reddit.user.me().name, "manual", now])
+    return True
+
+def check_modmail_for_overrides():
+    print("[DEBUG] Starting modmail override check...")
+    try:
+        for sub in TRUSTED_SUBS:
+            subreddit = reddit.subreddit(sub)
+            for state in ["new", "mod", "all"]:
+                print(f"[DEBUG] Checking modmail with state '{state}'")
+                for convo in subreddit.modmail.conversations(state=state):
+                    if not convo.messages:
+                        continue
+
+                    last_message = convo.messages[-1]
+                    body = last_message.body_markdown.strip()
+                    sender = last_message.author.name.lower()
+
+                    print(f"[DEBUG] Modmail from {sender}: {body}")
+
+                    if not is_trusted_mod(sender):
+                        continue
+
+                    if body.lower().startswith("/xsub pardon"):
+                        parts = body.strip().split()
+                        if len(parts) >= 3:
+                            username = parts[2].lstrip("u/").strip()
+                            if apply_override(username):
+                                convo.reply(body=f"✅ u/{username} has been marked as forgiven. They will not be banned again.")
+                                print(f"[OVERRIDE] {username} set by {sender} in {sub}")
+    except Exception as e:
+        print(f"[ERROR] Modmail check failed: {e}")
+
 def log_public_action(action, username, sub_name, source_sub="", mod_name="", note=""):
     now = datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
     entry = {
@@ -79,7 +151,35 @@ def log_public_action(action, username, sub_name, source_sub="", mod_name="", no
     except Exception as e:
         print(f"[ERROR] Failed to log public action: {e}")
 
-# --- Enforce bans locally based on sheet entries ---
+def sync_bans_from_sub(sub_name):
+    subreddit = reddit.subreddit(sub_name)
+    for log in subreddit.mod.log(action='banuser', limit=50):
+        user = log.target_author
+        source_sub = f"r/{log.subreddit}"
+        log_id = log.id
+        timestamp = datetime.utcfromtimestamp(log.created_utc).strftime('%Y-%m-%d %H:%M:%S')
+        description = log.description or ""
+
+        if datetime.utcnow() - datetime.utcfromtimestamp(log.created_utc) > timedelta(minutes=MAX_LOG_AGE_MINUTES):
+            print(f"[SKIP] Modlog too old for {user}, ignoring ID {log_id}")
+            continue
+
+        if description.strip().lower() != CROSS_SUB_BAN_REASON.lower():
+            continue
+        if source_sub not in TRUSTED_SOURCES:
+            continue
+        if user in EXEMPT_USERS or is_mod(subreddit, user):
+            continue
+        if already_logged_action(log_id):
+            print(f"[SKIP] Already processed modlog ID {log_id}")
+            continue
+        if already_listed(user):
+            print(f"[SKIP] User {user} already listed — skipping duplicate log")
+            continue
+
+        sheet.append_row([user, source_sub, CROSS_SUB_BAN_REASON, timestamp, "", log_id, "", ""])
+        print(f"[LOGGED] {user} from {source_sub} — modlog ID: {log_id}")
+
 def enforce_bans_on_sub(sub_name):
     try:
         subreddit = reddit.subreddit(sub_name)
@@ -136,7 +236,6 @@ def enforce_bans_on_sub(sub_name):
         except Exception as e:
             print(f"[ERROR] Failed to ban {user} in {sub_name}: {e}")
 
-# --- Main execution ---
 if __name__ == "__main__":
     check_modmail_for_overrides()
 
