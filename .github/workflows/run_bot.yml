@@ -24,6 +24,14 @@ jobs:
     - name: Decode service account key
       run: echo "${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}" | base64 -d > sa_credentials.json
 
+    - name: Debug Reddit secrets
+      run: |
+        echo "CLIENT_ID: $CLIENT_ID"
+        echo "USERNAME: $USERNAME"
+      env:
+        CLIENT_ID: ${{ secrets.REDDIT_CLIENT_ID }}
+        USERNAME: ${{ secrets.REDDIT_USERNAME }}
+
     - name: Run bot
       run: python3 cross_sub_ban_bot.py
       env:
