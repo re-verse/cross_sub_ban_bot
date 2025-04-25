@@ -1,6 +1,6 @@
 name: Reddit API Connection Test
 
-# Define triggers for the workflow (e.g., on push to main, or manually)
+# Define triggers for the workflow
 on:
   push:
     branches: [ main ] # Example: Run on pushes to the main branch
@@ -8,30 +8,33 @@ on:
 
 jobs:
   test-connection:
+    name: Test Reddit API Connection
     runs-on: ubuntu-latest # Use a standard runner environment
 
     steps:
       # 1. Check out your repository code
       - name: Check out code
-        uses: actions/checkout@v4 # Use the standard checkout action
+        uses: actions/checkout@v4
 
       # 2. Set up Python environment
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.x' # Specify your desired Python version
+          python-version: '3.11' # Specify a stable Python version
 
-      # 3. Install Python dependencies (like praw)
+      # 3. Install Python dependencies (praw and prawcore)
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install praw prawcore # Install libraries needed by your script
+          pip install praw prawcore # Ensure both are installed
 
-      # 4. Run your Python script
+      # 4. Run your Python script with CORRECT secret mapping
       - name: Run Reddit Connection Test Script
-        env: # Pass secrets as environment variables to the script
-          CLIENT_ID: ${{ secrets.CLIENT_ID }}
-          CLIENT_SECRET: ${{ secrets.CLIENT_SECRET }}
-          USERNAME: ${{ secrets.USERNAME }}
-          PASSWORD: ${{ secrets.PASSWORD }}
-        run: python reddit_test.py # Execute your Python file
+        env:
+          # Map your actual GitHub Secret names (right side)
+          # to the environment variables your script expects (left side)
+          CLIENT_ID: ${{ secrets.REDDIT_CLIENT_ID }}
+          CLIENT_SECRET: ${{ secrets.REDDIT_CLIENT_SECRET }}
+          USERNAME: ${{ secrets.REDDIT_USERNAME }}
+          PASSWORD: ${{ secrets.REDDIT_PASSWORD }}
+        run: python reddit_test.py # Make sure filename matches your script
