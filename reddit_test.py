@@ -2,27 +2,43 @@ import praw
 import os
 
 def test_reddit_connection():
+    """Tests the connection to the Reddit API using provided credentials."""
     try:
         reddit = praw.Reddit(
-            client_id=os.environ['CLIENT_ID'],
-            client_secret=os.environ['CLIENT_SECRET'],
-            username=os.environ['USERNAME'],
-            password=os.environ['PASSWORD'],
-            user_agent='Test Script'
+            client_id=os.environ.get('CLIENT_ID'),
+            client_secret=os.environ.get('CLIENT_SECRET'),
+            username=os.environ.get('USERNAME'),
+            password=os.environ.get('PASSWORD'),
+            user_agent='NHL Cross-Sub Ban Bot'  # Important: Use a descriptive user agent
         )
+        #  Try to fetch the currently authenticated user.
         user = reddit.user.me()
         if user:
-            print(f"Connected to Reddit as {user.name}")
+            print(f"Successfully connected to Reddit as {user.name}")
         else:
-            print("Connected, but couldn't get user. Check credentials.")
+            print("Successfully connected to Reddit, but could not get the current user.  Check your credentials.")
+
+        # Try a simple API call that requires authentication.
         subreddit = reddit.subreddit('all')
         print(f"Got subreddit: {subreddit.display_name}")
+        #  Try getting a listing.
         posts = subreddit.hot(limit=5)
-        print("Got hot posts from r/all")
+        print("Successfully retrieved hot posts from r/all")
         for post in posts:
             print(f"\t{post.title}")
+
+    except praw.exceptions.InvalidClient as e:
+        print(f"Error: Invalid Client.  Check your client_id and client_secret.  Error Details: {e}")
+    except praw.exceptions.InvalidGrant as e:
+        print(f"Error: Invalid Grant.  Check your username and password. Error Details: {e}")
+    except prawcore.exceptions.OAuthException as e:
+        print(f"Error: OAuth error.  Double-check your Reddit API credentials and token refresh. Error Details: {e}")
+    except prawcore.exceptions.ResponseException as e:
+        print(f"Error: Response Error: {e}.  This could indicate a network problem or a Reddit API issue.")
     except Exception as e:
-        print(f"Error: {e}")
+        print(f"An unexpected error occurred: {e}")
+        print("Please check your network connection, Reddit API status, and credentials.")
+        print("Also, ensure that the required environment variables are set correctly.")
 
 if __name__ == "__main__":
     test_reddit_connection()
