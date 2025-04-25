@@ -1,44 +1,37 @@
-import praw
-import os
+name: Reddit API Connection Test
 
-def test_reddit_connection():
-    """Tests the connection to the Reddit API using provided credentials."""
-    try:
-        reddit = praw.Reddit(
-            client_id=os.environ.get('CLIENT_ID'),
-            client_secret=os.environ.get('CLIENT_SECRET'),
-            username=os.environ.get('USERNAME'),
-            password=os.environ.get('PASSWORD'),
-            user_agent='NHL Cross-Sub Ban Bot'  # Important: Use a descriptive user agent
-        )
-        #  Try to fetch the currently authenticated user.
-        user = reddit.user.me()
-        if user:
-            print(f"Successfully connected to Reddit as {user.name}")
-        else:
-            print("Successfully connected to Reddit, but could not get the current user.  Check your credentials.")
+# Define triggers for the workflow (e.g., on push to main, or manually)
+on:
+  push:
+    branches: [ main ] # Example: Run on pushes to the main branch
+  workflow_dispatch: # Allows manual triggering from the Actions tab
 
-        # Try a simple API call that requires authentication.
-        subreddit = reddit.subreddit('all')
-        print(f"Got subreddit: {subreddit.display_name}")
-        #  Try getting a listing.
-        posts = subreddit.hot(limit=5)
-        print("Successfully retrieved hot posts from r/all")
-        for post in posts:
-            print(f"\t{post.title}")
+jobs:
+  test-connection:
+    runs-on: ubuntu-latest # Use a standard runner environment
 
-    except praw.exceptions.InvalidClient as e:
-        print(f"Error: Invalid Client.  Check your client_id and client_secret.  Error Details: {e}")
-    except praw.exceptions.InvalidGrant as e:
-        print(f"Error: Invalid Grant.  Check your username and password. Error Details: {e}")
-    except prawcore.exceptions.OAuthException as e:
-        print(f"Error: OAuth error.  Double-check your Reddit API credentials and token refresh. Error Details: {e}")
-    except prawcore.exceptions.ResponseException as e:
-        print(f"Error: Response Error: {e}.  This could indicate a network problem or a Reddit API issue.")
-    except Exception as e:
-        print(f"An unexpected error occurred: {e}")
-        print("Please check your network connection, Reddit API status, and credentials.")
-        print("Also, ensure that the required environment variables are set correctly.")
+    steps:
+      # 1. Check out your repository code
+      - name: Check out code
+        uses: actions/checkout@v4 # Use the standard checkout action
 
-if __name__ == "__main__":
-    test_reddit_connection()
+      # 2. Set up Python environment
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x' # Specify your desired Python version
+
+      # 3. Install Python dependencies (like praw)
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install praw prawcore # Install libraries needed by your script
+
+      # 4. Run your Python script
+      - name: Run Reddit Connection Test Script
+        env: # Pass secrets as environment variables to the script
+          CLIENT_ID: ${{ secrets.CLIENT_ID }}
+          CLIENT_SECRET: ${{ secrets.CLIENT_SECRET }}
+          USERNAME: ${{ secrets.USERNAME }}
+          PASSWORD: ${{ secrets.PASSWORD }}
+        run: python reddit_test.py # Execute your Python file
