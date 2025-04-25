@@ -14,6 +14,8 @@ CROSS_SUB_BAN_REASON = config["CROSS_SUB_BAN_REASON"]
 EXEMPT_USERS = set(config["EXEMPT_USERS"])
 DAILY_BAN_LIMIT = config["DAILY_BAN_LIMIT"]
 MAX_LOG_AGE_MINUTES = config["MAX_LOG_AGE_MINUTES"]
+PUBLIC_LOG_PATH = "public_ban_log.json"
+PUBLIC_LOG_MARKDOWN = "public_ban_log.md"
 
 # --- Load trusted subreddits ---
 def load_trusted_subs(file_path="trusted_subs.txt"):
@@ -43,145 +45,39 @@ reddit = praw.Reddit(
 # --- Caching mod lists for performance ---
 mod_cache = {}
 
-def is_mod(subreddit, user):
-    subname = subreddit.display_name.lower()
-    if subname not in mod_cache:
-        try:
-            mod_cache[subname] = {mod.name.lower() for mod in subreddit.moderator()}
-        except Exception as e:
-            print(f"[ERROR] Failed to fetch moderators for {subname}: {e}")
-            return False
-    return user.lower() in mod_cache.get(subname, set())
-
-def is_trusted_mod(user):
-    user = user.lower()
-    for sub in TRUSTED_SUBS:
-        try:
-            subreddit = reddit.subreddit(sub)
-            if user in {mod.name.lower() for mod in subreddit.moderator()}:
-                return True
-        except Exception as e:
-            print(f"[ERROR] Failed to check mod status in {sub}: {e}")
-    return False
-
-# --- Sheet helpers ---
-def get_recent_sheet_entries(source_sub):
-    now = datetime.utcnow()
-    return sum(1 for row in sheet.get_all_records()
-               if row['SourceSub'] == source_sub and
-               'Timestamp' in row and
-               datetime.strptime(row['Timestamp'], '%Y-%m-%d %H:%M:%S') > now - timedelta(days=1))
-
-def already_listed(user):
-    rows = sheet.col_values(1)
-    return user.lower() in (u.lower() for u in rows)
-
-def already_logged_action(log_id):
-    ids = sheet.col_values(6)
-    return log_id in ids
-
-def is_forgiven(user):
-    rows = sheet.get_all_records()
-    for row in rows:
-        if row['Username'].lower() == user.lower():
-            ban_time = row.get('Timestamp', '').strip()
-            forgive_time = row.get('ForgiveTimestamp', '').strip()
-            if str(row.get('ManualOverride', '')).strip().lower() not in {'yes', 'true'}:
-                continue
-            if forgive_time:
-                if ban_time:
-                    try:
-                        ban_dt = datetime.strptime(ban_time, '%Y-%m-%d %H:%M:%S')
-                        forgive_dt = datetime.strptime(forgive_time, '%Y-%m-%d %H:%M:%S')
-                        if forgive_dt >= ban_dt:
-                            return True
-                    except Exception:
-                        continue
-                else:
-                    return True
-    return False
-
-def apply_override(username, mod_name, mod_sub):
-    records = sheet.get_all_records()
+# --- Ban/unban public log ---
+def log_public_action(action, username, sub_name, source_sub="", mod_name="", note=""):
     now = datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
-    for i, row in enumerate(records, start=2):
-        if row['Username'].lower() == username.lower():
-            sheet.update_cell(i, 5, "yes")
-            sheet.update_cell(i, 7, mod_name)
-            sheet.update_cell(i, 8, mod_sub)
-            sheet.update_cell(i, 9, now)
-            return True
-    sheet.append_row([username, "manual", "", now, "yes", "", mod_name, mod_sub, now])
-    return True
-
-# --- Modmail override check ---
-def check_modmail_for_overrides():
+    entry = {
+        "timestamp": now,
+        "action": action,
+        "username": username,
+        "subreddit": sub_name,
+        "source_sub": source_sub,
+        "mod": mod_name,
+        "note": note
+    }
     try:
-        print("[DEBUG] Starting modmail override check...")
-        for sub in TRUSTED_SUBS:
-            subreddit = reddit.subreddit(sub)
-            for state in ["new", "mod", "all"]:
-                print(f"[DEBUG] Checking modmail with state '{state}'")
-                for convo in subreddit.modmail.conversations(state=state):
-                    if not convo.messages:
-                        continue
+        if os.path.exists(PUBLIC_LOG_PATH):
+            with open(PUBLIC_LOG_PATH, 'r') as f:
+                data = json.load(f)
+        else:
+            data = []
+        data.append(entry)
+        with open(PUBLIC_LOG_PATH, 'w') as f:
+            json.dump(data, f, indent=2)
 
-                    last_message = convo.messages[-1]
-                    body = last_message.body_markdown.strip()
-                    author = last_message.author
-
-                    if not author or not body.lower().startswith("/xsub pardon"):
-                        continue
-
-                    sender = author.name.lower()
-                    print(f"[DEBUG] Modmail from {sender}: {body}")
-
-                    if not is_trusted_mod(sender):
-                        continue
-
-                    parts = body.strip().split()
-                    if len(parts) >= 3:
-                        username = parts[2].lstrip("u/").strip()
-                        if apply_override(username, sender, sub):
-                            convo.reply(body=f"✅ u/{username} has been marked as forgiven. They will not be banned again.")
-                            print(f"[OVERRIDE] {username} set by {sender} in {sub}")
-                        else:
-                            convo.reply(body=f"⚠️ u/{username} was not found in the sheet. No action taken.")
+        with open(PUBLIC_LOG_MARKDOWN, 'a') as f:
+            f.write(f"### [{now}] {'✅' if action == 'UNBANNED' else '❌'} {action} u/{username}\n")
+            f.write(f"- **Subreddit**: r/{sub_name}\n")
+            if source_sub:
+                f.write(f"- **Source Sub**: {source_sub}\n")
+            f.write(f"- **Moderator**: {mod_name}\n")
+            if note:
+                f.write(f"- **Note**: {note}\n")
+            f.write(f"---\n\n")
     except Exception as e:
-        print(f"[ERROR] Modmail check failed: {e}")
-
-# --- Sync bans from modlogs into sheet ---
-def sync_bans_from_sub(sub_name):
-    try:
-        subreddit = reddit.subreddit(sub_name)
-        for log in subreddit.mod.log(action='banuser', limit=50):
-            user = log.target_author
-            source_sub = f"r/{log.subreddit}"
-            log_id = log.id
-            timestamp = datetime.utcfromtimestamp(log.created_utc).strftime('%Y-%m-%d %H:%M:%S')
-            description = log.description or ""
-
-            created_time = datetime.utcfromtimestamp(log.created_utc)
-            if datetime.utcnow() - created_time > timedelta(minutes=MAX_LOG_AGE_MINUTES):
-                continue
-
-            if description.strip().lower() != CROSS_SUB_BAN_REASON.lower():
-                continue
-            if source_sub not in TRUSTED_SOURCES:
-                continue
-            if user in EXEMPT_USERS or is_mod(subreddit, user):
-                continue
-            if already_logged_action(log_id):
-                continue
-            if already_listed(user):
-                continue
-            if get_recent_sheet_entries(source_sub) >= DAILY_BAN_LIMIT:
-                continue
-
-            sheet.append_row([user, source_sub, "", timestamp, "", log_id, "", "", ""])
-            print(f"[LOGGED] {user} from {source_sub} — modlog ID: {log_id}")
-    except Exception as e:
-        print(f"[ERROR] Failed to fetch modlog for {sub_name}: {e}")
+        print(f"[ERROR] Failed to log public action: {e}")
 
 # --- Enforce bans locally based on sheet entries ---
 def enforce_bans_on_sub(sub_name):
@@ -211,12 +107,12 @@ def enforce_bans_on_sub(sub_name):
                     if CROSS_SUB_BAN_REASON.lower() in ban_reason_text.lower():
                         subreddit.banned.remove(user)
                         print(f"[UNBANNED] {user} in {sub_name} (forgiven and ban matched reason)")
+                        log_public_action("UNBANNED", user, sub_name, source_sub, "auto", "Forgiven")
                 except Exception as e:
                     print(f"[ERROR] Failed to unban {user} in {sub_name}: {e}")
             continue
 
         if not already_banned:
-            # Check if this user *was* banned by bot but now no longer is and no override
             if str(row.get('ManualOverride', '')).strip().lower() not in {'yes', 'true'}:
                 print(f"[NOTICE] {user} was manually unbanned in {sub_name} without override")
                 try:
@@ -236,6 +132,7 @@ def enforce_bans_on_sub(sub_name):
                 note=f"Cross-sub ban from {source_sub}"
             )
             print(f"[BANNED] {user} in {sub_name}")
+            log_public_action("BANNED", user, sub_name, source_sub, "auto", "")
         except Exception as e:
             print(f"[ERROR] Failed to ban {user} in {sub_name}: {e}")
 
