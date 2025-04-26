@@ -205,7 +205,7 @@ def sync_bans_from_sub(sub):
                 continue
             forgive_time = forgiveness_timestamp(user)
             if forgive_time and ts > forgive_time + timedelta(minutes=60):
-                apply_override(user, '', '')  # Clear forgiveness
+                apply_override(user, '', '')
                 continue
             if user and (user.lower() in EXEMPT_USERS or is_mod(sr, user)):
                 continue
@@ -228,7 +228,8 @@ def enforce_bans_on_sub(sub):
         return
     cutoff = datetime.utcnow() - timedelta(days=ROW_RETENTION_DAYS)
     records = []
-    for r in sheet.get_all_records():
+    all_rows = sheet.get_all_records()
+    for r in all_rows:
         ts = r.get('Timestamp','')
         try:
             t = datetime.strptime(ts, '%Y-%m-%d %H:%M:%S')
@@ -236,6 +237,20 @@ def enforce_bans_on_sub(sub):
                 records.append(r)
         except:
             continue
+
+    # --- Delete old deleted users ---
+    now = datetime.utcnow()
+    for idx, r in enumerate(all_rows, start=2):
+        marker = str(r.get('ForgiveTimestamp','')).strip()
+        if marker.endswith('deleted'):
+            try:
+                mark_time = datetime.strptime(marker.replace(' deleted',''), '%Y-%m-%d %H:%M:%S')
+                if now - mark_time > timedelta(hours=24):
+                    sheet.delete_row(idx)
+                    print(f"[INFO] Removed old deleted user at row {idx}.")
+            except:
+                continue
+
     any_action = False
     for r in records:
         user = r.get('Username','')
