@@ -238,18 +238,21 @@ def enforce_bans_on_sub(sub):
         except:
             continue
 
-    # --- Delete old deleted users ---
+    # --- FIXED DELETION LOGIC ---
     now = datetime.utcnow()
+    to_delete = []
     for idx, r in enumerate(all_rows, start=2):
         marker = str(r.get('ForgiveTimestamp','')).strip()
         if marker.endswith('deleted'):
             try:
                 mark_time = datetime.strptime(marker.replace(' deleted',''), '%Y-%m-%d %H:%M:%S')
                 if now - mark_time > timedelta(hours=24):
-                    sheet.delete_row(idx)
-                    print(f"[INFO] Removed old deleted user at row {idx}.")
+                    to_delete.append(idx)
             except:
                 continue
+    for idx in reversed(to_delete):
+        sheet.delete_row(idx)
+        print(f"[INFO] Removed old deleted user at row {idx}.")
 
     any_action = False
     for r in records:
