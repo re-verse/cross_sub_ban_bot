@@ -251,7 +251,7 @@ def enforce_bans_on_sub(sub):
             except:
                 continue
     for idx in reversed(to_delete):
-        sheet.delete_row(idx)
+        sheet.delete_rows(idx)
         print(f"[INFO] Removed old deleted user at row {idx}.")
 
     any_action = False
