@@ -36,7 +36,7 @@ jobs:
         USERNAME: ${{ secrets.REDDIT_USERNAME }}
 
     - name: Run bot
-      run: python3 cross_sub_ban_bot.py
+      run: python3 -v cross_sub_ban_bot.py
       env:
         CLIENT_ID: ${{ secrets.REDDIT_CLIENT_ID }}
         CLIENT_SECRET: ${{ secrets.REDDIT_CLIENT_SECRET }}
