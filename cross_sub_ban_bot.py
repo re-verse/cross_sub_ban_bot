@@ -1,3 +1,8 @@
+# ===
+# Cross-Sub Ban Bot
+# Full, with Per-Sub Exemption support
+# ===
+
 #!/usr/bin/env python3
 
 import json
@@ -20,9 +25,11 @@ DAILY_BAN_LIMIT = config.get("DAILY_BAN_LIMIT", 30)
 MAX_LOG_AGE_MINUTES = config.get("MAX_LOG_AGE_MINUTES", 60)
 ROW_RETENTION_DAYS = config.get("ROW_RETENTION_DAYS", 30)
 
+# --- Public log files ---
 PUBLIC_LOG_JSON = "public_ban_log.json"
 PUBLIC_LOG_MD = "public_ban_log.md"
 
+# --- Trusted subreddits ---
 def load_trusted_subs(path="trusted_subs.txt"):
     with open(path) as f:
         return [line.strip() for line in f if line.strip()]
@@ -35,7 +42,6 @@ creds_env = os.environ.get('GOOGLE_SERVICE_ACCOUNT_JSON')
 if not creds_env:
     print("[FATAL] Missing GOOGLE_SERVICE_ACCOUNT_JSON env var.")
     sys.exit(1)
-
 try:
     decoded = base64.b64decode(creds_env)
     creds_str = decoded.decode('utf-8')
@@ -70,7 +76,7 @@ reddit = praw.Reddit(
 # --- Caches ---
 mod_cache = {}
 
-# --- Helpers ---
+# --- Helper Functions ---
 def is_mod(subreddit, user):
     sub = subreddit.display_name.lower()
     if sub not in mod_cache:
@@ -79,6 +85,32 @@ def is_mod(subreddit, user):
         except Exception:
             mod_cache[sub] = set()
     return user.lower() in mod_cache[sub]
+
+def exempt_subs_for_user(user):
+    for r in sheet.get_all_records():
+        if r.get('Username','').lower() == user.lower():
+            field = str(r.get('ExemptSubs','')).lower()
+            if field:
+                return {sub.strip() for sub in field.split(',') if sub.strip()}
+    return set()
+
+def apply_exemption(username, modsub):
+    records = sheet.get_all_records()
+    for i, r in enumerate(records, start=2):
+        if r.get('Username','').lower() == username.lower():
+            current = str(r.get('ExemptSubs','')).lower()
+            parts = {p.strip() for p in current.split(',') if p.strip()}
+            parts.add(modsub.lower())
+            new_field = ', '.join(sorted(parts))
+            sheet.update_cell(i, 10, new_field)
+            return True
+    return False
+
+def is_forgiven(user):
+    for r in sheet.get_all_records():
+        if r.get('Username','').lower() == user.lower() and str(r.get('ManualOverride','')).lower() in ('yes','true'):
+            return True
+    return False
 
 def already_logged_action(log_id):
     return log_id in sheet.col_values(6)
@@ -96,44 +128,6 @@ def get_recent_sheet_entries(source_sub):
             except:
                 pass
     return count
-
-def forgiveness_timestamp(user):
-    for r in sheet.get_all_records():
-        if r.get('Username','').lower() == user.lower():
-            ts = r.get('ForgiveTimestamp','')
-            if ts and 'deleted' not in ts:
-                try:
-                    return datetime.strptime(ts, '%Y-%m-%d %H:%M:%S')
-                except:
-                    return None
-    return None
-
-def exempt_subs_for_user(user):
-    for r in sheet.get_all_records():
-        if r.get('Username','').lower() == user.lower():
-            field = str(r.get('ExemptSubs','')).lower()
-            if field:
-                return {sub.strip() for sub in field.split(',') if sub.strip()}
-    return set()
-
-def is_forgiven(user):
-    for r in sheet.get_all_records():
-        if r.get('Username','').lower() == user.lower() and str(r.get('ManualOverride','')).lower() in ('yes','true'):
-            return True
-    return False
-
-def apply_override(username, moderator, modsub):
-    records = sheet.get_all_records()
-    for i,r in enumerate(records, start=2):
-        if r.get('Username','').lower() == username.lower():
-            sheet.update_cell(i,5,'yes')
-            sheet.update_cell(i,7,moderator)
-            sheet.update_cell(i,8,modsub)
-            sheet.update_cell(i,9,datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S'))
-            return True
-    now = datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
-    sheet.append_row([username,'manual','',now,'yes','',moderator,modsub,now,''])
-    return True
 
 def log_public_action(action, username, subreddit, source_sub="", actor="", note=""):
     entry = {
@@ -167,17 +161,13 @@ def log_public_action(action, username, subreddit, source_sub="", actor="", note
     except Exception as e:
         print(f"[ERROR] Failed to write public log: {e}")
 
-# --- Modmail override check ---
-def check_modmail_for_overrides():
-    print("[STEP] Checking for pardon messages...")
+# --- Modmail Checking ---
+def check_modmail():
+    print("[STEP] Checking for pardon and exemption messages...")
     for sub in TRUSTED_SUBS:
-        print(f"[INFO] Reading modmail in r/{sub}")
         try:
             sr = reddit.subreddit(sub)
-        except Exception:
-            continue
-        try:
-            for state in ("new","mod","all"): 
+            for state in ("new", "mod", "all"):
                 for convo in sr.modmail.conversations(state=state):
                     if not convo.messages:
                         continue
@@ -190,31 +180,32 @@ def check_modmail_for_overrides():
                         continue
                     if body.lower().startswith('/xsub pardon'):
                         parts = body.split()
-                        if len(parts)>=3:
+                        if len(parts) >= 3:
                             user = parts[2].lstrip('u/').strip()
                             apply_override(user, sender, sub)
-                    if body.lower().startswith('/xsub exempt'):
+                            convo.reply(body=f"✅ u/{user} has been forgiven and will not be banned.")
+                    elif body.lower().startswith('/xsub exempt'):
                         parts = body.split()
-                        if len(parts)>=4:
+                        if len(parts) >= 3:
                             user = parts[2].lstrip('u/').strip()
-                            target_sub = parts[3].lower()
-                            # Only allow exempting your own sub
-                            if target_sub == sub.lower():
-                                records = sheet.get_all_records()
-                                for i,r in enumerate(records, start=2):
-                                    if r.get('Username','').lower() == user.lower():
-                                        existing = str(r.get('ExemptSubs','')).lower()
-                                        if existing:
-                                            new_value = existing + ',' + target_sub
-                                        else:
-                                            new_value = target_sub
-                                        sheet.update_cell(i,10,new_value)
-                                        print(f"[EXEMPT] Added exemption: {user} in {target_sub}")
-                                        break
+                            if apply_exemption(user, sub):
+                                convo.reply(body=f"✅ u/{user} has been exempted from bans in r/{sub}.")
         except Exception:
             continue
 
-# --- Sync bans from modlog ---
+def apply_override(username, moderator, modsub):
+    records = sheet.get_all_records()
+    for i,r in enumerate(records, start=2):
+        if r.get('Username','').lower() == username.lower():
+            sheet.update_cell(i,5,'yes')
+            sheet.update_cell(i,7,moderator)
+            sheet.update_cell(i,8,modsub)
+            return True
+    now = datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
+    sheet.append_row([username,'manual','',now,'yes','',moderator,modsub,''])
+    return True
+
+# --- Ban Sync ---
 def sync_bans_from_sub(sub):
     print(f"[STEP] Checking modlog for r/{sub}")
     try:
@@ -240,7 +231,7 @@ def sync_bans_from_sub(sub):
     except (prawcore.exceptions.Forbidden, prawcore.exceptions.NotFound):
         print(f"[WARN] Cannot access modlog for r/{sub}, skipping.")
 
-# --- Enforce bans/unbans ---
+# --- Ban Enforcer ---
 def enforce_bans_on_sub(sub):
     print(f"[STEP] Enforcing bans/unbans in r/{sub}")
     try:
@@ -249,25 +240,21 @@ def enforce_bans_on_sub(sub):
     except Exception:
         print(f"[WARN] Cannot fetch ban list for r/{sub}, skipping.")
         return
-    # prune old rows
-    all_rows = sheet.get_all_records()
-    cutoff = datetime.utcnow() - timedelta(days=ROW_RETENTION_DAYS)
 
-    # --- Delete old deleted users (from bottom to top) ---
-    for idx in reversed(range(2, len(all_rows)+2)):
-        row = all_rows[idx-2]
-        marker = str(row.get('ForgiveTimestamp','')).strip()
+    all_rows = sheet.get_all_records()
+    now = datetime.utcnow()
+
+    # Delete old deleted users
+    for idx, r in reversed(list(enumerate(all_rows, start=2))):
+        marker = str(r.get('ForgiveTimestamp','')).strip()
         if marker.endswith('deleted'):
             try:
                 mark_time = datetime.strptime(marker.replace(' deleted',''), '%Y-%m-%d %H:%M:%S')
-                if datetime.utcnow() - mark_time > timedelta(hours=24):
+                if now - mark_time > timedelta(hours=24):
                     sheet.delete_rows(idx)
                     print(f"[INFO] Removed old deleted user at row {idx}.")
             except:
                 continue
-
-    # Re-fetch after possible deletions
-    all_rows = sheet.get_all_records()
 
     any_action = False
     for r in all_rows:
@@ -277,18 +264,8 @@ def enforce_bans_on_sub(sub):
             continue
         ul = user.lower()
         deleted_marker = str(r.get('ForgiveTimestamp','')).strip()
-        if deleted_marker.endswith('deleted'):
-            continue
-        exemptions = exempt_subs_for_user(user)
-        if sub.lower() in exemptions:
-            if ul in bans:
-                try:
-                    sr.banned.remove(user)
-                    print(f"[UNBANNED] Exempted u/{user} in r/{sub}")
-                    log_public_action("UNBANNED", user, sub, src, "Bot", "Exempted sub override")
-                    any_action = True
-                except Exception:
-                    pass
+        if deleted_marker:
+            print(f"[SKIP] {user} already marked deleted in sheet")
             continue
         if is_forgiven(user):
             if ul in bans and CROSS_SUB_BAN_REASON.lower() in (getattr(bans[ul],'note','') or '').lower():
@@ -296,6 +273,17 @@ def enforce_bans_on_sub(sub):
                     sr.banned.remove(user)
                     print(f"[UNBANNED] Forgiven u/{user} in r/{sub}")
                     log_public_action("UNBANNED", user, sub, src, "Bot", "Forgiven override")
+                    any_action = True
+                except Exception:
+                    pass
+            continue
+        exempt_subs = exempt_subs_for_user(user)
+        if sub.lower() in exempt_subs:
+            if ul in bans and CROSS_SUB_BAN_REASON.lower() in (getattr(bans[ul],'note','') or '').lower():
+                try:
+                    sr.banned.remove(user)
+                    print(f"[UNBANNED] Exempted u/{user} in r/{sub}")
+                    log_public_action("UNBANNED", user, sub, src, "Bot", "Per-sub exemption override")
                     any_action = True
                 except Exception:
                     pass
@@ -319,9 +307,9 @@ def enforce_bans_on_sub(sub):
         print(f"[INFO] No bans or unbans needed in r/{sub}.")
 
 # --- Main ---
-if __name__=='__main__':
+if __name__ == '__main__':
     print("=== Running Cross-Sub Ban Bot ===")
-    check_modmail_for_overrides()
+    check_modmail()
     for s in TRUSTED_SUBS:
         sync_bans_from_sub(s)
     for s in TRUSTED_SUBS:
