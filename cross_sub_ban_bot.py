@@ -355,3 +355,4 @@ if __name__ == '__main__':
         enforce_bans_on_sub(s)
     flush_public_markdown_log()
     print("=== Bot run complete ===")
+    sys.exit(0)
