@@ -141,26 +141,24 @@ def log_public_action(action, username, subreddit, source_sub="", actor="", note
         "note": note
     }
     try:
+        data = []
         if os.path.exists(PUBLIC_LOG_JSON):
-            with open(PUBLIC_LOG_JSON,'r') as f:
-                data = json.load(f)
-        else:
-            data = []
+            try:
+                with open(PUBLIC_LOG_JSON, 'r') as f:
+                    data = json.load(f)
+            except json.JSONDecodeError:
+                print(f"[WARN] {PUBLIC_LOG_JSON} exists but is invalid. Starting fresh.")
+                data = []
+
         data.append(entry)
-        with open(PUBLIC_LOG_JSON,'w') as f:
+        with open(PUBLIC_LOG_JSON, 'w') as f:
             json.dump(data, f, indent=2)
-        with open(PUBLIC_LOG_MD,'a') as f:
-            f.write(f"### [{entry['timestamp']}] {'✅' if action=='UNBANNED' else '❌'} {action} u/{username}\n")
-            f.write(f"- **Subreddit**: r/{subreddit}\n")
-            if source_sub:
-                f.write(f"- **Source Sub**: {source_sub}\n")
-            if actor:
-                f.write(f"- **Actor**: {actor}\n")
-            if note:
-                f.write(f"- **Note**: {note}\n")
-            f.write("\n")
+
+        print(f"[INFO] Logged public action: {entry}")
+
     except Exception as e:
-        print(f"[ERROR] Failed to write public log: {e}")
+        print(f"[ERROR] Failed to write to public ban log JSON: {e}")
+
 
 def load_sheet_cache():
     global SHEET_CACHE
@@ -283,6 +281,7 @@ def enforce_bans_on_sub(sub):
                     sr.banned.remove(user)
                     print(f"[UNBANNED] Forgiven u/{user} in r/{sub}")
                     log_public_action("UNBANNED", user, sub, src, "Bot", "Forgiven override")
+                    print(f"[DEBUG] Public action logged for u/{user} in r/{sub}")
                     any_action = True
                 except Exception:
                     pass
@@ -294,6 +293,7 @@ def enforce_bans_on_sub(sub):
                     sr.banned.remove(user)
                     print(f"[UNBANNED] Exempted u/{user} in r/{sub}")
                     log_public_action("UNBANNED", user, sub, src, "Bot", "Per-sub exemption override")
+                    print(f"[DEBUG] Public action logged for u/{user} in r/{sub}")
                     any_action = True
                 except Exception:
                     pass
@@ -304,6 +304,7 @@ def enforce_bans_on_sub(sub):
             sr.banned.add(user, ban_reason=CROSS_SUB_BAN_REASON, note=f"Cross-sub ban from {src}")
             print(f"[BANNED] u/{user} in r/{sub} from {src}")
             log_public_action("BANNED", user, sub, src, "Bot", "")
+            print(f"[DEBUG] Public action logged for u/{user} in r/{sub}")
             any_action = True
         except praw.exceptions.APIException as e:
             err = getattr(e._raw, 'error_type', '')
@@ -350,8 +351,8 @@ def flush_public_markdown_log():
 # --- Main ---
 if __name__ == '__main__':
     print("=== Running Cross-Sub Ban Bot ===")
-    check_modmail()
     load_sheet_cache()
+    check_modmail()
     for s in TRUSTED_SUBS:
         sync_bans_from_sub(s)
     for s in TRUSTED_SUBS:
