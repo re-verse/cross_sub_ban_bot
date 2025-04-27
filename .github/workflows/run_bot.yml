@@ -11,6 +11,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Set up Python
         uses: actions/setup-python@v4
@@ -20,14 +22,6 @@ jobs:
       - name: Install dependencies
         run: |
           pip install praw gspread oauth2client
-
-      - name: Debug Reddit secrets
-        run: |
-          echo "CLIENT_ID Length: ${#CLIENT_ID}"
-          echo "USERNAME: $USERNAME"
-        env:
-          CLIENT_ID: ${{ secrets.REDDIT_CLIENT_ID }}
-          USERNAME: ${{ secrets.REDDIT_USERNAME }}
 
       - name: Run bot
         run: python3 cross_sub_ban_bot.py
@@ -43,10 +37,6 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add public_ban_log.md public_ban_log.json
-          if git diff --cached --quiet; then
-            echo "No changes to commit."
-          else
-            git commit -m "Update public ban log $(date -u +'%Y-%m-%d %H:%M:%S UTC')"
-            git push || echo "Nothing to push"
-          fi
+          git add public_ban_log.md public_ban_log.json || true
+          git diff --cached --quiet && echo "No changes to commit" || git commit -m "Update public ban log $(date)"
+          git push || echo "Nothing to push"
