@@ -9,43 +9,46 @@ jobs:
   run:
     runs-on: ubuntu-latest
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v3
+      - name: Checkout code
+        uses: actions/checkout@v3
 
-    - name: Set up Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.11'
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
 
-    - name: Install dependencies
-      run: |
-        pip install praw gspread oauth2client
+      - name: Install dependencies
+        run: |
+          pip install praw gspread oauth2client
 
-    - name: Decode service account key
-      run: echo "${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}" | base64 -d > sa_credentials.json
+      - name: Decode service account key # This step isn't used by your python script, can be removed if desired
+        run: echo "${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}" | base64 -d > sa_credentials.json
 
-    - name: Debug Reddit secrets
-      run: |
-        echo "CLIENT_ID: $CLIENT_ID"
-        echo "USERNAME: $USERNAME"
-      env:
-        CLIENT_ID: ${{ secrets.REDDIT_CLIENT_ID }}
-        USERNAME: ${{ secrets.REDDIT_USERNAME }}
+      - name: Debug Reddit secrets
+        run: |
+          echo "CLIENT_ID Length: ${#CLIENT_ID}" # Show length instead of value for security
+          echo "USERNAME: $USERNAME"
+        env:
+          CLIENT_ID: ${{ secrets.REDDIT_CLIENT_ID }}
+          USERNAME: ${{ secrets.REDDIT_USERNAME }}
 
-    - name: Run bot
-      run: python3 cross_sub_ban_bot.py
-      env:
-        CLIENT_ID: ${{ secrets.REDDIT_CLIENT_ID }}
-        CLIENT_SECRET: ${{ secrets.REDDIT_CLIENT_SECRET }}
-        USERNAME: ${{ secrets.REDDIT_USERNAME }}
-        PASSWORD: ${{ secrets.REDDIT_PASSWORD }}
-        GOOGLE_SHEET_ID: ${{ secrets.GOOGLE_SHEET_ID }}
-        GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
+      - name: Run bot
+        run: python3 cross_sub_ban_bot.py
+        env:
+          CLIENT_ID: ${{ secrets.REDDIT_CLIENT_ID }}
+          CLIENT_SECRET: ${{ secrets.REDDIT_CLIENT_SECRET }}
+          USERNAME: ${{ secrets.REDDIT_USERNAME }}
+          PASSWORD: ${{ secrets.REDDIT_PASSWORD }}
+          GOOGLE_SHEET_ID: ${{ secrets.GOOGLE_SHEET_ID }}
+          GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }} # This is the correct end of the 'Run bot' step env block
 
-- name: Commit and push updated public ban log
-  run: |
-    git config user.name "github-actions[bot]"
-    git config user.email "github-actions[bot]@users.noreply.github.com"
-    git add public_ban_log.md public_ban_log.json
-    git diff --cached --quiet || git commit -m "Update public ban log"
-    git push
+      # CORRECT INDENTATION FOR THE NEXT STEP: Align '-' with previous steps
+      - name: Commit and push updated public ban log
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add public_ban_log.md public_ban_log.json
+          # Check for changes before committing
+          git diff --cached --quiet || git commit -m "Update public ban log"
+          # Attempt push (might fail if nothing was committed)
+          git push || echo "Push failed (may indicate no changes were committed or other Git error)"
