@@ -2,7 +2,7 @@ name: Run Cross-Sub Ban Bot
 
 on:
   schedule:
-    - cron: "*/10 * * * *"
+    - cron: "*/10 * * * *"  # every 10 min
   workflow_dispatch:
 
 jobs:
@@ -11,8 +11,6 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Set up Python
         uses: actions/setup-python@v4
@@ -23,6 +21,14 @@ jobs:
         run: |
           pip install praw gspread oauth2client
 
+      - name: Debug Reddit secrets
+        run: |
+          echo "CLIENT_ID Length: ${#CLIENT_ID}" # Show length instead of value for security
+          echo "USERNAME: $USERNAME"
+        env:
+          CLIENT_ID: ${{ secrets.REDDIT_CLIENT_ID }}
+          USERNAME: ${{ secrets.REDDIT_USERNAME }}
+
       - name: Run bot
         run: python3 cross_sub_ban_bot.py
         env:
@@ -31,17 +37,14 @@ jobs:
           USERNAME: ${{ secrets.REDDIT_USERNAME }}
           PASSWORD: ${{ secrets.REDDIT_PASSWORD }}
           GOOGLE_SHEET_ID: ${{ secrets.GOOGLE_SHEET_ID }}
-          GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
+          GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }} # Python script reads this directly
 
       - name: Commit and push updated public ban log
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add public_ban_log.md public_ban_log.json || true
-          git diff --cached --quiet && echo "No changes to commit" || git commit -m "Update public ban log $(date)"
-          git push || echo "Nothing to push"
-
-
-      - name: Touch public_ban_log.md to force a change
-        run: |
-          echo "Test update at $(date)" >> public_ban_log.md
+          git add public_ban_log.md public_ban_log.json
+          # Check for changes before committing
+          git diff --cached --quiet || git commit -m "Update public ban log"
+          # Attempt push (might fail if nothing was committed)
+          git push || echo "Push failed (may indicate no changes were committed or other Git error)"
