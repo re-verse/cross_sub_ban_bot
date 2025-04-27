@@ -2,7 +2,7 @@ name: Run Cross-Sub Ban Bot
 
 on:
   schedule:
-    - cron: "*/10 * * * *"  # every 10 min
+    - cron: "*/10 * * * *"
   workflow_dispatch:
 
 jobs:
@@ -21,12 +21,9 @@ jobs:
         run: |
           pip install praw gspread oauth2client
 
-      - name: Decode service account key # This step isn't used by your python script, can be removed if desired
-        run: echo "${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}" | base64 -d > sa_credentials.json
-
       - name: Debug Reddit secrets
         run: |
-          echo "CLIENT_ID Length: ${#CLIENT_ID}" # Show length instead of value for security
+          echo "CLIENT_ID Length: ${#CLIENT_ID}"
           echo "USERNAME: $USERNAME"
         env:
           CLIENT_ID: ${{ secrets.REDDIT_CLIENT_ID }}
@@ -40,15 +37,12 @@ jobs:
           USERNAME: ${{ secrets.REDDIT_USERNAME }}
           PASSWORD: ${{ secrets.REDDIT_PASSWORD }}
           GOOGLE_SHEET_ID: ${{ secrets.GOOGLE_SHEET_ID }}
-          GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }} # This is the correct end of the 'Run bot' step env block
+          GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
 
-      # CORRECT INDENTATION FOR THE NEXT STEP: Align '-' with previous steps
       - name: Commit and push updated public ban log
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add public_ban_log.md public_ban_log.json
-          # Check for changes before committing
-          git diff --cached --quiet || git commit -m "Update public ban log"
-          # Attempt push (might fail if nothing was committed)
-          git push || echo "Push failed (may indicate no changes were committed or other Git error)"
+          git add public_ban_log.md public_ban_log.json || true
+          git diff --cached --quiet && echo "No changes to commit" || git commit -m "Update public ban log $(date)"
+          git push || echo "Nothing to push"
