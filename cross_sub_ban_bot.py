@@ -1,9 +1,6 @@
-# ===
-# Cross-Sub Ban Bot
-# Full, with Per-Sub Exemption support
-# ===
-
 #!/usr/bin/env python3
+
+WORK_DIR = "/home/runner/work/cross_sub_ban_bot/cross_sub_ban_bot"
 
 import json
 import base64
@@ -30,8 +27,8 @@ MAX_LOG_AGE_MINUTES = config.get("MAX_LOG_AGE_MINUTES", 60)
 ROW_RETENTION_DAYS = config.get("ROW_RETENTION_DAYS", 30)
 
 # --- Public log files ---
-PUBLIC_LOG_JSON = "public_ban_log.json"
-PUBLIC_LOG_MD = "public_ban_log.md"
+PUBLIC_LOG_JSON = f"{WORK_DIR}/public_ban_log.json"
+PUBLIC_LOG_MD = f"{WORK_DIR}/public_ban_log.md"
 
 # --- Trusted subreddits ---
 def load_trusted_subs(path="trusted_subs.txt"):
