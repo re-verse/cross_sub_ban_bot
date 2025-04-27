@@ -40,3 +40,8 @@ jobs:
           git add public_ban_log.md public_ban_log.json || true
           git diff --cached --quiet && echo "No changes to commit" || git commit -m "Update public ban log $(date)"
           git push || echo "Nothing to push"
+
+
+      - name: Touch public_ban_log.md to force a change
+        run: |
+          echo "Test update at $(date)" >> public_ban_log.md
