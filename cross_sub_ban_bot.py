@@ -75,6 +75,7 @@ reddit = praw.Reddit(
 
 # --- Caches ---
 mod_cache = {}
+SHEET_CACHE = []
 
 # --- Helper Functions ---
 def is_mod(subreddit, user):
@@ -87,7 +88,7 @@ def is_mod(subreddit, user):
     return user.lower() in mod_cache[sub]
 
 def exempt_subs_for_user(user):
-    for r in sheet.get_all_records():
+    for r in SHEET_CACHE:
         if r.get('Username','').lower() == user.lower():
             field = str(r.get('ExemptSubs','')).lower()
             if field:
@@ -107,7 +108,7 @@ def apply_exemption(username, modsub):
     return False
 
 def is_forgiven(user):
-    for r in sheet.get_all_records():
+    for r in SHEET_CACHE:
         if r.get('Username','').lower() == user.lower() and str(r.get('ManualOverride','')).lower() in ('yes','true'):
             return True
     return False
@@ -118,7 +119,7 @@ def already_logged_action(log_id):
 def get_recent_sheet_entries(source_sub):
     cutoff = datetime.utcnow() - timedelta(days=1)
     count = 0
-    for r in sheet.get_all_records():
+    for r in SHEET_CACHE:
         if r.get('SourceSub') == source_sub:
             ts = r.get('Timestamp')
             try:
@@ -160,6 +161,15 @@ def log_public_action(action, username, subreddit, source_sub="", actor="", note
             f.write("\n")
     except Exception as e:
         print(f"[ERROR] Failed to write public log: {e}")
+
+def load_sheet_cache():
+    global SHEET_CACHE
+    try:
+        SHEET_CACHE = sheet.get_all_records()
+        print(f"[INFO] Loaded {len(SHEET_CACHE)} rows into local cache.")
+    except Exception as e:
+        print(f"[ERROR] Failed to load sheet cache: {e}")
+        SHEET_CACHE = []
 
 # --- Modmail Checking ---
 def check_modmail():
@@ -335,8 +345,10 @@ def flush_public_markdown_log():
 if __name__ == '__main__':
     print("=== Running Cross-Sub Ban Bot ===")
     check_modmail()
+    load_sheet_cache()
     for s in TRUSTED_SUBS:
         sync_bans_from_sub(s)
     for s in TRUSTED_SUBS:
         enforce_bans_on_sub(s)
+    flush_public_markdown_log()
     print("=== Bot run complete ===")
