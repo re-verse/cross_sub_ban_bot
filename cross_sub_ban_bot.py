@@ -15,6 +15,10 @@ import gspread
 from oauth2client.service_account import ServiceAccountCredentials
 from datetime import datetime, timedelta
 
+# --- Counters ---
+ban_counter = 0
+unban_counter = 0
+
 # --- Load configuration ---
 with open("config.json") as config_file:
     config = json.load(config_file)
@@ -295,6 +299,7 @@ def enforce_bans_on_sub(sub):
                     log_public_action("UNBANNED", user, sub, src, "Bot", "Per-sub exemption override")
                     print(f"[DEBUG] Public action logged for u/{user} in r/{sub}")
                     any_action = True
+                    unban_counter += 1
                 except Exception:
                     pass
             continue
@@ -306,6 +311,7 @@ def enforce_bans_on_sub(sub):
             log_public_action("BANNED", user, sub, src, "Bot", "")
             print(f"[DEBUG] Public action logged for u/{user} in r/{sub}")
             any_action = True
+            ban_counter += 1
         except praw.exceptions.APIException as e:
             err = getattr(e._raw, 'error_type', '')
             if err == 'USER_DOESNT_EXIST':
@@ -354,5 +360,9 @@ if __name__ == '__main__':
     for s in TRUSTED_SUBS:
         enforce_bans_on_sub(s)
     flush_public_markdown_log()
+    print(f"=== Summary ===")
+    print(f"Total Bans Applied: {ban_counter}")
+    print(f"Total Unbans Applied: {unban_counter}")
+    print("================")
     print("=== Bot run complete ===")
     sys.exit(0)
