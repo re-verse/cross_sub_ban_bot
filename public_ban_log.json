@@ -448,5 +448,95 @@
     "source_sub": "r/leafs",
     "actor": "Bot",
     "note": ""
+  },
+  {
+    "timestamp": "2025-04-28 18:37:09",
+    "action": "BANNED",
+    "username": "chente08",
+    "subreddit": "xsubpacttest1",
+    "source_sub": "r/OttawaSenators",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2025-04-28 18:37:10",
+    "action": "BANNED",
+    "username": "Beneficial-Speech-97",
+    "subreddit": "xsubpacttest1",
+    "source_sub": "r/OttawaSenators",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2025-04-28 18:37:10",
+    "action": "BANNED",
+    "username": "chente08",
+    "subreddit": "xsubpacttest2",
+    "source_sub": "r/OttawaSenators",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2025-04-28 18:37:11",
+    "action": "BANNED",
+    "username": "Beneficial-Speech-97",
+    "subreddit": "xsubpacttest2",
+    "source_sub": "r/OttawaSenators",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2025-04-28 18:37:37",
+    "action": "BANNED",
+    "username": "chente08",
+    "subreddit": "leafs",
+    "source_sub": "r/OttawaSenators",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2025-04-28 18:37:37",
+    "action": "BANNED",
+    "username": "Beneficial-Speech-97",
+    "subreddit": "leafs",
+    "source_sub": "r/OttawaSenators",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2025-04-28 18:40:52",
+    "action": "BANNED",
+    "username": "chente08",
+    "subreddit": "caps",
+    "source_sub": "r/OttawaSenators",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2025-04-28 18:40:52",
+    "action": "BANNED",
+    "username": "Beneficial-Speech-97",
+    "subreddit": "caps",
+    "source_sub": "r/OttawaSenators",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2025-04-28 18:41:05",
+    "action": "BANNED",
+    "username": "chente08",
+    "subreddit": "habs",
+    "source_sub": "r/OttawaSenators",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2025-04-28 18:41:06",
+    "action": "BANNED",
+    "username": "Beneficial-Speech-97",
+    "subreddit": "habs",
+    "source_sub": "r/OttawaSenators",
+    "actor": "Bot",
+    "note": ""
   }
 ]
