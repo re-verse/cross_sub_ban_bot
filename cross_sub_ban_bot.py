@@ -217,6 +217,7 @@ def apply_override(username, moderator, modsub):
 # --- Ban Sync ---
 def sync_bans_from_sub(sub):
     print(f"[STEP] Checking modlog for r/{sub}")
+    ban_counter = 0
     try:
         sr = reddit.subreddit(sub)
         for log in sr.mod.log(action='banuser', limit=50):
