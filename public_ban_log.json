@@ -241,5 +241,50 @@
     "source_sub": "r/OttawaSenators",
     "actor": "Bot",
     "note": "Forgiven override"
+  },
+  {
+    "timestamp": "2025-04-28 02:07:15",
+    "action": "BANNED",
+    "username": "Big-Investigator-852",
+    "subreddit": "xsubpacttest1",
+    "source_sub": "r/OttawaSenators",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2025-04-28 02:07:16",
+    "action": "BANNED",
+    "username": "Big-Investigator-852",
+    "subreddit": "xsubpacttest2",
+    "source_sub": "r/OttawaSenators",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2025-04-28 02:07:38",
+    "action": "BANNED",
+    "username": "Big-Investigator-852",
+    "subreddit": "leafs",
+    "source_sub": "r/OttawaSenators",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2025-04-28 02:10:26",
+    "action": "BANNED",
+    "username": "Big-Investigator-852",
+    "subreddit": "caps",
+    "source_sub": "r/OttawaSenators",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2025-04-28 02:10:38",
+    "action": "BANNED",
+    "username": "Big-Investigator-852",
+    "subreddit": "habs",
+    "source_sub": "r/OttawaSenators",
+    "actor": "Bot",
+    "note": ""
   }
 ]
