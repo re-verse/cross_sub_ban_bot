@@ -244,6 +244,8 @@ def sync_bans_from_sub(sub):
 # --- Ban Enforcer ---
 def enforce_bans_on_sub(sub):
     print(f"[STEP] Enforcing bans/unbans in r/{sub}")
+    any_action = False
+    ban_counter = 0
     try:
         sr = reddit.subreddit(sub)
         bans = {b.name.lower(): b for b in sr.banned(limit=None)}
