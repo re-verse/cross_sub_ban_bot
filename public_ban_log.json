@@ -430,5 +430,23 @@
     "source_sub": "manual",
     "actor": "Bot",
     "note": "Forgiven override"
+  },
+  {
+    "timestamp": "2025-04-28 15:02:35",
+    "action": "BANNED",
+    "username": "Nolonger50",
+    "subreddit": "caps",
+    "source_sub": "r/leafs",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2025-04-28 15:02:47",
+    "action": "BANNED",
+    "username": "Nolonger50",
+    "subreddit": "habs",
+    "source_sub": "r/leafs",
+    "actor": "Bot",
+    "note": ""
   }
 ]
