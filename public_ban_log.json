@@ -376,5 +376,59 @@
     "source_sub": "manual",
     "actor": "Bot",
     "note": ""
+  },
+  {
+    "timestamp": "2025-04-28 11:59:30",
+    "action": "UNBANNED",
+    "username": "Former-Chair-9522",
+    "subreddit": "xsubpacttest1",
+    "source_sub": "manual",
+    "actor": "Bot",
+    "note": "Forgiven override"
+  },
+  {
+    "timestamp": "2025-04-28 11:59:31",
+    "action": "UNBANNED",
+    "username": "Former-Chair-9522",
+    "subreddit": "xsubpacttest2",
+    "source_sub": "manual",
+    "actor": "Bot",
+    "note": "Forgiven override"
+  },
+  {
+    "timestamp": "2025-04-28 11:59:53",
+    "action": "UNBANNED",
+    "username": "Former-Chair-9522",
+    "subreddit": "leafs",
+    "source_sub": "manual",
+    "actor": "Bot",
+    "note": "Forgiven override"
+  },
+  {
+    "timestamp": "2025-04-28 11:59:59",
+    "action": "UNBANNED",
+    "username": "Former-Chair-9522",
+    "subreddit": "OttawaSenators",
+    "source_sub": "manual",
+    "actor": "Bot",
+    "note": "Forgiven override"
+  },
+  {
+    "timestamp": "2025-04-28 12:02:34",
+    "action": "UNBANNED",
+    "username": "Former-Chair-9522",
+    "subreddit": "caps",
+    "source_sub": "manual",
+    "actor": "Bot",
+    "note": "Forgiven override"
+  },
+  {
+    "timestamp": "2025-04-28 12:02:45",
+    "action": "UNBANNED",
+    "username": "Former-Chair-9522",
+    "subreddit": "habs",
+    "source_sub": "manual",
+    "actor": "Bot",
+    "note": "Forgiven override"
   }
 ]
