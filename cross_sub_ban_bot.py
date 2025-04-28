@@ -310,6 +310,7 @@ def enforce_bans_on_sub(sub):
             print(f"[BANNED] u/{user} in r/{sub} from {src}")
             log_public_action("BANNED", user, sub, src, "Bot", "")
             print(f"[DEBUG] Public action logged for u/{user} in r/{sub}")
+            ban_counter += 1
             any_action = True
             ban_counter += 1
         except praw.exceptions.APIException as e:
