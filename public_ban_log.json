@@ -1,1 +1,191 @@
-[]
+[
+  {
+    "timestamp": "2025-04-28 00:34:08",
+    "action": "BANNED",
+    "username": "WileyKylie_",
+    "subreddit": "leafs",
+    "source_sub": "r/OttawaSenators",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2025-04-28 00:34:08",
+    "action": "BANNED",
+    "username": "Global_Examination_8",
+    "subreddit": "leafs",
+    "source_sub": "r/OttawaSenators",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2025-04-28 00:34:09",
+    "action": "BANNED",
+    "username": "HepHibli",
+    "subreddit": "leafs",
+    "source_sub": "r/OttawaSenators",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2025-04-28 00:34:09",
+    "action": "BANNED",
+    "username": "PeterGriffinFan2",
+    "subreddit": "leafs",
+    "source_sub": "r/OttawaSenators",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2025-04-28 00:34:17",
+    "action": "BANNED",
+    "username": "StarDarkCaptain",
+    "subreddit": "OttawaSenators",
+    "source_sub": "r/leafs",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2025-04-28 00:37:14",
+    "action": "BANNED",
+    "username": "TeamFast77",
+    "subreddit": "caps",
+    "source_sub": "r/OttawaSenators",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2025-04-28 00:37:14",
+    "action": "BANNED",
+    "username": "Mizhe_",
+    "subreddit": "caps",
+    "source_sub": "r/OttawaSenators",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2025-04-28 00:37:14",
+    "action": "BANNED",
+    "username": "Practical-Visual-837",
+    "subreddit": "caps",
+    "source_sub": "r/OttawaSenators",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2025-04-28 00:37:15",
+    "action": "BANNED",
+    "username": "WileyKylie_",
+    "subreddit": "caps",
+    "source_sub": "r/OttawaSenators",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2025-04-28 00:37:15",
+    "action": "BANNED",
+    "username": "Global_Examination_8",
+    "subreddit": "caps",
+    "source_sub": "r/OttawaSenators",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2025-04-28 00:37:15",
+    "action": "BANNED",
+    "username": "HepHibli",
+    "subreddit": "caps",
+    "source_sub": "r/OttawaSenators",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2025-04-28 00:37:16",
+    "action": "BANNED",
+    "username": "PeterGriffinFan2",
+    "subreddit": "caps",
+    "source_sub": "r/OttawaSenators",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2025-04-28 00:37:16",
+    "action": "BANNED",
+    "username": "StarDarkCaptain",
+    "subreddit": "caps",
+    "source_sub": "r/leafs",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2025-04-28 00:37:28",
+    "action": "BANNED",
+    "username": "Bigdaddybear519",
+    "subreddit": "habs",
+    "source_sub": "r/OttawaSenators",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2025-04-28 00:37:28",
+    "action": "BANNED",
+    "username": "Mizhe_",
+    "subreddit": "habs",
+    "source_sub": "r/OttawaSenators",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2025-04-28 00:37:29",
+    "action": "BANNED",
+    "username": "Practical-Visual-837",
+    "subreddit": "habs",
+    "source_sub": "r/OttawaSenators",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2025-04-28 00:37:29",
+    "action": "BANNED",
+    "username": "WileyKylie_",
+    "subreddit": "habs",
+    "source_sub": "r/OttawaSenators",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2025-04-28 00:37:29",
+    "action": "BANNED",
+    "username": "Global_Examination_8",
+    "subreddit": "habs",
+    "source_sub": "r/OttawaSenators",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2025-04-28 00:37:29",
+    "action": "BANNED",
+    "username": "HepHibli",
+    "subreddit": "habs",
+    "source_sub": "r/OttawaSenators",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2025-04-28 00:37:30",
+    "action": "BANNED",
+    "username": "PeterGriffinFan2",
+    "subreddit": "habs",
+    "source_sub": "r/OttawaSenators",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2025-04-28 00:37:30",
+    "action": "BANNED",
+    "username": "StarDarkCaptain",
+    "subreddit": "habs",
+    "source_sub": "r/leafs",
+    "actor": "Bot",
+    "note": ""
+  }
+]
