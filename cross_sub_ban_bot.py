@@ -309,18 +309,16 @@ def enforce_bans_on_sub(sub):
             sr.banned.add(user, ban_reason=CROSS_SUB_BAN_REASON, note=f"Cross-sub ban from {src}")
             print(f"[BANNED] u/{user} in r/{sub} from {src}")
             log_public_action("BANNED", user, sub, src, "Bot", "")
-            print(f"[DEBUG] Public action logged for u/{user} in r/{sub}")
-            ban_counter += 1
             any_action = True
-            ban_counter += 1
-        except praw.exceptions.APIException as e:
-            err = getattr(e._raw, 'error_type', '')
-            if err == 'USER_DOESNT_EXIST':
-                for idx,row in enumerate(all_rows, start=2):
-                    if row.get('Username','').lower() == ul:
-                        sheet.update_cell(idx,9,datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S') + ' deleted')
-                        print(f"[INFO] Marked u/{user} as deleted in sheet, skipping future attempts.")
-                        break
+        except praw.exceptions.RedditAPIException as e:
+            print(f"[ERROR] Reddit API Exception while banning u/{user} in r/{sub}: {e}")
+            for subexc in e.items:
+                if subexc.error_type == 'USER_DOESNT_EXIST':
+                    for idx, row in enumerate(all_rows, start=2):
+                        if row.get('Username', '').lower() == ul:
+                            sheet.update_cell(idx, 9, datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S') + ' deleted')
+                            print(f"[INFO] Marked u/{user} as deleted in sheet, skipping future attempts.")
+                            break
     if not any_action:
         print(f"[INFO] No bans or unbans needed in r/{sub}.")
 
