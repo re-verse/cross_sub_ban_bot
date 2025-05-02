@@ -3634,5 +3634,50 @@
     "source_sub": "r/OttawaSenators",
     "actor": "Bot",
     "note": ""
+  },
+  {
+    "timestamp": "2025-05-02 13:32:02",
+    "action": "BANNED",
+    "username": "iiKolin",
+    "subreddit": "xsubpacttest1",
+    "source_sub": "r/leafs",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2025-05-02 13:32:04",
+    "action": "BANNED",
+    "username": "iiKolin",
+    "subreddit": "xsubpacttest2",
+    "source_sub": "r/leafs",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2025-05-02 13:32:39",
+    "action": "BANNED",
+    "username": "iiKolin",
+    "subreddit": "OttawaSenators",
+    "source_sub": "r/leafs",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2025-05-02 13:37:54",
+    "action": "BANNED",
+    "username": "iiKolin",
+    "subreddit": "caps",
+    "source_sub": "r/leafs",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2025-05-02 13:38:16",
+    "action": "BANNED",
+    "username": "iiKolin",
+    "subreddit": "habs",
+    "source_sub": "r/leafs",
+    "actor": "Bot",
+    "note": ""
   }
 ]
