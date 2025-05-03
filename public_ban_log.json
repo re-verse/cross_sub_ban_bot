@@ -3949,5 +3949,86 @@
     "source_sub": "r/OttawaSenators",
     "actor": "Bot",
     "note": ""
+  },
+  {
+    "timestamp": "2025-05-03 05:25:31",
+    "action": "BANNED",
+    "username": "Try-Minimum",
+    "subreddit": "xsubpacttest1",
+    "source_sub": "r/OttawaSenators",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2025-05-03 05:25:31",
+    "action": "BANNED",
+    "username": "kingkongbundyjr",
+    "subreddit": "xsubpacttest1",
+    "source_sub": "r/OttawaSenators",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2025-05-03 05:25:33",
+    "action": "BANNED",
+    "username": "Try-Minimum",
+    "subreddit": "xsubpacttest2",
+    "source_sub": "r/OttawaSenators",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2025-05-03 05:25:33",
+    "action": "BANNED",
+    "username": "kingkongbundyjr",
+    "subreddit": "xsubpacttest2",
+    "source_sub": "r/OttawaSenators",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2025-05-03 05:25:58",
+    "action": "BANNED",
+    "username": "Try-Minimum",
+    "subreddit": "leafs",
+    "source_sub": "r/OttawaSenators",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2025-05-03 05:25:59",
+    "action": "BANNED",
+    "username": "kingkongbundyjr",
+    "subreddit": "leafs",
+    "source_sub": "r/OttawaSenators",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2025-05-03 05:28:56",
+    "action": "BANNED",
+    "username": "Try-Minimum",
+    "subreddit": "caps",
+    "source_sub": "r/OttawaSenators",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2025-05-03 05:28:57",
+    "action": "BANNED",
+    "username": "kingkongbundyjr",
+    "subreddit": "caps",
+    "source_sub": "r/OttawaSenators",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2025-05-03 05:29:10",
+    "action": "BANNED",
+    "username": "kingkongbundyjr",
+    "subreddit": "habs",
+    "source_sub": "r/OttawaSenators",
+    "actor": "Bot",
+    "note": ""
   }
 ]
