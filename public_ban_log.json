@@ -3769,5 +3769,185 @@
     "source_sub": "r/leafs",
     "actor": "Bot",
     "note": ""
+  },
+  {
+    "timestamp": "2025-05-03 03:47:05",
+    "action": "BANNED",
+    "username": "dboet1",
+    "subreddit": "xsubpacttest1",
+    "source_sub": "r/OttawaSenators",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2025-05-03 03:47:06",
+    "action": "BANNED",
+    "username": "Relative-Sherbet-532",
+    "subreddit": "xsubpacttest1",
+    "source_sub": "r/OttawaSenators",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2025-05-03 03:47:06",
+    "action": "BANNED",
+    "username": "Fullpoint9",
+    "subreddit": "xsubpacttest1",
+    "source_sub": "r/OttawaSenators",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2025-05-03 03:47:06",
+    "action": "BANNED",
+    "username": "Snoo_40560",
+    "subreddit": "xsubpacttest1",
+    "source_sub": "r/OttawaSenators",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2025-05-03 03:47:08",
+    "action": "BANNED",
+    "username": "dboet1",
+    "subreddit": "xsubpacttest2",
+    "source_sub": "r/OttawaSenators",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2025-05-03 03:47:08",
+    "action": "BANNED",
+    "username": "Relative-Sherbet-532",
+    "subreddit": "xsubpacttest2",
+    "source_sub": "r/OttawaSenators",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2025-05-03 03:47:08",
+    "action": "BANNED",
+    "username": "Fullpoint9",
+    "subreddit": "xsubpacttest2",
+    "source_sub": "r/OttawaSenators",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2025-05-03 03:47:08",
+    "action": "BANNED",
+    "username": "Snoo_40560",
+    "subreddit": "xsubpacttest2",
+    "source_sub": "r/OttawaSenators",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2025-05-03 03:47:31",
+    "action": "BANNED",
+    "username": "dboet1",
+    "subreddit": "leafs",
+    "source_sub": "r/OttawaSenators",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2025-05-03 03:47:31",
+    "action": "BANNED",
+    "username": "Relative-Sherbet-532",
+    "subreddit": "leafs",
+    "source_sub": "r/OttawaSenators",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2025-05-03 03:47:31",
+    "action": "BANNED",
+    "username": "Fullpoint9",
+    "subreddit": "leafs",
+    "source_sub": "r/OttawaSenators",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2025-05-03 03:47:32",
+    "action": "BANNED",
+    "username": "Snoo_40560",
+    "subreddit": "leafs",
+    "source_sub": "r/OttawaSenators",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2025-05-03 03:50:21",
+    "action": "BANNED",
+    "username": "dboet1",
+    "subreddit": "caps",
+    "source_sub": "r/OttawaSenators",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2025-05-03 03:50:22",
+    "action": "BANNED",
+    "username": "Relative-Sherbet-532",
+    "subreddit": "caps",
+    "source_sub": "r/OttawaSenators",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2025-05-03 03:50:22",
+    "action": "BANNED",
+    "username": "Fullpoint9",
+    "subreddit": "caps",
+    "source_sub": "r/OttawaSenators",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2025-05-03 03:50:23",
+    "action": "BANNED",
+    "username": "Snoo_40560",
+    "subreddit": "caps",
+    "source_sub": "r/OttawaSenators",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2025-05-03 03:50:36",
+    "action": "BANNED",
+    "username": "dboet1",
+    "subreddit": "habs",
+    "source_sub": "r/OttawaSenators",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2025-05-03 03:50:37",
+    "action": "BANNED",
+    "username": "Relative-Sherbet-532",
+    "subreddit": "habs",
+    "source_sub": "r/OttawaSenators",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2025-05-03 03:50:37",
+    "action": "BANNED",
+    "username": "Fullpoint9",
+    "subreddit": "habs",
+    "source_sub": "r/OttawaSenators",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2025-05-03 03:50:37",
+    "action": "BANNED",
+    "username": "Snoo_40560",
+    "subreddit": "habs",
+    "source_sub": "r/OttawaSenators",
+    "actor": "Bot",
+    "note": ""
   }
 ]
