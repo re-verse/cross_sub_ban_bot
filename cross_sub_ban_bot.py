@@ -9,6 +9,7 @@ import sys
 import praw
 import prawcore
 import gspread
+import traceback
 from oauth2client.service_account import ServiceAccountCredentials
 from datetime import datetime, timedelta
 
