@@ -457,23 +457,27 @@ def write_stats_sheet():
 # --- Main ---
 if __name__ == '__main__':
     print("=== Running Cross-Sub Ban Bot ===")
+    
     load_sheet_cache()
     check_modmail()
     
     for s in TRUSTED_SUBS:
         sync_bans_from_sub(s)
+        time.sleep(2)  # Let Reddit breathe a bit between subs
     
-    import time
-    time.sleep(15)  # Let Reddit modlogs catch up
-    
+    time.sleep(15)  # Let modlogs catch up after syncing
+
     for s in TRUSTED_SUBS:
         enforce_bans_on_sub(s)
-    
+        time.sleep(3)  # Pause between ban waves to avoid 429s
+
     flush_public_markdown_log()
+    
     print(f"=== Summary ===")
     print(f"Total Bans Applied: {ban_counter}")
     print(f"Total Unbans Applied: {unban_counter}")
     print("================")
     print("=== Bot run complete ===")
+    
     write_stats_sheet()
     sys.exit(0)
