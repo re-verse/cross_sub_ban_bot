@@ -4,3 +4,4 @@ leafs
 OttawaSenators
 caps
 habs
+goldenknights
