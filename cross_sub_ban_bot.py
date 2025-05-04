@@ -221,6 +221,7 @@ def sync_bans_from_sub(sub):
     try:
         sr = reddit.subreddit(sub)
         for log in sr.mod.log(action='banuser', limit=50):
+            print(f"[DEBUG] Modlog Entry → id: {log.id}, mod: {log.mod}, author: {log.target_author}, desc: {log.description}")
             user = log.target_author
             source = f"r/{log.subreddit}"
             lid = log.id
