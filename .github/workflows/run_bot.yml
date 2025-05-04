@@ -2,7 +2,7 @@ name: Run Cross-Sub Ban Bot
 
 on:
   schedule:
-    - cron: "*/10 * * * *"  # every 10 min
+    - cron: "*/20 * * * *"  # every 10 min
   workflow_dispatch:
 
 jobs:
