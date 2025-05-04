@@ -279,12 +279,13 @@ def sync_bans_from_sub(sub):
                     mod,
                     '',
                     ''
-            ])
-            print(f"[LOGGED] {user} banned in {source} by {mod}")
-        except Exception as e:
-            print(f"[ERROR] FAILED to log user '{user}' to sheet for r/{sub}")
-            print(f"Error Type: {type(e).__name__}, Message: {e}")
-            traceback.print_exc()
+                ])
+                print(f"[LOGGED] {user} banned in {source} by {mod}")
+            except Exception as e:
+                print(f"[ERROR] FAILED to log user '{user}' to sheet for r/{sub}")
+                print(f"Error Type: {type(e).__name__}, Message: {e}")
+                traceback.print_exc()
+
 
     except (prawcore.exceptions.Forbidden, prawcore.exceptions.NotFound):
         print(f"[WARN] Cannot access modlog for r/{sub}, skipping.")
