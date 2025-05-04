@@ -283,33 +283,41 @@ def sync_bans_from_sub(sub):
         print(f"[WARN] Cannot access modlog for r/{sub}, skipping.")
 
 # --- Ban Enforcer ---
+# --- Ban Enforcer ---
 def enforce_bans_on_sub(sub):
     print(f"[STEP] Enforcing bans/unbans in r/{sub}")
-    any_action = False
-    ban_counter = 0
+    # Keep track if any action IS taken by the queue later
+    action_was_taken_by_queue = False
+    global ban_counter, unban_counter # Make sure counters are accessible if you use them
+
     try:
         sr = reddit.subreddit(sub)
-        bans = {b.name.lower(): b for b in sr.banned(limit=50)}
-    except Exception:
-        print(f"[WARN] Cannot fetch ban list for r/{sub}, skipping.")
-        return
+        # You might want to increase this limit again if needed, or handle pagination
+        FETCH_LIMIT=100
+        print(f"[INFO] Fetching the latest {FETCH_LIMIT} bans for r/{sub}...")
+        bans = {b.name.lower(): b for b in sr.banned(limit=FETCH_LIMIT)}
+        print(f"[INFO] Fetched {len(bans)} bans.")
+    # --- ADD BETTER ERROR HANDLING HERE TOO ---
+    except prawcore.exceptions.TooManyRequests as e:
+         print(f"[WARN] Hit rate limit fetching ban list for r/{sub}. Skipping enforcement for this sub.")
+         return # Skip this sub if we can't even get the list
+    except Exception as e:
+        print(f"[ERROR] Cannot fetch ban list for r/{sub} ({type(e).__name__}): {e}")
+        import traceback
+        traceback.print_exc()
+        return # Skip this sub
 
-    all_rows = sheet.get_all_records()
+    all_rows = sheet.get_all_records() # Consider if cache is sufficient: all_rows = SHEET_CACHE
     now = datetime.utcnow()
 
-    # Delete old deleted users
-    for idx, r in reversed(list(enumerate(all_rows, start=2))):
-        marker = str(r.get('ForgiveTimestamp','')).strip()
-        if marker.endswith('deleted'):
-            try:
-                mark_time = datetime.strptime(marker.replace(' deleted',''), '%Y-%m-%d %H:%M:%S')
-                if now - mark_time > timedelta(hours=24):
-                    sheet.delete_rows(idx)
-                    print(f"[INFO] Removed old deleted user at row {idx}.")
-            except:
-                continue
+    # --- STEP 1: Initialize the action queue ---
+    actions_to_take = []
 
-    any_action = False
+    # Delete old deleted users (This part is fine)
+    # ... (your existing code for deleting old users) ...
+
+    # --- STEP 2: Populate the queue instead of acting immediately ---
+    print(f"[INFO] Checking {len(all_rows)} sheet entries against r/{sub} ban list...")
     for r in all_rows:
         user = r.get('Username','')
         src = r.get('SourceSub','')
@@ -318,50 +326,93 @@ def enforce_bans_on_sub(sub):
         ul = user.lower()
         deleted_marker = str(r.get('ForgiveTimestamp','')).strip()
         if deleted_marker:
-            print(f"[SKIP] {user} already marked deleted in sheet")
+            # print(f"[SKIP] {user} already marked deleted in sheet") # Maybe reduce logging noise
             continue
+
+        # --- Check for UNBAN actions ---
+        should_unban = False
+        unban_reason = ""
         if is_forgiven(user):
-            if ul in bans and CROSS_SUB_BAN_REASON.lower() in (getattr(bans[ul],'note','') or '').lower():
-                try:
-                    sr.banned.remove(user)
-                    print(f"[UNBANNED] Forgiven u/{user} in r/{sub}")
-                    log_public_action("UNBANNED", user, sub, src, "Bot", "Forgiven override")
-                    print(f"[DEBUG] Public action logged for u/{user} in r/{sub}")
-                    any_action = True
-                except Exception:
-                    pass
-            continue
-        exempt_subs = exempt_subs_for_user(user)
-        if sub.lower() in exempt_subs:
-            if ul in bans and CROSS_SUB_BAN_REASON.lower() in (getattr(bans[ul],'note','') or '').lower():
-                try:
-                    sr.banned.remove(user)
-                    print(f"[UNBANNED] Exempted u/{user} in r/{sub}")
-                    log_public_action("UNBANNED", user, sub, src, "Bot", "Per-sub exemption override")
-                    print(f"[DEBUG] Public action logged for u/{user} in r/{sub}")
-                    any_action = True
-                    unban_counter += 1
-                except Exception:
-                    pass
-            continue
+            should_unban = True
+            unban_reason = "Forgiven override"
+        elif sub.lower() in exempt_subs_for_user(user):
+            should_unban = True
+            unban_reason = "Per-sub exemption override"
+
+        if should_unban:
+            # Check if actually banned with the specific reason before queueing unban
+            if ul in bans and CROSS_SUB_BAN_REASON.lower() in (getattr(bans.get(ul),'note','') or '').lower():
+                 actions_to_take.append(('unban', user, src, unban_reason))
+            continue # Move to next user
+
+        # --- Check for BAN actions ---
+        # Skip if already banned OR globally exempt OR a mod in the target sub
         if ul in bans or ul in EXEMPT_USERS or is_mod(sr, user):
             continue
+
+        # If we reach here, user should be banned and isn't yet
+        actions_to_take.append(('ban', user, src, "")) # Add ban action
+
+    # --- STEP 3: Process the queue AFTER checking all rows ---
+    # <<< PASTE THE QUEUE PROCESSING BLOCK HERE >>>
+    print(f"[INFO] Processing {len(actions_to_take)} queued actions for r/{sub}...")
+    for action_details in actions_to_take:
+        # Unpack based on what you stored (add unban_reason if needed)
+        action_type, username, source_sub, reason_note = action_details
         try:
-            sr.banned.add(user, ban_reason=CROSS_SUB_BAN_REASON, note=f"Cross-sub ban from {src}")
-            print(f"[BANNED] u/{user} in r/{sub} from {src}")
-            log_public_action("BANNED", user, sub, src, "Bot", "")
-            any_action = True
+            if action_type == 'unban':
+                sr.banned.remove(username)
+                print(f"[UNBANNED] (Queued) u/{username} in r/{sub} ({reason_note})")
+                log_public_action("UNBANNED", username, sub, source_sub, "Bot (Queued)", reason_note)
+                unban_counter += 1 # Increment counter on success
+                action_was_taken_by_queue = True
+            elif action_type == 'ban':
+                # Check USER_DOESNT_EXIST before banning if possible/needed, or handle exception
+                sr.banned.add(username, ban_reason=CROSS_SUB_BAN_REASON, note=f"Cross-sub ban from {source_sub}")
+                print(f"[BANNED] (Queued) u/{username} in r/{sub} from {source_sub}")
+                log_public_action("BANNED", username, sub, source_sub, "Bot (Queued)", "")
+                ban_counter += 1 # Increment counter on success
+                action_was_taken_by_queue = True
+
+            # !!! CRITICAL DELAY BETWEEN EACH ACTION !!!
+            time.sleep(2) # Start with 2 seconds, increase if needed
+
+        except prawcore.exceptions.TooManyRequests:
+            print(f"[WARN] Hit rate limit during queued action for u/{username} in r/{sub}. Sleeping longer...")
+            time.sleep(30) # Sleep longer if hit during queue processing
+            # Consider re-queueing the action or just skipping for next run
         except praw.exceptions.RedditAPIException as e:
-            print(f"[ERROR] Reddit API Exception while banning u/{user} in r/{sub}: {e}")
+            print(f"[ERROR] Queued action API Error for u/{username} in r/{sub}: {e}")
+            is_user_deleted = False
             for subexc in e.items:
-                if subexc.error_type == 'USER_DOESNT_EXIST':
-                    for idx, row in enumerate(all_rows, start=2):
-                        if row.get('Username', '').lower() == ul:
-                            sheet.update_cell(idx, 9, datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S') + ' deleted')
-                            print(f"[INFO] Marked u/{user} as deleted in sheet, skipping future attempts.")
-                            break
-    if not any_action:
-        print(f"[INFO] No bans or unbans needed in r/{sub}.")
+                 if subexc.error_type == 'USER_DOESNT_EXIST':
+                     is_user_deleted = True
+                     # Mark as deleted in sheet (consider doing this outside the loop later?)
+                     # for idx, row in enumerate(all_rows, start=2): # This might be slow/inefficient here
+                     #     if row.get('Username', '').lower() == username.lower():
+                     #         sheet.update_cell(idx, 9, datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S') + ' deleted')
+                     #         print(f"[INFO] Marked u/{username} as deleted in sheet.")
+                     #         break
+                     print(f"[INFO] Skipping action for non-existent user u/{username}.")
+                     break # Stop processing this specific action
+                 elif subexc.error_type == 'SUBREDDIT_BAN_NOT_PERMITTED':
+                     print(f"[WARN] Bot lacks permission to ban u/{username} in r/{sub}. Check permissions.")
+                     break
+                 elif subexc.error_type == 'USER_ALREADY_BANNED':
+                      print(f"[INFO] Skipping ban, u/{username} already banned in r/{sub}.")
+                      break
+            # Add handling for other specific API errors if needed
+        except Exception as e:
+            print(f"[ERROR] Unexpected error during queued action for u/{username} in r/{sub} ({type(e).__name__}): {e}")
+            import traceback
+            traceback.print_exc()
+    # <<< END OF PASTED BLOCK >>>
+
+    # --- STEP 4: Check if any action was taken (optional logging) ---
+    if not action_was_taken_by_queue:
+        print(f"[INFO] No bans or unbans needed/performed via queue in r/{sub}.")
+
+# --- End of function ---
 
 # --- Public Markdown Log Writer ---
 def flush_public_markdown_log():
