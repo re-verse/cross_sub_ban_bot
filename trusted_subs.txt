@@ -1,5 +1,3 @@
-xsubpacttest1
-xsubpacttest2
 leafs
 OttawaSenators
 caps
