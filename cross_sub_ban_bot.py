@@ -22,9 +22,9 @@ with open("config.json") as config_file:
 
 CROSS_SUB_BAN_REASON = config.get("CROSS_SUB_BAN_REASON", "Auto XSub Pact Ban")
 EXEMPT_USERS = set(u.lower() for u in config.get("EXEMPT_USERS", []))
-DAILY_BAN_LIMIT = config.get("DAILY_BAN_LIMIT", 30)
-MAX_LOG_AGE_MINUTES = config.get("MAX_LOG_AGE_MINUTES", 60)
-ROW_RETENTION_DAYS = config.get("ROW_RETENTION_DAYS", 30)
+DAILY_BAN_LIMIT = config.get("DAILY_BAN_LIMIT", 50)
+MAX_LOG_AGE_MINUTES = config.get("MAX_LOG_AGE_MINUTES", 45)
+ROW_RETENTION_DAYS = config.get("ROW_RETENTION_DAYS", 10)
 
 # --- Public log files ---
 PUBLIC_LOG_JSON = f"{WORK_DIR}/public_ban_log.json"
