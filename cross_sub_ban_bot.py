@@ -265,8 +265,8 @@ def sync_bans_from_sub(sub):
                 continue
 
             # Respect per-sub ban limits
-            if get_recent_sheet_entries(source) >= DAILY_BAN_LIMIT:
-                continue
+            #if get_recent_sheet_entries(source) >= DAILY_BAN_LIMIT:
+            #    continue
 
             # Log it
             try:
