@@ -224,7 +224,8 @@ def sync_bans_from_sub(sub):
         sr = reddit.subreddit(sub)
         for log in sr.mod.log(action='banuser', limit=30):
             # Add this inside your sync_bans_from_sub() loop, right after "for log in sr.mod.log(...)"
-            with open(f"modlog_dump_{sub}.txt", "a") as f:
+            print(f"[DEBUG] Writing modlog dump for {sub} to {os.path.join(WORK_DIR, f'modlog_dump_{sub}.txt')}")
+            with open(os.path.join(WORK_DIR, f"modlog_dump_{sub}.txt"), "a") as f:
                 f.write(f"{datetime.utcnow().isoformat()} | log_id={log.id} | user={log.target_author} | mod={log.mod} | desc={log.description}\n")
 
             desc = (log.description or '').strip()
