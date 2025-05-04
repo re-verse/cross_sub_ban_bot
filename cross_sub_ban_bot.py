@@ -217,33 +217,61 @@ def apply_override(username, moderator, modsub):
 # --- Ban Sync ---
 def sync_bans_from_sub(sub):
     print(f"[STEP] Checking modlog for r/{sub}")
-    ban_counter = 0
     try:
         sr = reddit.subreddit(sub)
         for log in sr.mod.log(action='banuser', limit=50):
-            print(f"[DEBUG] Modlog Entry → id: {log.id}, mod: {log.mod}, author: {log.target_author}, desc: {log.description}")
-            user = log.target_author
+            desc = (log.description or '').strip()
+            log_id = log.id
             source = f"r/{log.subreddit}"
-            lid = log.id
             ts = datetime.utcfromtimestamp(log.created_utc)
-            if datetime.utcnow()-ts > timedelta(minutes=MAX_LOG_AGE_MINUTES):
+            mod = getattr(log.mod, 'name', 'unknown')
+
+            # Debug output for all modlog entries
+            print(f"[DEBUG] log_id={log_id}, mod={mod}, target_author={log.target_author}, desc='{desc}'")
+
+            # Skip old entries
+            if datetime.utcnow() - ts > timedelta(minutes=MAX_LOG_AGE_MINUTES):
                 continue
-            if (log.description or '').strip().lower() != CROSS_SUB_BAN_REASON.lower():
+
+            # Check description match
+            if desc.lower() != CROSS_SUB_BAN_REASON.lower():
                 continue
+
+            # Trusted source only
             if source not in TRUSTED_SOURCES:
                 continue
-            if user and (user.lower() in EXEMPT_USERS or is_mod(sr, user)):
+
+            # Try to get a username
+            user = log.target_author or (log.target_body if isinstance(log.target_body, str) else None)
+            if not user:
+                print(f"[WARN] Skipping log {log_id} - No target user found.")
                 continue
-            if any(r.get("Username", "").lower() == user.lower() for r in SHEET_CACHE):
-                print(f"[SKIP] {user} already exists in sheet, skipping.")
+
+            # Skip if user is exempt or a mod
+            if user.lower() in EXEMPT_USERS or is_mod(sr, user):
                 continue
-            if already_logged_action(lid):
+
+            # Skip if this exact log ID is already logged
+            if already_logged_action(log_id):
                 continue
+
+            # Respect per-sub ban limits
             if get_recent_sheet_entries(source) >= DAILY_BAN_LIMIT:
                 continue
-            moderator = getattr(log.mod, 'name', 'unknown')
-            sheet.append_row([user, source, CROSS_SUB_BAN_REASON, ts.strftime('%Y-%m-%d %H:%M:%S'), '', lid, moderator, '', ''])
 
+            # Log it
+            sheet.append_row([
+                user,
+                source,
+                CROSS_SUB_BAN_REASON,
+                ts.strftime('%Y-%m-%d %H:%M:%S'),
+                '',
+                log_id,
+                mod,
+                '',
+                ''
+            ])
+            print(f"[LOGGED] {user} banned in {source} by {mod}")
     except (prawcore.exceptions.Forbidden, prawcore.exceptions.NotFound):
         print(f"[WARN] Cannot access modlog for r/{sub}, skipping.")
 
