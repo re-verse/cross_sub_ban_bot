@@ -239,8 +239,9 @@ def sync_bans_from_sub(sub):
             if datetime.utcnow() - ts > timedelta(minutes=MAX_LOG_AGE_MINUTES):
                 continue
 
-            # Check description match
-            if desc.lower() != CROSS_SUB_BAN_REASON.lower():
+              # Check description match (containment check)
+            if CROSS_SUB_BAN_REASON.lower() not in desc.lower():
+                print(f"[DEBUG] Skipping log {log.id} for {log.target_author}: Reason mismatch. Expected '{CROSS_SUB_BAN_REASON.lower()}' not in '{desc.lower()}'") # Added debug print
                 continue
 
             # Trusted source only
