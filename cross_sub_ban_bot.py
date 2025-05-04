@@ -237,7 +237,9 @@ def sync_bans_from_sub(sub):
                 continue
             if get_recent_sheet_entries(source) >= DAILY_BAN_LIMIT:
                 continue
-            sheet.append_row([user,source,CROSS_SUB_BAN_REASON,ts.strftime('%Y-%m-%d %H:%M:%S'),'',lid,'',''])
+            moderator = getattr(log.mod, 'name', 'unknown')
+            sheet.append_row([user, source, CROSS_SUB_BAN_REASON, ts.strftime('%Y-%m-%d %H:%M:%S'), '', lid, moderator, '', ''])
+
     except (prawcore.exceptions.Forbidden, prawcore.exceptions.NotFound):
         print(f"[WARN] Cannot access modlog for r/{sub}, skipping.")
 
@@ -389,7 +391,7 @@ def write_stats_sheet():
 
     # Overwrite entire Stats sheet
     stats_sheet.clear()
-    stats_sheet.update("A1", [["📅 Daily Ban Count"]])
+    stats_sheet.update(values=[["📅 Daily Ban Count"]], range_name="A1")
     row = 2
     for day in sorted(daily_counts.keys(), reverse=True):
         for sub, count in daily_counts[day].items():
