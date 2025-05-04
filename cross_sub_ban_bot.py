@@ -455,29 +455,48 @@ def write_stats_sheet():
     print("[INFO] Stats written to 'Stats' worksheet.")
 
 # --- Main ---
-import time  # ← ADD THIS NEAR TOP OF SCRIPT, or at least before main
+import time  
 
 if __name__ == '__main__':
     print("=== Running Cross-Sub Ban Bot ===")
     
     load_sheet_cache()
-    check_modmail()
+    check_modmail() # Modmail check already loops internally
     
+    print("[INFO] Starting ban sync phase...")
     for s in TRUSTED_SUBS:
         sync_bans_from_sub(s)
-        time.sleep(2)  # Let Reddit breathe a bit between subs
-    
-    time.sleep(15)  # Let modlogs catch up after syncing
+        # --- DELAY 1 ---
+        # Pause slightly after checking each sub's modlog
+        print(f"[INFO] Pausing briefly after checking r/{s} modlog...")
+        time.sleep(2)  # Pause for 2 seconds 
+        
+    print("[INFO] Sync phase complete. Pausing before enforcement phase...")
+    # This existing pause is good - allows Reddit/Sheets time to process
+    time.sleep(15) 
 
+    print("[INFO] Starting ban enforcement phase...")
+    # --- BAN ACTION QUEUE (Recommended for heavier loads) ---
+    # If simple delays aren't enough, implement the ban action queue here
+    # as discussed previously, putting the main delay *between each ban*
+    # in the queue processing loop. For now, we'll just add delays between subs.
+    
     for s in TRUSTED_SUBS:
         enforce_bans_on_sub(s)
-        time.sleep(3)  # Pause between ban waves to avoid 429s
-
+        # --- DELAY 2 ---
+        # Pause after potentially fetching ban lists and applying bans/unbans
+        print(f"[INFO] Pausing after enforcing bans in r/{s}...")
+        time.sleep(3) # Pause for 3 seconds (maybe slightly longer)
+        
+    print("[INFO] Enforcement phase complete.")
+    
     flush_public_markdown_log()
     
     print(f"=== Summary ===")
-    print(f"Total Bans Applied: {ban_counter}")
-    print(f"Total Unbans Applied: {unban_counter}")
+    # Use the global counters if you uncomment their increments
+    # print(f"Total Bans Applied: {ban_counter}") 
+    # print(f"Total Unbans Applied: {unban_counter}")
+    # Or fetch stats from sheet/log if needed
     print("================")
     print("=== Bot run complete ===")
     
