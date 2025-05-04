@@ -268,22 +268,27 @@ def sync_bans_from_sub(sub):
                 continue
 
             # Log it
-            sheet.append_row([
-                user,
-                source,
-                CROSS_SUB_BAN_REASON,
-                ts.strftime('%Y-%m-%d %H:%M:%S'),
-                '',
-                log_id,
-                mod,
-                '',
-                ''
+            try:
+                sheet.append_row([
+                    user,
+                    source,
+                    CROSS_SUB_BAN_REASON,
+                    ts.strftime('%Y-%m-%d %H:%M:%S'),
+                    '',
+                    log_id,
+                    mod,
+                    '',
+                    ''
             ])
             print(f"[LOGGED] {user} banned in {source} by {mod}")
+        except Exception as e:
+            print(f"[ERROR] FAILED to log user '{user}' to sheet for r/{sub}")
+            print(f"Error Type: {type(e).__name__}, Message: {e}")
+            traceback.print_exc()
+
     except (prawcore.exceptions.Forbidden, prawcore.exceptions.NotFound):
         print(f"[WARN] Cannot access modlog for r/{sub}, skipping.")
 
-# --- Ban Enforcer ---
 # --- Ban Enforcer ---
 def enforce_bans_on_sub(sub):
     print(f"[STEP] Enforcing bans/unbans in r/{sub}")
