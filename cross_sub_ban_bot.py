@@ -178,7 +178,7 @@ def check_modmail():
     for sub in TRUSTED_SUBS:
         try:
             sr = reddit.subreddit(sub)
-            for state in ("new", "mod", "all"):
+            for state in ("new", "mod",):
                 for convo in sr.modmail.conversations(state=state):
                     if not convo.messages:
                         continue
