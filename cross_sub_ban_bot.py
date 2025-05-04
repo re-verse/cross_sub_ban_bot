@@ -391,7 +391,7 @@ def write_stats_sheet():
 
     # Overwrite entire Stats sheet
     stats_sheet.clear()
-    stats_sheet.update(values=[["📅 Daily Ban Count"]], range_name="A1")
+    sstats_sheet.update(values=[["📅 Daily Ban Count"]], range_name="A1")
     row = 2
     for day in sorted(daily_counts.keys(), reverse=True):
         for sub, count in daily_counts[day].items():
