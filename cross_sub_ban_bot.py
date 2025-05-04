@@ -233,6 +233,9 @@ def sync_bans_from_sub(sub):
                 continue
             if user and (user.lower() in EXEMPT_USERS or is_mod(sr, user)):
                 continue
+            if any(r.get("Username", "").lower() == user.lower() for r in SHEET_CACHE):
+                print(f"[SKIP] {user} already exists in sheet, skipping.")
+                continue
             if already_logged_action(lid):
                 continue
             if get_recent_sheet_entries(source) >= DAILY_BAN_LIMIT:
