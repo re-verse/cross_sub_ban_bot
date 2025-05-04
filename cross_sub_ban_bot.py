@@ -289,7 +289,7 @@ def enforce_bans_on_sub(sub):
     ban_counter = 0
     try:
         sr = reddit.subreddit(sub)
-        bans = {b.name.lower(): b for b in sr.banned(limit=100)}
+        bans = {b.name.lower(): b for b in sr.banned(limit=50)}
     except Exception:
         print(f"[WARN] Cannot fetch ban list for r/{sub}, skipping.")
         return
