@@ -395,21 +395,22 @@ def write_stats_sheet():
     row = 2
     for day in sorted(daily_counts.keys(), reverse=True):
         for sub, count in daily_counts[day].items():
-            stats_sheet.update(f"A{row}", [[day, sub, count]])
+            stats_sheet.update(range_name=f"A{row}", values=[[day, sub, count]])
             row += 1
 
     row += 1
-    stats_sheet.update(f"A{row}", [["📈 Weekly Bans Per Subreddit"]])
+    stats_sheet.update(range_name=f"A{row}", values=[["📈 Weekly Bans Per Subreddit"]])
     row += 1
     for sub, count in sorted(weekly_counts.items(), key=lambda x: -x[1]):
-        stats_sheet.update(f"A{row}", [[sub, count]])
+        stats_sheet.update(range_name=f"A{row}", values=[[sub, count]])
+
         row += 1
 
     row += 1
-    stats_sheet.update(f"A{row}", [["🏆 Top Banning Moderators"]])
+    stats_sheet.update(range_name=f"A{row}", values=[["🏆 Top Banning Moderators"]])
     row += 1
     for mod, count in sorted(user_counts.items(), key=lambda x: -x[1]):
-        stats_sheet.update(f"A{row}", [[mod, count]])
+        stats_sheet.update(range_name=f"A{row}", values=[[mod, count]])
         row += 1
 
     print("[INFO] Stats written to 'Stats' worksheet.")
