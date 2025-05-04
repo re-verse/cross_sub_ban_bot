@@ -420,10 +420,16 @@ if __name__ == '__main__':
     print("=== Running Cross-Sub Ban Bot ===")
     load_sheet_cache()
     check_modmail()
+    
     for s in TRUSTED_SUBS:
         sync_bans_from_sub(s)
+    
+    import time
+    time.sleep(15)  # Let Reddit modlogs catch up
+    
     for s in TRUSTED_SUBS:
         enforce_bans_on_sub(s)
+    
     flush_public_markdown_log()
     print(f"=== Summary ===")
     print(f"Total Bans Applied: {ban_counter}")
