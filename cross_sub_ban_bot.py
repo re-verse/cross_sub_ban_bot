@@ -223,7 +223,6 @@ def sync_bans_from_sub(sub):
     try:
         sr = reddit.subreddit(sub)
         for log in sr.mod.log(action='banuser', limit=30):
-            # Add this inside your sync_bans_from_sub() loop, right after "for log in sr.mod.log(...)"
             print(f"[DEBUG] Writing modlog dump for {sub} to {os.path.join(WORK_DIR, f'modlog_dump_{sub}.txt')}")
             with open(os.path.join(WORK_DIR, f"modlog_dump_{sub}.txt"), "a") as f:
                 f.write(f"{datetime.utcnow().isoformat()} | log_id={log.id} | user={log.target_author} | mod={log.mod} | desc={log.description}\n")
@@ -234,41 +233,35 @@ def sync_bans_from_sub(sub):
             ts = datetime.utcfromtimestamp(log.created_utc)
             mod = getattr(log.mod, 'name', 'unknown')
 
-            # Debug output for all modlog entries
             print(f"[DEBUG] log_id={log_id}, mod={mod}, target_author={log.target_author}, desc='{desc}'")
 
-            # Skip old entries
             if datetime.utcnow() - ts > timedelta(minutes=MAX_LOG_AGE_MINUTES):
                 continue
 
-              # Check description match (containment check)
             if CROSS_SUB_BAN_REASON.lower() not in desc.lower():
-                print(f"[DEBUG] Skipping log {log.id} for {log.target_author}: Reason mismatch. Expected '{CROSS_SUB_BAN_REASON.lower()}' not in '{desc.lower()}'") # Added debug print
+                print(f"[DEBUG] Skipping log {log.id} for {log.target_author}: Reason mismatch.")
                 continue
 
-            # Trusted source only
             if source not in TRUSTED_SOURCES:
                 continue
 
-            # Try to get a username
             user = log.target_author or (log.target_body if isinstance(log.target_body, str) else None)
             if not user:
                 print(f"[WARN] Skipping log {log_id} - No target user found.")
                 continue
 
-            # Skip if user is exempt or a mod
             if user.lower() in EXEMPT_USERS or is_mod(sr, user):
                 continue
 
-            # Skip if this exact log ID is already logged
+            # 🔥 Fixed: Skip if user already in the sheet
+            if any(r.get('Username', '').lower() == user.lower() for r in SHEET_CACHE):
+                print(f"[SKIP] User {user} already logged in sheet. Skipping.")
+                continue
+
+            # Optional: Keep this too, in case re-runs ever happen with same log ID
             if already_logged_action(log_id):
                 continue
 
-            # Respect per-sub ban limits
-            #if get_recent_sheet_entries(source) >= DAILY_BAN_LIMIT:
-            #    continue
-
-            # Log it
             try:
                 sheet.append_row([
                     user,
@@ -288,7 +281,6 @@ def sync_bans_from_sub(sub):
                 print(f"[ERROR] FAILED to log user '{user}' to sheet for r/{sub}")
                 print(f"Error Type: {type(e).__name__}, Message: {e}")
                 traceback.print_exc()
-
 
     except (prawcore.exceptions.Forbidden, prawcore.exceptions.NotFound):
         print(f"[WARN] Cannot access modlog for r/{sub}, skipping.")
