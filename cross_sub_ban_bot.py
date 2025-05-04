@@ -275,12 +275,14 @@ def sync_bans_from_sub(sub):
                     source,
                     CROSS_SUB_BAN_REASON,
                     ts.strftime('%Y-%m-%d %H:%M:%S'),
-                    '',
+                    '',  # ManualOverride
                     log_id,
                     mod,
-                    '',
-                    ''
-                ])
+                    '',  # ModSub
+                    '',  # ForgiveTimestamp
+                    ''   # ExemptSubs
+                ], value_input_option='USER_ENTERED')
+
                 print(f"[LOGGED] {user} banned in {source} by {mod}")
             except Exception as e:
                 print(f"[ERROR] FAILED to log user '{user}' to sheet for r/{sub}")
