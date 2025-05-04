@@ -220,6 +220,10 @@ def sync_bans_from_sub(sub):
     try:
         sr = reddit.subreddit(sub)
         for log in sr.mod.log(action='banuser', limit=50):
+            # Add this inside your sync_bans_from_sub() loop, right after "for log in sr.mod.log(...)"
+            with open(f"modlog_dump_{sub}.txt", "a") as f:
+                f.write(f"{datetime.utcnow().isoformat()} | log_id={log.id} | user={log.target_author} | mod={log.mod} | desc={log.description}\n")
+
             desc = (log.description or '').strip()
             log_id = log.id
             source = f"r/{log.subreddit}"
