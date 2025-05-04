@@ -315,7 +315,7 @@ def enforce_bans_on_sub(sub):
         traceback.print_exc()
         return # Skip this sub
 
-    all_rows = sheet.get_all_records() # Consider if cache is sufficient: all_rows = SHEET_CACHE
+    all_rows = SHEET_CACHE 
     now = datetime.utcnow()
 
     # --- STEP 1: Initialize the action queue ---
@@ -395,12 +395,6 @@ def enforce_bans_on_sub(sub):
             for subexc in e.items:
                  if subexc.error_type == 'USER_DOESNT_EXIST':
                      is_user_deleted = True
-                     # Mark as deleted in sheet (consider doing this outside the loop later?)
-                     # for idx, row in enumerate(all_rows, start=2): # This might be slow/inefficient here
-                     #     if row.get('Username', '').lower() == username.lower():
-                     #         sheet.update_cell(idx, 9, datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S') + ' deleted')
-                     #         print(f"[INFO] Marked u/{username} as deleted in sheet.")
-                     #         break
                      print(f"[INFO] Skipping action for non-existent user u/{username}.")
                      break # Stop processing this specific action
                  elif subexc.error_type == 'SUBREDDIT_BAN_NOT_PERMITTED':
@@ -526,24 +520,17 @@ if __name__ == '__main__':
     for s in TRUSTED_SUBS:
         sync_bans_from_sub(s)
         # --- DELAY 1 ---
-        # Pause slightly after checking each sub's modlog
         print(f"[INFO] Pausing briefly after checking r/{s} modlog...")
         time.sleep(2)  # Pause for 2 seconds 
         
     print("[INFO] Sync phase complete. Pausing before enforcement phase...")
-    # This existing pause is good - allows Reddit/Sheets time to process
     time.sleep(15) 
 
     print("[INFO] Starting ban enforcement phase...")
-    # --- BAN ACTION QUEUE (Recommended for heavier loads) ---
-    # If simple delays aren't enough, implement the ban action queue here
-    # as discussed previously, putting the main delay *between each ban*
-    # in the queue processing loop. For now, we'll just add delays between subs.
     
     for s in TRUSTED_SUBS:
         enforce_bans_on_sub(s)
         # --- DELAY 2 ---
-        # Pause after potentially fetching ban lists and applying bans/unbans
         print(f"[INFO] Pausing after enforcing bans in r/{s}...")
         time.sleep(3) # Pause for 3 seconds (maybe slightly longer)
         
@@ -552,10 +539,6 @@ if __name__ == '__main__':
     flush_public_markdown_log()
     
     print(f"=== Summary ===")
-    # Use the global counters if you uncomment their increments
-    # print(f"Total Bans Applied: {ban_counter}") 
-    # print(f"Total Unbans Applied: {unban_counter}")
-    # Or fetch stats from sheet/log if needed
     print("================")
     print("=== Bot run complete ===")
     
