@@ -455,6 +455,8 @@ def write_stats_sheet():
     print("[INFO] Stats written to 'Stats' worksheet.")
 
 # --- Main ---
+import time  # ← ADD THIS NEAR TOP OF SCRIPT, or at least before main
+
 if __name__ == '__main__':
     print("=== Running Cross-Sub Ban Bot ===")
     
