@@ -18,63 +18,17 @@ from datetime import datetime, timedelta
 ban_counter = 0
 unban_counter = 0
 
-# --- Load configuration ---
-with open("config.json") as config_file:
-    config = json.load(config_file)
-
-CROSS_SUB_BAN_REASON = config.get("CROSS_SUB_BAN_REASON", "Auto XSub Pact Ban")
-EXEMPT_USERS = set(u.lower() for u in config.get("EXEMPT_USERS", []))
-DAILY_BAN_LIMIT = config.get("DAILY_BAN_LIMIT", 50)
-MAX_LOG_AGE_MINUTES = config.get("MAX_LOG_AGE_MINUTES", 45)
-ROW_RETENTION_DAYS = config.get("ROW_RETENTION_DAYS", 10)
-
-# --- Public log files ---
-PUBLIC_LOG_JSON = f"{WORK_DIR}/public_ban_log.json"
-PUBLIC_LOG_MD = f"{WORK_DIR}/public_ban_log.md"
-
-# --- Trusted subreddits ---
-def load_trusted_subs(path="trusted_subs.txt"):
-    with open(path) as f:
-        return [line.strip() for line in f if line.strip()]
-
-# load and normalize all our “r/foo” strings to lowercase
-TRUSTED_SUBS    = [sub.lower() for sub in load_trusted_subs()]
-TRUSTED_SOURCES = {f"r/{sub}" for sub in TRUSTED_SUBS}
-
-# --- Google Sheets setup ---
-creds_env = os.environ.get('GOOGLE_SERVICE_ACCOUNT_JSON')
-if not creds_env:
-    print("[FATAL] Missing GOOGLE_SERVICE_ACCOUNT_JSON env var.")
-    sys.exit(1)
-try:
-    decoded = base64.b64decode(creds_env)
-    creds_str = decoded.decode('utf-8')
-    creds_dict = json.loads(creds_str)
-except Exception:
-    try:
-        creds_dict = json.loads(creds_env)
-    except Exception as e:
-        print(f"[FATAL] Failed to parse service account JSON: {e}")
-        sys.exit(1)
-
-scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
-creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_dict, scope)
-client = gspread.authorize(creds)
-
-sheet_key = os.environ.get('GOOGLE_SHEET_ID')
-if not sheet_key:
-    print("[FATAL] Missing GOOGLE_SHEET_ID env var.")
-    sys.exit(1)
-sheet = client.open_by_key(sheet_key).sheet1
-print(f"[INFO] Google Sheet '{sheet_key}' opened, worksheet '{sheet.title}' loaded.")
-
-# --- Reddit API setup ---
-reddit = praw.Reddit(
-    client_id=os.environ.get('REDDIT_CLIENT_ID') or os.environ.get('CLIENT_ID'),
-    client_secret=os.environ.get('REDDIT_CLIENT_SECRET') or os.environ.get('CLIENT_SECRET'),
-    username=os.environ.get('REDDIT_USERNAME') or os.environ.get('USERNAME'),
-    password=os.environ.get('REDDIT_PASSWORD') or os.environ.get('PASSWORD'),
-    user_agent='Cross-Sub Ban Bot/1.0'
+from config import (
+    CROSS_SUB_BAN_REASON,
+    EXEMPT_USERS,
+    DAILY_BAN_LIMIT,
+    MAX_LOG_AGE_MINUTES,
+    ROW_RETENTION_DAYS,
+    TRUSTED_SUBS,
+    TRUSTED_SOURCES,
+    sheet,
+    client,
+    reddit
 )
 
 # --- Caches ---
