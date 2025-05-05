@@ -289,7 +289,6 @@ def sync_bans_from_sub(sub):
 def enforce_bans_on_sub(sub):
     print(f"[STEP] Enforcing bans/unbans in r/{sub}")
     action_was_taken_by_queue = False
-    global ban_counter, unban_counter
 
     try:
         sr = reddit.subreddit(sub)
@@ -371,13 +370,11 @@ def enforce_bans_on_sub(sub):
                 sr.banned.remove(username)
                 print(f"[UNBANNED] (Queued) u/{username} in r/{sub} ({reason_note})")
                 log_public_action("UNBANNED", username, sub, source_sub, "Bot (Queued)", reason_note)
-                unban_counter += 1
                 action_was_taken_by_queue = True
             elif action_type == 'ban':
                 sr.banned.add(username, ban_reason=CROSS_SUB_BAN_REASON, note=f"Cross-sub ban from {source_sub}")
                 print(f"[BANNED] (Queued) u/{username} in r/{sub} from {source_sub}")
                 log_public_action("BANNED", username, sub, source_sub, "Bot (Queued)", "")
-                ban_counter += 1
                 action_was_taken_by_queue = True
             time.sleep(2)
         except prawcore.exceptions.TooManyRequests:
