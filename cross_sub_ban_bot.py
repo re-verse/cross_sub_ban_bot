@@ -116,7 +116,14 @@ def is_forgiven(user):
     return False
 
 def already_logged_action(log_id):
-    return any(r.get('ModLogID', '') == log_id for r in SHEET_CACHE)
+    if not log_id:
+        return False
+    log_id = str(log_id).strip().lower()
+    for row in SHEET_CACHE:
+        if str(row.get('ModLogID', '')).strip().lower() == log_id:
+            return True
+    return False
+
 
 def get_recent_sheet_entries(source_sub):
     cutoff = datetime.utcnow() - timedelta(days=1)
