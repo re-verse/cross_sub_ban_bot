@@ -18,7 +18,7 @@ from datetime import datetime, timedelta
 ban_counter = 0
 unban_counter = 0
 
-from config import (
+from bot_config import (
     CROSS_SUB_BAN_REASON,
     EXEMPT_USERS,
     DAILY_BAN_LIMIT,
