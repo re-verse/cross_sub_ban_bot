@@ -307,6 +307,7 @@ def sync_bans_from_sub(sub):
                 ]
                 print("[DEBUG] About to append row:", row_data)
                 sheet.append_row(row_data, value_input_option='USER_ENTERED')
+                print("[DEBUG] APPEND SUCCESS")
 
                 SHEET_CACHE.append({
                     'Username': user,
@@ -326,9 +327,9 @@ def sync_bans_from_sub(sub):
             except Exception as e:
                 print(f"[ERROR] FAILED to log user '{user}' to sheet for r/{sub}")
                 print("[CRITICAL] Row data that caused failure:", row_data)
-                raise
                 print(f"Error Type: {type(e).__name__}, Message: {e}")
                 traceback.print_exc()
+                raise
 
     except (prawcore.exceptions.Forbidden, prawcore.exceptions.NotFound):
         print(f"[WARN] Cannot access modlog for r/{sub}, skipping.")
