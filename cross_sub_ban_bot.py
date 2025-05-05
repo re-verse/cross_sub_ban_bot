@@ -38,7 +38,8 @@ def load_trusted_subs(path="trusted_subs.txt"):
     with open(path) as f:
         return [line.strip() for line in f if line.strip()]
 
-TRUSTED_SUBS = [s.lower() for s in load_trusted_subs()]
+# load and normalize all our “r/foo” strings to lowercase
+TRUSTED_SUBS    = [sub.lower() for sub in load_trusted_subs()]
 TRUSTED_SOURCES = {f"r/{sub}" for sub in TRUSTED_SUBS}
 
 # --- Google Sheets setup ---
@@ -238,12 +239,12 @@ def sync_bans_from_sub(sub):
             mod = getattr(log.mod, 'name', 'unknown')
             desc = (log.description or '').strip()
             source = f"r/{log.subreddit}".lower()
-            ts = datetime.utcfromtimestamp(log.created_utc)
 
             # debug drop if not in trusted
             if source not in TRUSTED_SOURCES:
-                    print(f"[DEBUG] SKIP {log_id}: source {source!r} not in TRUSTED_SOURCES {TRUSTED_SOURCES}")
-                    continue
+                print(f"[DEBUG] SKIP {log_id}: source {source!r} not in TRUSTED_SOURCES {TRUSTED_SOURCES}")
+                continue
+            ts     = datetime.utcfromtimestamp(log.created_utc)
 
             # Simplified username resolution
             user = getattr(log, "target_author", None)
