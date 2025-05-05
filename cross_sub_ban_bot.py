@@ -288,47 +288,47 @@ def sync_bans_from_sub(sub):
 # --- Ban Enforcer ---
 def enforce_bans_on_sub(sub):
     print(f"[STEP] Enforcing bans/unbans in r/{sub}")
-    # Keep track if any action IS taken by the queue later
     action_was_taken_by_queue = False
-    global ban_counter, unban_counter # Make sure counters are accessible if you use them
+    global ban_counter, unban_counter
 
     try:
         sr = reddit.subreddit(sub)
-        # You might want to increase this limit again if needed, or handle pagination
-        FETCH_LIMIT=100
+        FETCH_LIMIT = 100
         print(f"[INFO] Fetching the latest {FETCH_LIMIT} bans for r/{sub}...")
         bans = {b.name.lower(): b for b in sr.banned(limit=FETCH_LIMIT)}
         print(f"[INFO] Fetched {len(bans)} bans.")
-    # --- ADD BETTER ERROR HANDLING HERE TOO ---
-    except prawcore.exceptions.TooManyRequests as e:
-         print(f"[WARN] Hit rate limit fetching ban list for r/{sub}. Skipping enforcement for this sub.")
-         return # Skip this sub if we can't even get the list
+    except prawcore.exceptions.TooManyRequests:
+        print(f"[WARN] Hit rate limit fetching ban list for r/{sub}. Skipping enforcement for this sub.")
+        return
     except Exception as e:
         print(f"[ERROR] Cannot fetch ban list for r/{sub} ({type(e).__name__}): {e}")
         import traceback
         traceback.print_exc()
-        return # Skip this sub
+        return
 
-    all_rows = SHEET_CACHE 
+    all_rows = SHEET_CACHE
     now = datetime.utcnow()
+    cutoff = now - timedelta(days=1)
 
-    # --- STEP 1: Initialize the action queue ---
     actions_to_take = []
 
-    # Delete old deleted users (This part is fine)
-    # ... (your existing code for deleting old users) ...
-
-    # --- STEP 2: Populate the queue instead of acting immediately ---
     print(f"[INFO] Checking {len(all_rows)} sheet entries against r/{sub} ban list...")
     for r in all_rows:
-        user = r.get('Username','')
-        src = r.get('SourceSub','')
-        if not user or not src:
+        user = r.get('Username', '')
+        src = r.get('SourceSub', '')
+        ts_str = r.get('Timestamp', '')
+        if not user or not src or not ts_str:
             continue
+        try:
+            entry_time = datetime.strptime(ts_str, '%Y-%m-%d %H:%M:%S')
+        except:
+            continue
+        if entry_time < cutoff:
+            continue  # Skip old rows
+
         ul = user.lower()
-        deleted_marker = str(r.get('ForgiveTimestamp','')).strip()
+        deleted_marker = str(r.get('ForgiveTimestamp', '')).strip()
         if deleted_marker:
-            # print(f"[SKIP] {user} already marked deleted in sheet") # Maybe reduce logging noise
             continue
 
         # --- Check for UNBAN actions ---
@@ -342,79 +342,61 @@ def enforce_bans_on_sub(sub):
             unban_reason = "Per-sub exemption override"
 
         if should_unban:
-            # Check if actually banned with the specific reason before queueing unban
-            if ul in bans and CROSS_SUB_BAN_REASON.lower() in (getattr(bans.get(ul),'note','') or '').lower():
-                 actions_to_take.append(('unban', user, src, unban_reason))
-            continue # Move to next user
+            if ul in bans and CROSS_SUB_BAN_REASON.lower() in (getattr(bans.get(ul), 'note', '') or '').lower():
+                actions_to_take.append(('unban', user, src, unban_reason))
+            continue
 
         # --- Check for BAN actions ---
-        # Skip if globally exempt or a mod in the target sub
         if ul in EXEMPT_USERS or is_mod(sr, user):
             continue
 
-        # Check if already banned in this sub with correct reason
         if ul in bans:
             existing_note = getattr(bans[ul], 'note', '') or ''
             if CROSS_SUB_BAN_REASON.lower() in existing_note.lower():
                 print(f"[SKIP] u/{user} already banned in r/{sub} with correct reason.")
-                continue  # Already banned correctly, skip
+                continue
 
-        # If we reach here, user should be banned and isn't yet
-        actions_to_take.append(('ban', user, src, "")) # Add ban action
+        actions_to_take.append(('ban', user, src, ""))
 
-    # --- STEP 3: Process the queue AFTER checking all rows ---
-    # <<< PASTE THE QUEUE PROCESSING BLOCK HERE >>>
     print(f"[INFO] Processing {len(actions_to_take)} queued actions for r/{sub}...")
-    for action_details in actions_to_take:
-        # Unpack based on what you stored (add unban_reason if needed)
-        action_type, username, source_sub, reason_note = action_details
+    for action_type, username, source_sub, reason_note in actions_to_take:
         try:
             if action_type == 'unban':
                 sr.banned.remove(username)
                 print(f"[UNBANNED] (Queued) u/{username} in r/{sub} ({reason_note})")
                 log_public_action("UNBANNED", username, sub, source_sub, "Bot (Queued)", reason_note)
-                unban_counter += 1 # Increment counter on success
+                unban_counter += 1
                 action_was_taken_by_queue = True
             elif action_type == 'ban':
-                # Check USER_DOESNT_EXIST before banning if possible/needed, or handle exception
                 sr.banned.add(username, ban_reason=CROSS_SUB_BAN_REASON, note=f"Cross-sub ban from {source_sub}")
                 print(f"[BANNED] (Queued) u/{username} in r/{sub} from {source_sub}")
                 log_public_action("BANNED", username, sub, source_sub, "Bot (Queued)", "")
-                ban_counter += 1 # Increment counter on success
+                ban_counter += 1
                 action_was_taken_by_queue = True
-
-            # !!! CRITICAL DELAY BETWEEN EACH ACTION !!!
-            time.sleep(2) # Start with 2 seconds, increase if needed
-
+            time.sleep(2)
         except prawcore.exceptions.TooManyRequests:
             print(f"[WARN] Hit rate limit during queued action for u/{username} in r/{sub}. Sleeping longer...")
-            time.sleep(30) # Sleep longer if hit during queue processing
-            # Consider re-queueing the action or just skipping for next run
+            time.sleep(30)
         except praw.exceptions.RedditAPIException as e:
             print(f"[ERROR] Queued action API Error for u/{username} in r/{sub}: {e}")
-            is_user_deleted = False
             for subexc in e.items:
-                 if subexc.error_type == 'USER_DOESNT_EXIST':
-                     is_user_deleted = True
-                     print(f"[INFO] Skipping action for non-existent user u/{username}.")
-                     break # Stop processing this specific action
-                 elif subexc.error_type == 'SUBREDDIT_BAN_NOT_PERMITTED':
-                     print(f"[WARN] Bot lacks permission to ban u/{username} in r/{sub}. Check permissions.")
-                     break
-                 elif subexc.error_type == 'USER_ALREADY_BANNED':
-                      print(f"[INFO] Skipping ban, u/{username} already banned in r/{sub}.")
-                      break
-            # Add handling for other specific API errors if needed
+                if subexc.error_type == 'USER_DOESNT_EXIST':
+                    print(f"[INFO] Skipping action for non-existent user u/{username}.")
+                    break
+                elif subexc.error_type == 'SUBREDDIT_BAN_NOT_PERMITTED':
+                    print(f"[WARN] Bot lacks permission to ban u/{username} in r/{sub}.")
+                    break
+                elif subexc.error_type == 'USER_ALREADY_BANNED':
+                    print(f"[INFO] Skipping ban, u/{username} already banned in r/{sub}.")
+                    break
         except Exception as e:
             print(f"[ERROR] Unexpected error during queued action for u/{username} in r/{sub} ({type(e).__name__}): {e}")
             import traceback
             traceback.print_exc()
-    # <<< END OF PASTED BLOCK >>>
 
-    # --- STEP 4: Check if any action was taken (optional logging) ---
     if not action_was_taken_by_queue:
         print(f"[INFO] No bans or unbans needed/performed via queue in r/{sub}.")
-
+        
 # --- End of function ---
 
 # --- Public Markdown Log Writer ---
