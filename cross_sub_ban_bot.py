@@ -239,20 +239,22 @@ def sync_bans_from_sub(sub):
 
             # Resolve username safely
             user = None
-            if hasattr(log, "target_author") and log.target_author:
-                user = getattr(log.target_author, 'name', None)
-            elif isinstance(log.target_body, str):
+            if getattr(log, "target_author", None) and getattr(log.target_author, "name", None):
+                user = log.target_author.name
+            elif isinstance(getattr(log, "target_body", None), str):
                 user = log.target_body.strip()
-
-            if not isinstance(user, str) or not user.strip():
-                print(f"[WARN] Skipping log {log_id} - No target user found (user={user})")
-                continue
+            else:
+                user = "[unknown_user]"
 
             print(f"[DEBUG] Writing modlog dump for {sub} to {os.path.join(WORK_DIR, f'modlog_dump_{sub}.txt')}")
             with open(os.path.join(WORK_DIR, f"modlog_dump_{sub}.txt"), "a") as f:
                 f.write(f"{datetime.utcnow().isoformat()} | log_id={log_id} | user={user} | mod={mod} | desc={desc}\n")
 
             print(f"[DEBUG] log_id={log_id}, mod={mod}, target_author={user}, desc='{desc}'")
+
+            if user in [None, "None", "", "[deleted]", "[unknown_user]"]:
+                print(f"[WARN] Skipping log {log_id} - No valid target user found (user={user})")
+                continue
 
             if datetime.utcnow() - ts > timedelta(minutes=MAX_LOG_AGE_MINUTES):
                 continue
@@ -311,6 +313,7 @@ def sync_bans_from_sub(sub):
 
     except (prawcore.exceptions.Forbidden, prawcore.exceptions.NotFound):
         print(f"[WARN] Cannot access modlog for r/{sub}, skipping.")
+
         
 # --- Ban Enforcer ---
 def enforce_bans_on_sub(sub):
