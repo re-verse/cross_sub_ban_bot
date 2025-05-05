@@ -280,15 +280,6 @@ def sync_bans_from_sub(sub):
             if user.lower() in EXEMPT_USERS or is_mod(sr, user):
                 continue
 
-            # TEMPORARILY REMOVED: Username+SourceSub check for debugging
-            # if any(
-            #     r.get('Username', '').lower() == user.lower() and
-            #     r.get('SourceSub', '').lower() == source.lower()
-            #     for r in SHEET_CACHE
-            # ):
-            #     print(f"[SKIP] User {user} already logged in sheet for {source}. Skipping.")
-            #     continue
-
             if already_logged_action(log_id):
                 continue
 
@@ -308,6 +299,17 @@ def sync_bans_from_sub(sub):
                 print("[DEBUG] About to append row:", row_data)
                 sheet.append_row(row_data, value_input_option='USER_ENTERED')
                 print("[DEBUG] APPEND SUCCESS")
+            except Exception as e:
+                print(f"[ERROR] FAILED to log user '{user}' to sheet for r/{sub}")
+                print("[CRITICAL] Row data that caused failure:", row_data)
+                print(f"Error Type: {type(e).__name__}, Message: {e}")
+                traceback.print_exc()
+                raise
+            else:
+                print("[DEBUG] Append completed without triggering exception block")
+                print("[DEBUG] APPEND SUCCESS", flush=True)
+
+                
 
                 SHEET_CACHE.append({
                     'Username': user,
@@ -323,13 +325,6 @@ def sync_bans_from_sub(sub):
                 })
 
                 print(f"[LOGGED] {user} banned in {source} by {mod}")
-
-            except Exception as e:
-                print(f"[ERROR] FAILED to log user '{user}' to sheet for r/{sub}")
-                print("[CRITICAL] Row data that caused failure:", row_data)
-                print(f"Error Type: {type(e).__name__}, Message: {e}")
-                traceback.print_exc()
-                raise
 
     except (prawcore.exceptions.Forbidden, prawcore.exceptions.NotFound):
         print(f"[WARN] Cannot access modlog for r/{sub}, skipping.")
