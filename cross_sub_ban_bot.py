@@ -226,6 +226,7 @@ def apply_override(username, moderator, modsub):
     return True
 
 # --- Ban Sync ---
+
 def sync_bans_from_sub(sub):
     print(f"[STEP] Checking modlog for r/{sub}")
     try:
@@ -242,7 +243,6 @@ def sync_bans_from_sub(sub):
             # Resolve username safely
             user = None
 
-            # 🔍 Dump the raw log object to see what fields are available
             try:
                 print(f"[RAW] log object:\n{json.dumps(log.__dict__, default=str, indent=2)}")
             except Exception as e:
@@ -285,6 +285,7 @@ def sync_bans_from_sub(sub):
             if user.lower() in EXEMPT_USERS or is_mod(sr, user):
                 continue
 
+            # 💡 Inserted check: avoid duplicates by (username, source_sub)
             if any(
                 r.get('Username', '').lower() == user.lower() and
                 r.get('SourceSub', '').lower() == source.lower()
@@ -293,7 +294,9 @@ def sync_bans_from_sub(sub):
                 print(f"[SKIP] User {user} already logged in sheet for {source}. Skipping.")
                 continue
 
+            # 💡 Inserted check: skip if we've seen this modlog ID
             if already_logged_action(log_id):
+                print(f"[SKIP] Log ID {log_id} already processed. Skipping.")
                 continue
 
             try:
@@ -333,7 +336,7 @@ def sync_bans_from_sub(sub):
 
     except (prawcore.exceptions.Forbidden, prawcore.exceptions.NotFound):
         print(f"[WARN] Cannot access modlog for r/{sub}, skipping.")
-        
+
 # --- Ban Enforcer ---
 def enforce_bans_on_sub(sub):
     print(f"[STEP] Enforcing bans/unbans in r/{sub}")
