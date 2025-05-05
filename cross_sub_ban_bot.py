@@ -241,6 +241,7 @@ def sync_bans_from_sub(sub):
 
             # Resolve username safely
             user = None
+            print(f"[TRACE] target_author={repr(getattr(log, 'target_author', None))}, target_body={repr(getattr(log, 'target_body', None))}")
             if getattr(log, "target_author", None) and getattr(log.target_author, "name", None):
                 user = log.target_author.name
             elif isinstance(getattr(log, "target_body", None), str):
