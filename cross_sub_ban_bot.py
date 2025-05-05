@@ -1,4 +1,3 @@
-source = f"r/{log.subreddit}"
 #!/usr/bin/env python3
 
 WORK_DIR = "/home/runner/work/cross_sub_ban_bot/cross_sub_ban_bot"
