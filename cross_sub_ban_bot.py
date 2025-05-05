@@ -284,6 +284,11 @@ def sync_bans_from_sub(sub):
             if already_logged_action(log_id):
                 continue
 
+            # Skip if (user, source) combo is already in the sheet
+            if any(r.get('Username', '').lower() == user.lower() and r.get('SourceSub', '').lower() == source for r in SHEET_CACHE):
+                print(f"[SKIP] Already logged ({user}, {source}) to sheet")
+                continue
+                
             try:
                 row_data = [
                     user,
