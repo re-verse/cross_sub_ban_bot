@@ -46,7 +46,8 @@ def flush_public_markdown_log():
             f.write(f"Last updated: {datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')} UTC\n\n")
             f.write("---\n\n")
             for entry in entries:
-                f.write(f"### [{entry['timestamp']}] {'\u2705' if entry['action']=='UNBANNED' else '\u274C'} {entry['action']} u/{entry['username']}\n")
+                symbol = "✅" if entry['action'] == 'UNBANNED' else "❌"
+                f.write(f"### [{entry['timestamp']}] {symbol} {entry['action']} u/{entry['username']}\n")
                 f.write(f"- **Subreddit**: r/{entry['subreddit']}\n")
                 if entry.get('source_sub'):
                     f.write(f"- **Source Sub**: {entry['source_sub']}\n")
