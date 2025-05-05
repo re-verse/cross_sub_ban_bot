@@ -231,31 +231,31 @@ def sync_bans_from_sub(sub):
         load_sheet_cache()  # ensure fresh cache each run
         sr = reddit.subreddit(sub)
         for log in sr.mod.log(action='banuser', limit=30):
-            print(f"[DEBUG] Writing modlog dump for {sub} to {os.path.join(WORK_DIR, f'modlog_dump_{sub}.txt')}")
-            with open(os.path.join(WORK_DIR, f"modlog_dump_{sub}.txt"), "a") as f:
-                f.write(f"{datetime.utcnow().isoformat()} | log_id={log.id} | user={log.target_author} | mod={log.mod} | desc={log.description}\n")
-
-            desc = (log.description or '').strip()
             log_id = log.id
+            user = log.target_author or (log.target_body if isinstance(log.target_body, str) else None)
+            mod = getattr(log.mod, 'name', 'unknown')
+            desc = (log.description or '').strip()
             source = f"r/{log.subreddit}"
             ts = datetime.utcfromtimestamp(log.created_utc)
-            mod = getattr(log.mod, 'name', 'unknown')
 
-            print(f"[DEBUG] log_id={log_id}, mod={mod}, target_author={log.target_author}, desc='{desc}'")
+            print(f"[DEBUG] Writing modlog dump for {sub} to {os.path.join(WORK_DIR, f'modlog_dump_{sub}.txt')}")
+            with open(os.path.join(WORK_DIR, f"modlog_dump_{sub}.txt"), "a") as f:
+                f.write(f"{datetime.utcnow().isoformat()} | log_id={log_id} | user={user} | mod={mod} | desc={desc}\n")
+
+            print(f"[DEBUG] log_id={log_id}, mod={mod}, target_author={user}, desc='{desc}'")
+
+            if not user:
+                print(f"[WARN] Skipping log {log_id} - No target user found.")
+                continue
 
             if datetime.utcnow() - ts > timedelta(minutes=MAX_LOG_AGE_MINUTES):
                 continue
 
             if CROSS_SUB_BAN_REASON.lower() not in desc.lower():
-                print(f"[DEBUG] Skipping log {log.id} for {log.target_author}: Reason mismatch.")
+                print(f"[DEBUG] Skipping log {log_id} for {user}: Reason mismatch.")
                 continue
 
             if source not in TRUSTED_SOURCES:
-                continue
-
-            user = log.target_author or (log.target_body if isinstance(log.target_body, str) else None)
-            if not user:
-                print(f"[WARN] Skipping log {log_id} - No target user found.")
                 continue
 
             if user.lower() in EXEMPT_USERS or is_mod(sr, user):
@@ -269,7 +269,7 @@ def sync_bans_from_sub(sub):
                 continue
 
             try:
-                sheet.append_row([
+                row_data = [
                     user,
                     source,
                     CROSS_SUB_BAN_REASON,
@@ -280,22 +280,23 @@ def sync_bans_from_sub(sub):
                     '',  # ModSub
                     '',  # ForgiveTimestamp
                     ''   # ExemptSubs
-                ], value_input_option='USER_ENTERED')
+                ]
+                sheet.append_row(row_data, value_input_option='USER_ENTERED')
+
+                SHEET_CACHE.append({
+                    'Username': user,
+                    'SourceSub': source,
+                    'Reason': CROSS_SUB_BAN_REASON,
+                    'Timestamp': ts.strftime('%Y-%m-%d %H:%M:%S'),
+                    'ManualOverride': '',
+                    'ModLogID': log_id,
+                    'Mod': mod,
+                    'ModSub': '',
+                    'ForgiveTimestamp': '',
+                    'ExemptSubs': ''
+                })
 
                 print(f"[LOGGED] {user} banned in {source} by {mod}")
-
-                # Validate it actually got written
-                new_sheet = sheet.get_all_records()
-                if not any(r.get('Username', '').lower() == user.lower() for r in new_sheet):
-                    print(f"[FATAL] User {user} not found in sheet after append. Retrying...")
-                    sheet.append_row([
-                        user,
-                        source,
-                        CROSS_SUB_BAN_REASON,
-                        ts.strftime('%Y-%m-%d %H:%M:%S'),
-                        '', log_id, mod, '', '', ''
-                    ], value_input_option='USER_ENTERED')
-                    print(f"[RECOVERY] Successfully re-logged user {user}.")
 
             except Exception as e:
                 print(f"[ERROR] FAILED to log user '{user}' to sheet for r/{sub}")
@@ -304,6 +305,7 @@ def sync_bans_from_sub(sub):
 
     except (prawcore.exceptions.Forbidden, prawcore.exceptions.NotFound):
         print(f"[WARN] Cannot access modlog for r/{sub}, skipping.")
+
 
 # --- Ban Enforcer ---
 def enforce_bans_on_sub(sub):
