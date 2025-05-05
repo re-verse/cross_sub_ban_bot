@@ -270,7 +270,7 @@ def sync_bans_from_sub(sub):
                 continue
 
             if CROSS_SUB_BAN_REASON.lower() not in desc.lower():
-                print(f"[DEBUG] Skipping log {log_id} for {user}: Exact reason mismatch ('{desc}')")
+                print(f"[WARN] Skipping log {log_id} for {user}: Description doesn't contain expected reason ('{desc}')")
                 continue
 
             if source not in TRUSTED_SOURCES:
