@@ -38,43 +38,6 @@ mod_cache = {}
 SHEET_CACHE = []
 
 # --- Helper Functions ---
-def exempt_subs_for_user(user):
-    for r in SHEET_CACHE:
-        if r.get('Username','').lower() == user.lower():
-            field = str(r.get('ExemptSubs','')).lower()
-            if field:
-                return {sub.strip() for sub in field.split(',') if sub.strip()}
-    return set()
-
-def is_forgiven(user):
-    for r in SHEET_CACHE:
-        if r.get('Username','').lower() == user.lower() and str(r.get('ManualOverride','')).lower() in ('yes','true'):
-            return True
-    return False
-
-def already_logged_action(log_id):
-    if not log_id:
-        return False
-    log_id = str(log_id).strip().lower()
-    for row in SHEET_CACHE:
-        if str(row.get('ModLogID', '')).strip().lower() == log_id:
-            return True
-    return False
-
-
-def get_recent_sheet_entries(source_sub):
-    cutoff = datetime.utcnow() - timedelta(days=1)
-    count = 0
-    for r in SHEET_CACHE:
-        if r.get('SourceSub') == source_sub:
-            ts = r.get('Timestamp')
-            try:
-                t = datetime.strptime(ts, '%Y-%m-%d %H:%M:%S')
-                if t > cutoff:
-                    count += 1
-            except:
-                pass
-    return count
 
 def load_sheet_cache():
     global SHEET_CACHE
@@ -142,7 +105,7 @@ def sync_bans_from_sub(sub):
             if user.lower() in EXEMPT_USERS or is_mod(sr, user):
                 continue
 
-            if already_logged_action(log_id):
+            if already_logged_action(log_id, SHEET_CACHE):
                 continue
 
             # Skip if (user, source) combo is already in the sheet
@@ -250,10 +213,10 @@ def enforce_bans_on_sub(sub):
         # --- Check for UNBAN actions ---
         should_unban = False
         unban_reason = ""
-        if is_forgiven(user):
+        if is_forgiven(user, SHEET_CACHE):
             should_unban = True
             unban_reason = "Forgiven override"
-        elif sub.lower() in exempt_subs_for_user(user):
+        elif sub.lower() in exempt_subs_for_user(user, SHEET_CACHE):
             should_unban = True
             unban_reason = "Per-sub exemption override"
 
