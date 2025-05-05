@@ -285,13 +285,13 @@ def sync_bans_from_sub(sub):
             if user.lower() in EXEMPT_USERS or is_mod(sr, user):
                 continue
 
-			if any(
-				r.get('Username', '').lower() == user.lower() and
-				r.get('SourceSub', '').lower() == source.lower()
-				for r in SHEET_CACHE
-			):
-				print(f"[SKIP] User {user} already logged in sheet from {source}. Skipping.")
-				continue
+		if any(
+			r.get('Username', '').lower() == user.lower() and
+			r.get('SourceSub', '').lower() == source.lower()
+			for r in SHEET_CACHE
+		):
+			print(f"[SKIP] User {user} already logged in sheet from {source}. Skipping.")
+			continue
 
 
             if already_logged_action(log_id):
