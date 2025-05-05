@@ -241,6 +241,13 @@ def sync_bans_from_sub(sub):
 
             # Resolve username safely
             user = None
+
+            # 🔍 Dump the raw log object to see what fields are available
+            try:
+                print(f"[RAW] log object:\n{json.dumps(log.__dict__, default=str, indent=2)}")
+            except Exception as e:
+                print(f"[ERROR] Could not dump log.__dict__: {e}")
+            
             print(f"[TRACE] target_author={repr(getattr(log, 'target_author', None))}, target_body={repr(getattr(log, 'target_body', None))}")
             if getattr(log, "target_author", None) and getattr(log.target_author, "name", None):
                 user = log.target_author.name
