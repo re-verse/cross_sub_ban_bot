@@ -233,7 +233,7 @@ def sync_bans_from_sub(sub):
         load_sheet_cache()  # ensure fresh cache each run
         sr = reddit.subreddit(sub)
 
-        for log in sr.mod.log(action='banuser', limit=30):
+        for log in sr.mod.log(action='banuser', limit=100):
             log_id = log.id
             mod = getattr(log.mod, 'name', 'unknown')
             desc = (log.description or '').strip()
