@@ -356,6 +356,7 @@ def enforce_bans_on_sub(sub):
     cutoff = now - timedelta(days=1)
 
     actions_to_take = []
+    seen = set()
 
     print(f"[INFO] Checking {len(all_rows)} sheet entries against r/{sub} ban list...")
     for r in all_rows:
@@ -370,6 +371,11 @@ def enforce_bans_on_sub(sub):
             continue
         if entry_time < cutoff:
             continue  # Skip old rows
+
+        key = (user.lower(), src.lower())
+        if key in seen:
+            continue
+        seen.add(key)
 
         ul = user.lower()
         deleted_marker = str(r.get('ForgiveTimestamp', '')).strip()
