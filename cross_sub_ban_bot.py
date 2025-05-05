@@ -234,6 +234,12 @@ def sync_bans_from_sub(sub):
         sr = reddit.subreddit(sub)
 
         for log in sr.mod.log(action='banuser', limit=100):
+            print(f"[DEBUG] MODLOG ENTRY FOR {sub}:")
+            print(f"  log.id = {log.id}")
+            print(f"  log.mod = {log.mod} (type: {type(log.mod)})")
+            print(f"  getattr(log.mod, 'name', None) = {getattr(log.mod, 'name', None)}")
+            print(f"  log.target_author = {getattr(log, 'target_author', None)}")
+            print(f"  log.description = {getattr(log, 'description', None)}")
             log_id = log.id
             mod = getattr(log.mod, 'name', 'unknown')
             desc = (log.description or '').strip()
