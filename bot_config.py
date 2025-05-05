@@ -5,6 +5,10 @@ import gspread
 import praw
 from oauth2client.service_account import ServiceAccountCredentials
 
+WORK_DIR = "/home/runner/work/cross_sub_ban_bot/cross_sub_ban_bot"
+PUBLIC_LOG_JSON = f"{WORK_DIR}/public_ban_log.json"
+PUBLIC_LOG_MD = f"{WORK_DIR}/public_ban_log.md"
+
 # --- Load config.json ---
 with open("config.json") as f:
     config = json.load(f)
