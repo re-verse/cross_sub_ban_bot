@@ -221,6 +221,7 @@ def apply_override(username, moderator, modsub):
 def sync_bans_from_sub(sub):
     print(f"[STEP] Checking modlog for r/{sub}")
     try:
+        load_sheet_cache()  # ensure fresh cache each run
         sr = reddit.subreddit(sub)
         for log in sr.mod.log(action='banuser', limit=30):
             print(f"[DEBUG] Writing modlog dump for {sub} to {os.path.join(WORK_DIR, f'modlog_dump_{sub}.txt')}")
@@ -253,12 +254,10 @@ def sync_bans_from_sub(sub):
             if user.lower() in EXEMPT_USERS or is_mod(sr, user):
                 continue
 
-            # 🔥 Fixed: Skip if user already in the sheet
             if any(r.get('Username', '').lower() == user.lower() for r in SHEET_CACHE):
                 print(f"[SKIP] User {user} already logged in sheet. Skipping.")
                 continue
 
-            # Optional: Keep this too, in case re-runs ever happen with same log ID
             if already_logged_action(log_id):
                 continue
 
@@ -277,6 +276,20 @@ def sync_bans_from_sub(sub):
                 ], value_input_option='USER_ENTERED')
 
                 print(f"[LOGGED] {user} banned in {source} by {mod}")
+
+                # Validate it actually got written
+                new_sheet = sheet.get_all_records()
+                if not any(r.get('Username', '').lower() == user.lower() for r in new_sheet):
+                    print(f"[FATAL] User {user} not found in sheet after append. Retrying...")
+                    sheet.append_row([
+                        user,
+                        source,
+                        CROSS_SUB_BAN_REASON,
+                        ts.strftime('%Y-%m-%d %H:%M:%S'),
+                        '', log_id, mod, '', '', ''
+                    ], value_input_option='USER_ENTERED')
+                    print(f"[RECOVERY] Successfully re-logged user {user}.")
+
             except Exception as e:
                 print(f"[ERROR] FAILED to log user '{user}' to sheet for r/{sub}")
                 print(f"Error Type: {type(e).__name__}, Message: {e}")
