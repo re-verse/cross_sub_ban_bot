@@ -12,9 +12,10 @@ import re
 from oauth2client.service_account import ServiceAccountCredentials
 from datetime import datetime, timedelta
 
-from bot_config import PUBLIC_LOG_JSON, PUBLIC_LOG_MD
-
 from bot_config import (
+    WORK_DIR,
+    PUBLIC_LOG_JSON,
+    PUBLIC_LOG_MD,
     CROSS_SUB_BAN_REASON,
     EXEMPT_USERS,
     DAILY_BAN_LIMIT,
