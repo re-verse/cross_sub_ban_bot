@@ -1,7 +1,5 @@
 #!/usr/bin/env python3
 
-WORK_DIR = "/home/runner/work/cross_sub_ban_bot/cross_sub_ban_bot"
-
 import json
 import base64
 import os
@@ -14,9 +12,7 @@ import re
 from oauth2client.service_account import ServiceAccountCredentials
 from datetime import datetime, timedelta
 
-# --- Counters ---
-ban_counter = 0
-unban_counter = 0
+from bot_config import PUBLIC_LOG_JSON, PUBLIC_LOG_MD
 
 from bot_config import (
     CROSS_SUB_BAN_REASON,
