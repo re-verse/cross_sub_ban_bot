@@ -38,15 +38,6 @@ mod_cache = {}
 SHEET_CACHE = []
 
 # --- Helper Functions ---
-def is_mod(subreddit, user):
-    sub = subreddit.display_name.lower()
-    if sub not in mod_cache:
-        try:
-            mod_cache[sub] = {m.name.lower() for m in subreddit.moderator()}
-        except Exception:
-            mod_cache[sub] = set()
-    return user.lower() in mod_cache[sub]
-
 def exempt_subs_for_user(user):
     for r in SHEET_CACHE:
         if r.get('Username','').lower() == user.lower():
