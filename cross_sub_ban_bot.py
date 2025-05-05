@@ -1,3 +1,4 @@
+source = f"r/{log.subreddit}"
 #!/usr/bin/env python3
 
 WORK_DIR = "/home/runner/work/cross_sub_ban_bot/cross_sub_ban_bot"
@@ -236,8 +237,13 @@ def sync_bans_from_sub(sub):
             log_id = log.id
             mod = getattr(log.mod, 'name', 'unknown')
             desc = (log.description or '').strip()
-            source = f"r/{log.subreddit}"
+            source = f"r/{log.subreddit}".lower()
             ts = datetime.utcfromtimestamp(log.created_utc)
+
+            # debug drop if not in trusted
+            if source not in TRUSTED_SOURCES:
+                    print(f"[DEBUG] SKIP {log_id}: source {source!r} not in TRUSTED_SOURCES {TRUSTED_SOURCES}")
+                    continue
 
             # Simplified username resolution
             user = getattr(log, "target_author", None)
