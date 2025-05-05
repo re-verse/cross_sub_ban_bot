@@ -26,6 +26,7 @@ from bot_config import (
     sheet,
     client,
     reddit
+    sheet_key
 )
 
 # --- Caches ---
