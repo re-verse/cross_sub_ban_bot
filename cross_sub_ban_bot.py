@@ -402,8 +402,6 @@ def enforce_bans_on_sub(sub):
     if not action_was_taken_by_queue:
         print(f"[INFO] No bans or unbans needed/performed via queue in r/{sub}.")
         
-# --- End of function ---
-
 # --- Public Markdown Log Writer ---
 def flush_public_markdown_log():
     try:
