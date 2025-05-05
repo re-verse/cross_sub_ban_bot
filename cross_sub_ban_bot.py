@@ -230,7 +230,6 @@ def apply_override(username, moderator, modsub):
 def sync_bans_from_sub(sub):
     print(f"[STEP] Checking modlog for r/{sub}")
     try:
-        load_sheet_cache()  # ensure fresh cache each run
         sr = reddit.subreddit(sub)
 
         for log in sr.mod.log(action='banuser', limit=100):
@@ -240,26 +239,9 @@ def sync_bans_from_sub(sub):
             source = f"r/{log.subreddit}"
             ts = datetime.utcfromtimestamp(log.created_utc)
 
-            # Resolve username safely
-            user = None
-
-            try:
-                print(f"[RAW] log object:\n{json.dumps(log.__dict__, default=str, indent=2)}")
-            except Exception as e:
-                print(f"[ERROR] Could not dump log.__dict__: {e}")
-            
-            print(f"[TRACE] target_author={repr(getattr(log, 'target_author', None))}, target_body={repr(getattr(log, 'target_body', None))}")
-
-            if isinstance(getattr(log, "target_author", None), str):
-                user = log.target_author
-            elif isinstance(getattr(log, "target_body", None), str):
-                match = re.search(r'u/([A-Za-z0-9_-]{3,20})', log.target_body)
-                if match:
-                    user = match.group(1)
-                elif re.fullmatch(r'[A-Za-z0-9_-]{3,20}', log.target_body.strip()):
-                    user = log.target_body.strip()
-
-            if not isinstance(user, str) or user.strip() in ["", "None", "[deleted]"]:
+            # Simplified username resolution
+            user = getattr(log, "target_author", None)
+            if not isinstance(user, str) or not user.strip():
                 user = "[unknown_user]"
 
             print(f"[DEBUG] Writing modlog dump for {sub} to {os.path.join(WORK_DIR, f'modlog_dump_{sub}.txt')}")
@@ -285,18 +267,16 @@ def sync_bans_from_sub(sub):
             if user.lower() in EXEMPT_USERS or is_mod(sr, user):
                 continue
 
-            # 💡 Inserted check: avoid duplicates by (username, source_sub)
-            if any(
-                r.get('Username', '').lower() == user.lower() and
-                r.get('SourceSub', '').lower() == source.lower()
-                for r in SHEET_CACHE
-            ):
-                print(f"[SKIP] User {user} already logged in sheet for {source}. Skipping.")
-                continue
+            # TEMPORARILY REMOVED: Username+SourceSub check for debugging
+            # if any(
+            #     r.get('Username', '').lower() == user.lower() and
+            #     r.get('SourceSub', '').lower() == source.lower()
+            #     for r in SHEET_CACHE
+            # ):
+            #     print(f"[SKIP] User {user} already logged in sheet for {source}. Skipping.")
+            #     continue
 
-            # 💡 Inserted check: skip if we've seen this modlog ID
             if already_logged_action(log_id):
-                print(f"[SKIP] Log ID {log_id} already processed. Skipping.")
                 continue
 
             try:
