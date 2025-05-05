@@ -52,7 +52,7 @@ def setup_google_sheet():
 
     sheet = client.open_by_key(sheet_key).sheet1
     print(f"[INFO] Google Sheet '{sheet_key}' opened, worksheet '{sheet.title}' loaded.")
-    return sheet, client
+    return sheet, client, sheet_key
 
 # --- Reddit API setup ---
 def setup_reddit():
