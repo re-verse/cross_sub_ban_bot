@@ -292,6 +292,7 @@ def sync_bans_from_sub(sub):
                     '',  # ForgiveTimestamp
                     ''   # ExemptSubs
                 ]
+                print("[DEBUG] About to append row:", row_data)
                 sheet.append_row(row_data, value_input_option='USER_ENTERED')
 
                 SHEET_CACHE.append({
@@ -311,6 +312,8 @@ def sync_bans_from_sub(sub):
 
             except Exception as e:
                 print(f"[ERROR] FAILED to log user '{user}' to sheet for r/{sub}")
+                print("[CRITICAL] Row data that caused failure:", row_data)
+                raise
                 print(f"Error Type: {type(e).__name__}, Message: {e}")
                 traceback.print_exc()
 
