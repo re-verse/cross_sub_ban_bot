@@ -10,6 +10,7 @@ import praw
 import prawcore
 import gspread
 import traceback
+import re
 from oauth2client.service_account import ServiceAccountCredentials
 from datetime import datetime, timedelta
 
@@ -230,6 +231,7 @@ def sync_bans_from_sub(sub):
     try:
         load_sheet_cache()  # ensure fresh cache each run
         sr = reddit.subreddit(sub)
+
         for log in sr.mod.log(action='banuser', limit=30):
             log_id = log.id
             mod = getattr(log.mod, 'name', 'unknown')
@@ -242,8 +244,12 @@ def sync_bans_from_sub(sub):
             if getattr(log, "target_author", None) and getattr(log.target_author, "name", None):
                 user = log.target_author.name
             elif isinstance(getattr(log, "target_body", None), str):
-                user = log.target_body.strip()
-            else:
+                match = re.search(r'u/([A-Za-z0-9_-]{3,20})', log.target_body)
+                if match:
+                    user = match.group(1)
+                elif re.fullmatch(r'[A-Za-z0-9_-]{3,20}', log.target_body.strip()):
+                    user = log.target_body.strip()
+            if not isinstance(user, str) or user.strip() in ["", "None", "[deleted]"]:
                 user = "[unknown_user]"
 
             print(f"[DEBUG] Writing modlog dump for {sub} to {os.path.join(WORK_DIR, f'modlog_dump_{sub}.txt')}")
@@ -252,7 +258,7 @@ def sync_bans_from_sub(sub):
 
             print(f"[DEBUG] log_id={log_id}, mod={mod}, target_author={user}, desc='{desc}'")
 
-            if user in [None, "None", "", "[deleted]", "[unknown_user]"]:
+            if user in ["[unknown_user]"]:
                 print(f"[WARN] Skipping log {log_id} - No valid target user found (user={user})")
                 continue
 
@@ -313,7 +319,6 @@ def sync_bans_from_sub(sub):
 
     except (prawcore.exceptions.Forbidden, prawcore.exceptions.NotFound):
         print(f"[WARN] Cannot access modlog for r/{sub}, skipping.")
-
         
 # --- Ban Enforcer ---
 def enforce_bans_on_sub(sub):
