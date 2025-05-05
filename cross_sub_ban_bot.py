@@ -25,7 +25,7 @@ from bot_config import (
     TRUSTED_SOURCES,
     sheet,
     client,
-    reddit
+    reddit,
     sheet_key
 )
 
