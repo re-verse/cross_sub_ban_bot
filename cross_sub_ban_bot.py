@@ -225,8 +225,7 @@ def apply_override(username, moderator, modsub):
     sheet.append_row([username,'manual','',now,'yes','',moderator,modsub,''])
     return True
 
-# --- Ban Sync ---
-def sync_bans_from_sub(sub):
+# --- Ban Sync ---def sync_bans_from_sub(sub):
     print(f"[STEP] Checking modlog for r/{sub}")
     try:
         load_sheet_cache()  # ensure fresh cache each run
@@ -249,14 +248,16 @@ def sync_bans_from_sub(sub):
                 print(f"[ERROR] Could not dump log.__dict__: {e}")
             
             print(f"[TRACE] target_author={repr(getattr(log, 'target_author', None))}, target_body={repr(getattr(log, 'target_body', None))}")
-            if getattr(log, "target_author", None) and getattr(log.target_author, "name", None):
-                user = log.target_author.name
+
+            if isinstance(getattr(log, "target_author", None), str):
+                user = log.target_author
             elif isinstance(getattr(log, "target_body", None), str):
                 match = re.search(r'u/([A-Za-z0-9_-]{3,20})', log.target_body)
                 if match:
                     user = match.group(1)
                 elif re.fullmatch(r'[A-Za-z0-9_-]{3,20}', log.target_body.strip()):
                     user = log.target_body.strip()
+
             if not isinstance(user, str) or user.strip() in ["", "None", "[deleted]"]:
                 user = "[unknown_user]"
 
