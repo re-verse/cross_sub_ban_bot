@@ -259,7 +259,7 @@ def sync_bans_from_sub(sub):
 
             print(f"[DEBUG] log_id={log_id}, mod={mod}, target_author={user}, desc='{desc}'")
 
-            if user in ["[unknown_user]"]:
+            if user == "[unknown_user]":
                 print(f"[WARN] Skipping log {log_id} - No valid target user found (user={user})")
                 continue
 
