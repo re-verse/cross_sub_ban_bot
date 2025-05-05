@@ -348,9 +348,16 @@ def enforce_bans_on_sub(sub):
             continue # Move to next user
 
         # --- Check for BAN actions ---
-        # Skip if already banned OR globally exempt OR a mod in the target sub
-        if ul in bans or ul in EXEMPT_USERS or is_mod(sr, user):
+        # Skip if globally exempt or a mod in the target sub
+        if ul in EXEMPT_USERS or is_mod(sr, user):
             continue
+
+        # Check if already banned in this sub with correct reason
+        if ul in bans:
+            existing_note = getattr(bans[ul], 'note', '') or ''
+            if CROSS_SUB_BAN_REASON.lower() in existing_note.lower():
+                print(f"[SKIP] u/{user} already banned in r/{sub} with correct reason.")
+                continue  # Already banned correctly, skip
 
         # If we reach here, user should be banned and isn't yet
         actions_to_take.append(('ban', user, src, "")) # Add ban action
