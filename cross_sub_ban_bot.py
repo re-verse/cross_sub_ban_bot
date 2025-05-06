@@ -132,7 +132,7 @@ def sync_bans_from_sub(sub):
                 traceback.print_exc()
                 raise
             else:
-                seen_user_sources.add(key)  # <- track it so we don't double-write in same session
+                seen_user_sources.add(user_lc)  # <- track it so we don't double-write in same session
                 print("[DEBUG] Append completed without triggering exception block")
                 print("[DEBUG] APPEND SUCCESS", flush=True)
 
