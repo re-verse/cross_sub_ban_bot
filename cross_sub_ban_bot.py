@@ -14,7 +14,6 @@ from datetime import datetime, timedelta
 from core_utils import (
     is_mod,
     is_forgiven,
-    already_logged_action,
     exempt_subs_for_user,
 )
 from log_utils import log_public_action, flush_public_markdown_log
