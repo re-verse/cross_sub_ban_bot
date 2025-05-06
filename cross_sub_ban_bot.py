@@ -140,12 +140,12 @@ def sync_bans_from_sub(sub):
                     ''   # ExemptSubs
                 ]
                 print("[DEBUG] About to append row:", row_data)
-                sheet.append_row(row_data, value_input_option='USER_ENTERED')
-                print("[DEBUG] APPEND SUCCESS")
 
                 if user.lower() == "anon883083":
                     print(f"[!!! TEST CASE] Writing anon883083 to sheet: {row_data}")
 
+                sheet.append_row(row_data, value_input_option='USER_ENTERED')
+                print("[DEBUG] APPEND SUCCESS")
             except Exception as e:
                 print(f"[ERROR] FAILED to log user '{user}' to sheet for r/{sub}")
                 print("[CRITICAL] Row data that caused failure:", row_data)
