@@ -1,7 +1,7 @@
 from datetime import datetime
+import time
 from bot_config import sheet, reddit, TRUSTED_SUBS
-
-from core_utils import is_mod  # make sure this exists in a new utils file
+from core_utils import is_mod  # ensure this exists
 
 def check_modmail():
     print("[STEP] Checking for pardon and exemption messages...")
@@ -34,7 +34,8 @@ def check_modmail():
                                 convo.reply(body=f"✅ u/{user} has been exempted from bans in r/{sub}.")
         except Exception as e:
             print(f"[WARN] Could not check modmail for r/{sub}: {e}")
-            
+        time.sleep(2)  # Throttle to avoid hitting 429
+
 def apply_override(username, moderator, modsub):
     records = sheet.get_all_records()
     for i, r in enumerate(records, start=2):
