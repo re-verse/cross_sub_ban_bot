@@ -56,8 +56,12 @@ def load_sheet_cache():
 
 # --- Ban Sync ---
 
+# --- Ban Sync ---
+
 def sync_bans_from_sub(sub):
     print(f"[STEP] Checking modlog for r/{sub}")
+    seen_user_sources = set()
+
     try:
         sr = reddit.subreddit(sub)
 
@@ -66,22 +70,11 @@ def sync_bans_from_sub(sub):
             mod = getattr(log.mod, 'name', 'unknown')
             desc = (log.description or '').strip()
             source = f"r/{log.subreddit}".lower()
+            ts = datetime.utcfromtimestamp(log.created_utc)
 
-            # debug drop if not in trusted
-            if source not in TRUSTED_SOURCES:
-                print(f"[DEBUG] SKIP {log_id}: source {source!r} not in TRUSTED_SOURCES {TRUSTED_SOURCES}")
-                print(f"[DEBUG] log_id={log_id}, mod={mod}, target_author={user}, desc='{desc}'")
-                continue
-            ts     = datetime.utcfromtimestamp(log.created_utc)
-
-            # Simplified username resolution
             user = getattr(log, "target_author", None)
             if not isinstance(user, str) or not user.strip():
                 user = "[unknown_user]"
-
-            print(f"[DEBUG] Writing modlog dump for {sub} to {os.path.join(WORK_DIR, f'modlog_dump_{sub}.txt')}")
-            with open(os.path.join(WORK_DIR, f"modlog_dump_{sub}.txt"), "a") as f:
-                f.write(f"{datetime.utcnow().isoformat()} | log_id={log_id} | user={user} | mod={mod} | desc={desc}\n")
 
             print(f"[DEBUG] log_id={log_id}, mod={mod}, target_author={user}, desc='{desc}'")
 
@@ -106,26 +99,16 @@ def sync_bans_from_sub(sub):
             if user.lower() in EXEMPT_USERS or is_mod(sr, user):
                 continue
 
-            if already_logged_action(log_id, SHEET_CACHE):
-                continue
-
-            if user.lower() == "anon883083":
-                print(f"[!!! TEST CASE] anon883083 passed all checks, not already logged")
-
-            # Skip if (user, source) combo is already in the sheet
-
-            if user.lower() == 'anon883083':            
-                print(f"[DEBUG] Checking sheet for existing 'anon883083' entries from {source}")
-                for r in SHEET_CACHE:
-                    uname = r.get('Username', '').lower()
-                    ssub = r.get('SourceSub', '').lower()
-                    if uname == 'anon883083':
-                        print(f"  -> MATCH CHECK: ({uname}, {ssub}) == ({user.lower()}, {source}) | FULL ROW: {r}")
-
-            if any(r.get('Username', '').lower() == user.lower() and r.get('SourceSub', '').lower() == source for r in SHEET_CACHE):
+            # New deduping logic by (user, source)
+            key = (user.lower(), source)
+            if key in seen_user_sources or any(
+                r.get('Username', '').lower() == user.lower() and r.get('SourceSub', '').lower() == source
+                for r in SHEET_CACHE
+            ):
                 print(f"[SKIP] Already logged ({user}, {source}) to sheet")
                 continue
-                
+            # -- end new deduping logic --
+
             try:
                 row_data = [
                     user,
@@ -153,10 +136,9 @@ def sync_bans_from_sub(sub):
                 traceback.print_exc()
                 raise
             else:
+                seen_user_sources.add(key)  # <- track it so we don't double-write in same session
                 print("[DEBUG] Append completed without triggering exception block")
                 print("[DEBUG] APPEND SUCCESS", flush=True)
-
-                
 
                 SHEET_CACHE.append({
                     'Username': user,
