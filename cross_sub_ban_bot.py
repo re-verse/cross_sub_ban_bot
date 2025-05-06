@@ -293,6 +293,7 @@ if __name__ == '__main__':
     
     print("[INFO] Starting ban sync phase...")
     for s in TRUSTED_SUBS:
+        load_sheet_cache()
         sync_bans_from_sub(s)
         # --- DELAY 1 ---
         print(f"[INFO] Pausing briefly after checking r/{s} modlog...")
