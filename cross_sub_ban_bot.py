@@ -276,9 +276,13 @@ import time
 
 if __name__ == '__main__':
     print("=== Running Cross-Sub Ban Bot ===")
-    
+
+    print("[INFO] Loading sheet cache...")
     load_sheet_cache()
+    print("[INFO] Sheet cache loaded.")
+    print("[INFO] Checking modmail threads...")
     check_modmail() # Modmail check already loops internally
+    print("[INFO] Modmail check complete.")
     
     print("[INFO] Starting ban sync phase...")
     for s in TRUSTED_SUBS:
