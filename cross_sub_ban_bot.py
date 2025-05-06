@@ -115,6 +115,15 @@ def sync_bans_from_sub(sub):
                 continue
 
             # Skip if (user, source) combo is already in the sheet
+
+            if user.lower() == 'anon883083':
+                print("[DEBUG] Checking sheet for existing 'anon883083' entries from", source)
+                for r in SHEET_CACHE:
+                    uname = r.get('Username', '').lower()
+                    ssub = r.get('SourceSub', '').lower()
+                    if uname == 'anon883083':
+                        print(f"  -> MATCH CHECK: ({uname}, {ssub}) == ({user.lower()}, {source})")
+
             if any(r.get('Username', '').lower() == user.lower() and r.get('SourceSub', '').lower() == source for r in SHEET_CACHE):
                 print(f"[SKIP] Already logged ({user}, {source}) to sheet")
                 continue
@@ -311,8 +320,6 @@ if __name__ == '__main__':
     
     flush_public_markdown_log()
     
-    print(f"=== Summary ===")
-    print("================")
     print("=== Bot run complete ===")
     
     write_stats_sheet(SHEET_CACHE, client, sheet_key)
