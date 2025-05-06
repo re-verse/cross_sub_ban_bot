@@ -18,7 +18,7 @@ with open("config.json") as f:
 CROSS_SUB_BAN_REASON   = config.get("CROSS_SUB_BAN_REASON", "Auto XSub Pact Ban")
 EXEMPT_USERS           = set(u.lower() for u in config.get("EXEMPT_USERS", []))
 DAILY_BAN_LIMIT        = config.get("DAILY_BAN_LIMIT", 50)
-MAX_LOG_AGE_MINUTES    = config.get("MAX_LOG_AGE_MINUTES", 45)
+MAX_LOG_AGE_MINUTES    = config.get("MAX_LOG_AGE_MINUTES", 600)
 ROW_RETENTION_DAYS     = config.get("ROW_RETENTION_DAYS", 10)
 
 # --- Load trusted subs from file ---
