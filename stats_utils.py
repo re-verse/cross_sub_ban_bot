@@ -37,26 +37,27 @@ def write_stats_sheet(sheet_cache, client, sheet_key):
             user_counts.setdefault(actor, 0)
             user_counts[actor] += 1
 
+    # Clear and start from the top
     stats_sheet.clear()
-    stats_sheet.update(values=[["\ud83d\udcc5 Daily Ban Count"]], range_name="A1")
-    row = 2
+    values = []
+
+    # 📅 Daily Ban Count
+    values.append(["📅 Daily Ban Count"])
     for day in sorted(daily_counts.keys(), reverse=True):
         for sub, count in daily_counts[day].items():
-            stats_sheet.update(range_name=f"A{row}", values=[[day, sub, count]])
-            row += 1
+            values.append([day, sub, count])
 
-    row += 1
-    stats_sheet.update(range_name=f"A{row}", values=[["\ud83d\udcc8 Weekly Bans Per Subreddit"]])
-    row += 1
+    # 📈 Weekly Bans Per Subreddit
+    values.append([])
+    values.append(["📈 Weekly Bans Per Subreddit"])
     for sub, count in sorted(weekly_counts.items(), key=lambda x: -x[1]):
-        stats_sheet.update(range_name=f"A{row}", values=[[sub, count]])
-        row += 1
+        values.append([sub, count])
 
-    row += 1
-    stats_sheet.update(range_name=f"A{row}", values=[["\ud83c\udfc6 Top Banning Moderators"]])
-    row += 1
+    # 🏆 Top Banning Moderators
+    values.append([])
+    values.append(["🏆 Top Banning Moderators"])
     for mod, count in sorted(user_counts.items(), key=lambda x: -x[1]):
-        stats_sheet.update(range_name=f"A{row}", values=[[mod, count]])
-        row += 1
+        values.append([mod, count])
 
+    stats_sheet.update("A1", values)
     print("[INFO] Stats written to 'Stats' worksheet.")
