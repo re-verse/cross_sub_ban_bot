@@ -16,7 +16,8 @@ def write_stats_sheet(sheet_cache, client, sheet_key):
     for row in sheet_cache:
         ts_str = row.get("Timestamp", "")
         src = row.get("SourceSub", "unknown")
-        actor = row.get("Mod", "unknown")
+        actor = row.get("OverriddenBy", "").strip()  # Use correct field
+
         try:
             ts = datetime.strptime(ts_str, "%Y-%m-%d %H:%M:%S")
         except:
@@ -24,7 +25,6 @@ def write_stats_sheet(sheet_cache, client, sheet_key):
 
         date_key = ts.date().isoformat()
         src = src.strip() or "unknown"
-        actor = actor.strip() or "unknown"
 
         daily_counts.setdefault(date_key, {}).setdefault(src, 0)
         daily_counts[date_key][src] += 1
@@ -33,7 +33,7 @@ def write_stats_sheet(sheet_cache, client, sheet_key):
             weekly_counts.setdefault(src, 0)
             weekly_counts[src] += 1
 
-        if actor.lower() not in ["", "unknown"]:
+        if actor:
             user_counts.setdefault(actor, 0)
             user_counts[actor] += 1
 
