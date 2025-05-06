@@ -242,12 +242,10 @@ def enforce_bans_on_sub(sub):
                 action_was_taken_by_queue = True
             elif action_type == 'ban':
                 ban_note = (
-                    f"Cross-sub ban originating from {source_sub}.\n\n"
-                    "This action is part of a mutual agreement among NHL team subreddits to combat cross-community trolling and hostility.\n\n"
-                    f"If you'd like to be unbanned across all participating subreddits, you must first reach out to the moderators of {source_sub} — "
-                    "the subreddit where the original ban occurred. Be respectful, acknowledge the behavior that led to the ban, and clearly state "
-                    "that you understand the rules and will follow them moving forward. They may choose to lift the original ban, which can trigger "
-                    "a full unban across the network."
+                    f"Cross-sub ban from {source_sub}. NHL subs share a pact to fight trolling. "
+                    f"To appeal, message mods of {source_sub}, admit what you did, and promise to follow rules. "
+                    f"If they forgive, a global unban will follow."
+
                 )
                 sr.banned.add(username, ban_reason=CROSS_SUB_BAN_REASON, note=ban_note)
                 print(f"[BANNED] (Queued) u/{username} in r/{sub} from {source_sub}")
