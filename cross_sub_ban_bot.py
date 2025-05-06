@@ -64,6 +64,7 @@ def sync_bans_from_sub(sub):
     try:
         sr = reddit.subreddit(sub)
 
+        print(f"[INFO] Scanning latest 200 ban logs for r/{sub}...")
         for log in sr.mod.log(action='banuser', limit=200):
             log_id = log.id
             mod = getattr(log.mod, 'name', 'unknown')
@@ -74,8 +75,6 @@ def sync_bans_from_sub(sub):
             user = getattr(log, "target_author", None)
             if not isinstance(user, str) or not user.strip():
                 user = "[unknown_user]"
-
-            print(f"[DEBUG] log_id={log_id}, mod={mod}, target_author={user}, desc='{desc}'")
 
             if user.lower() == "anon883083":
                 print(f"[!!! TEST CASE] Found anon883083 in modlog: log_id={log_id}, desc='{desc}', mod={mod}, source={source}")
@@ -283,6 +282,7 @@ if __name__ == '__main__':
     
     print("[INFO] Starting ban sync phase...")
     for s in TRUSTED_SUBS:
+        print(f"\n=== [SYNC] Processing r/{s} ===")
         load_sheet_cache()
         sync_bans_from_sub(s)
         # --- DELAY 1 ---
