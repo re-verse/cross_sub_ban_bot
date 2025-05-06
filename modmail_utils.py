@@ -6,9 +6,11 @@ from core_utils import is_mod  # make sure this exists in a new utils file
 def check_modmail():
     print("[STEP] Checking for pardon and exemption messages...")
     for sub in TRUSTED_SUBS:
+        print(f"[MODMAIL] Scanning modmail in r/{sub}")
         try:
             sr = reddit.subreddit(sub)
             for state in ("new", "mod"):
+                print(f"[MODMAIL] Fetching '{state}' conversations for r/{sub}")
                 for convo in sr.modmail.conversations(state=state):
                     if not convo.messages:
                         continue
@@ -19,21 +21,27 @@ def check_modmail():
                         continue
                     if not is_mod(sr, sender):
                         continue
+
+                    print(f"[MODMAIL] Last message from u/{sender}: '{body[:40]}...'")
+
                     if body.lower().startswith('/xsub pardon'):
                         parts = body.split()
                         if len(parts) >= 3:
                             user = parts[2].lstrip('u/').strip()
+                            print(f"[MODMAIL] Applying pardon override for u/{user} in r/{sub}")
                             apply_override(user, sender, sub)
                             convo.reply(body=f"✅ u/{user} has been forgiven and will not be banned.")
                     elif body.lower().startswith('/xsub exempt'):
                         parts = body.split()
                         if len(parts) >= 3:
                             user = parts[2].lstrip('u/').strip()
+                            print(f"[MODMAIL] Applying exemption override for u/{user} in r/{sub}")
                             if apply_exemption(user, sub):
                                 convo.reply(body=f"✅ u/{user} has been exempted from bans in r/{sub}.")
-        except Exception:
+        except Exception as e:
+            print(f"[WARN] Modmail check failed for r/{sub}: {e}")
             continue
-
+            
 def apply_override(username, moderator, modsub):
     records = sheet.get_all_records()
     for i, r in enumerate(records, start=2):
