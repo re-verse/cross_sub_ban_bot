@@ -85,6 +85,9 @@ def sync_bans_from_sub(sub):
 
             print(f"[DEBUG] log_id={log_id}, mod={mod}, target_author={user}, desc='{desc}'")
 
+            if user.lower() == "anon883083":
+                print(f"[!!! TEST CASE] Found anon883083 in modlog: log_id={log_id}, desc='{desc}', mod={mod}, source={source}")
+
             if user == "[unknown_user]":
                 print(f"[WARN] Skipping log {log_id} - No valid target user found (user={user})")
                 continue
@@ -105,6 +108,9 @@ def sync_bans_from_sub(sub):
 
             if already_logged_action(log_id, SHEET_CACHE):
                 continue
+
+            if user.lower() == "anon883083":
+                print(f"[!!! TEST CASE] anon883083 passed all checks, not already logged")
 
             # Skip if (user, source) combo is already in the sheet
 
@@ -136,6 +142,10 @@ def sync_bans_from_sub(sub):
                 print("[DEBUG] About to append row:", row_data)
                 sheet.append_row(row_data, value_input_option='USER_ENTERED')
                 print("[DEBUG] APPEND SUCCESS")
+
+                if user.lower() == "anon883083":
+                    print(f"[!!! TEST CASE] Writing anon883083 to sheet: {row_data}")
+
             except Exception as e:
                 print(f"[ERROR] FAILED to log user '{user}' to sheet for r/{sub}")
                 print("[CRITICAL] Row data that caused failure:", row_data)
