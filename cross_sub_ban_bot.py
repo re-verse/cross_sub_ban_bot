@@ -50,8 +50,6 @@ def load_sheet_cache():
     try:
         SHEET_CACHE = sheet.get_all_records()
         print(f"[INFO] Loaded {len(SHEET_CACHE)} rows into local cache.")
-        for row in SHEET_CACHE:
-            print("[DEBUG] CACHE ROW:", row)
     except Exception as e:
         print(f"[ERROR] Failed to load sheet cache: {e}")
         SHEET_CACHE = []
