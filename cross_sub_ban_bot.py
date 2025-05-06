@@ -55,8 +55,6 @@ def load_sheet_cache():
 
 # --- Ban Sync ---
 
-# --- Ban Sync ---
-
 def sync_bans_from_sub(sub):
     print(f"[STEP] Checking modlog for r/{sub}")
     seen_user_sources = set()
