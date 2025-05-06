@@ -75,9 +75,6 @@ def sync_bans_from_sub(sub):
             if not isinstance(user, str) or not user.strip():
                 user = "[unknown_user]"
 
-            if user.lower() == "anon883083":
-                print(f"[!!! TEST CASE] Found anon883083 in modlog: log_id={log_id}, desc='{desc}', mod={mod}, source={source}")
-
             if user == "[unknown_user]":
                 print(f"[WARN] Skipping log {log_id} - No valid target user found (user={user})")
                 continue
@@ -120,9 +117,6 @@ def sync_bans_from_sub(sub):
                     ''   # ExemptSubs
                 ]
                 print("[DEBUG] About to append row:", row_data)
-
-                if user.lower() == "anon883083":
-                    print(f"[!!! TEST CASE] Writing anon883083 to sheet: {row_data}")
 
                 sheet.append_row(row_data, value_input_option='USER_ENTERED')
                 print("[DEBUG] APPEND SUCCESS")
