@@ -20,18 +20,25 @@ def check_modmail():
                         continue
                     if not is_mod(sr, sender):
                         continue
-                    if body.lower().startswith('/xsub pardon'):
-                        parts = body.split()
-                        if len(parts) >= 3:
-                            user = parts[2].lstrip('u/').strip()
+
+                    body_l = body.lower()
+                    parts = body_l.split()
+                    if body_l.startswith('/xsub pardon') and len(parts) >= 3:
+                        user = parts[2].lstrip('u/').strip()
+                        # Verify user was banned in this sub
+                        records = sheet.get_all_records()
+                        matched = next((r for r in records if r.get('Username', '').lower() == user.lower()), None)
+                        if matched and matched.get('SourceSub', '').lower() == sub.lower():
                             apply_override(user, sender, sub)
                             convo.reply(body=f"✅ u/{user} has been forgiven and will not be banned.")
-                    elif body.lower().startswith('/xsub exempt'):
-                        parts = body.split()
-                        if len(parts) >= 3:
-                            user = parts[2].lstrip('u/').strip()
-                            if apply_exemption(user, sub):
-                                convo.reply(body=f"✅ u/{user} has been exempted from bans in r/{sub}.")
+                        else:
+                            print(f"[WARN] Mod u/{sender} tried to pardon u/{user}, but ban was not from r/{sub}")
+                            convo.reply(f"⚠️ Can't pardon u/{user} — they were not banned in r/{sub}.")
+
+                    elif body_l.startswith('/xsub exempt') and len(parts) >= 3:
+                        user = parts[2].lstrip('u/').strip()
+                        if apply_exemption(user, sub):
+                            convo.reply(body=f"✅ u/{user} has been exempted from bans in r/{sub}.")
         except Exception as e:
             print(f"[WARN] Could not check modmail for r/{sub}: {e}")
         time.sleep(2)  # Throttle to avoid hitting 429
