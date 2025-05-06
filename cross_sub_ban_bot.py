@@ -93,7 +93,7 @@ def sync_bans_from_sub(sub):
             if datetime.utcnow() - ts > timedelta(minutes=MAX_LOG_AGE_MINUTES):
                 continue
 
-            if CROSS_SUB_BAN_REASON.lower() not in desc.lower():
+            if CROSS_SUB_BAN_REASON.lower() not in desc.lower() and desc.strip() != "Auto XSub Pact Ban":
                 print(f"[WARN] Skipping log {log_id} for {user}: Description doesn't contain expected reason ('{desc}')")
                 continue
 
