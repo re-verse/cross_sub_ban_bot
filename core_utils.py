@@ -14,15 +14,6 @@ def is_forgiven(user, sheet_cache):
             return True
     return False
 
-def already_logged_action(log_id, sheet_cache):
-    if not log_id:
-        return False
-    log_id = str(log_id).strip().lower()
-    for row in sheet_cache:
-        if str(row.get('ModLogID', '')).strip().lower() == log_id:
-            return True
-    return False
-
 def exempt_subs_for_user(user, sheet_cache):
     for r in sheet_cache:
         if r.get('Username','').lower() == user.lower():
