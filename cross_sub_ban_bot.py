@@ -95,15 +95,15 @@ def sync_bans_from_sub(sub):
             if user.lower() in EXEMPT_USERS or is_mod(sr, user):
                 continue
 
-            # New deduping logic by (user, source)
-            key = (user.lower(), source)
-            if key in seen_user_sources or any(
-                r.get('Username', '').lower() == user.lower() and r.get('SourceSub', '').lower() == source
+            # New deduping logic by user only
+            user_lc = user.strip().lower()
+            if user_lc in seen_user_sources or any(
+                r.get('Username', '').strip().lower() == user_lc
                 for r in SHEET_CACHE
             ):
-                print(f"[SKIP] Already logged ({user}, {source}) to sheet")
+                print(f"[SKIP] Already logged user {user_lc} to sheet (from any sub)")
                 continue
-            # -- end new deduping logic --
+            seen_user_sources.add(user_lc)
 
             try:
                 row_data = [
