@@ -2,7 +2,7 @@ name: Run Cross-Sub Ban Bot
 
 on:
   schedule:
-    - cron: "*/10 * * * *"
+    - cron: "*/20 * * * *"  # every 10 min
   workflow_dispatch:
 
 jobs:
@@ -23,7 +23,7 @@ jobs:
 
       - name: Debug Reddit secrets
         run: |
-          echo "CLIENT_ID Length: ${#CLIENT_ID}"
+          echo "CLIENT_ID Length: ${#CLIENT_ID}" # Show length instead of value for security
           echo "USERNAME: $USERNAME"
         env:
           CLIENT_ID: ${{ secrets.REDDIT_CLIENT_ID }}
@@ -44,9 +44,11 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add public_ban_log.md public_ban_log.json
-          if git diff --cached --quiet; then
-            echo "No changes to commit."
-          else
-            git commit -m "Update public ban log $(date -u +'%Y-%m-%d %H:%M:%S UTC')"
-            git push || echo "Nothing to push"
-          fi
+          git diff --cached --quiet || git commit -m "Update public ban log"
+          git push || echo "Push failed (may indicate no changes were committed or other Git error)"
+
+      - name: Upload modlog dumps
+        uses: actions/upload-artifact@v4
+        with:
+          name: modlog_dumps
+          path: modlog_dump_*.txt
