@@ -117,7 +117,7 @@ def sync_bans_from_sub(sub):
             # Skip if (user, source) combo is already in the sheet
 
             if user.lower() == 'anon883083':
-                print("[DEBUG] Checking sheet for existing 'anon883083' entries from", source)
+                print(f"  -> MATCH CHECK: ({uname}, {ssub}) == ({user.lower()}, {source}) | FULL ROW: {r}")
                 for r in SHEET_CACHE:
                     uname = r.get('Username', '').lower()
                     ssub = r.get('SourceSub', '').lower()
