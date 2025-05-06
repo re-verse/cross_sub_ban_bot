@@ -33,8 +33,9 @@ def write_stats_sheet(sheet_cache, client, sheet_key):
             weekly_counts.setdefault(src, 0)
             weekly_counts[src] += 1
 
-        user_counts.setdefault(actor, 0)
-        user_counts[actor] += 1
+        if actor.lower() not in ["", "unknown"]:
+            user_counts.setdefault(actor, 0)
+            user_counts[actor] += 1
 
     stats_sheet.clear()
     stats_sheet.update(values=[["\ud83d\udcc5 Daily Ban Count"]], range_name="A1")
