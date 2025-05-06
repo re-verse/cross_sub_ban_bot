@@ -63,12 +63,6 @@ def sync_bans_from_sub(sub):
 
         for log in sr.mod.log(action='banuser', limit=200):
             print(f"[TRACE] log_id={log.id}, action={log.action}, user={getattr(log, 'target_author', None)}")
-            print(f"[DEBUG] MODLOG ENTRY FOR {sub}:")
-            print(f"  log.id = {log.id}")
-            print(f"  log.mod = {log.mod} (type: {type(log.mod)})")
-            print(f"  getattr(log.mod, 'name', None) = {getattr(log.mod, 'name', None)}")
-            print(f"  log.target_author = {getattr(log, 'target_author', None)}")
-            print(f"  log.description = {getattr(log, 'description', None)}")
             log_id = log.id
             mod = getattr(log.mod, 'name', 'unknown')
             desc = (log.description or '').strip()
@@ -77,6 +71,7 @@ def sync_bans_from_sub(sub):
             # debug drop if not in trusted
             if source not in TRUSTED_SOURCES:
                 print(f"[DEBUG] SKIP {log_id}: source {source!r} not in TRUSTED_SOURCES {TRUSTED_SOURCES}")
+                print(f"[DEBUG] log_id={log_id}, mod={mod}, target_author={user}, desc='{desc}'")
                 continue
             ts     = datetime.utcfromtimestamp(log.created_utc)
 
