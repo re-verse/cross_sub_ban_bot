@@ -48,7 +48,9 @@ SHEET_CACHE = []
 def load_sheet_cache():
     global SHEET_CACHE
     try:
+        start = time.time()
         SHEET_CACHE = sheet.get_all_records()
+        print(f"[DEBUG] Sheet load took {time.time() - start:.2f}s")
         print(f"[INFO] Loaded {len(SHEET_CACHE)} rows into local cache.")
     except Exception as e:
         print(f"[ERROR] Failed to load sheet cache: {e}")
