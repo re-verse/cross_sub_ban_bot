@@ -131,8 +131,7 @@ def sync_bans_from_sub(sub):
                 print(f"Error Type: {type(e).__name__}, Message: {e}")
                 traceback.print_exc()
                 raise
-            else:
-                seen_user_sources.add(user_lc)  # <- track it so we don't double-write in same session
+            else:  
                 print("[DEBUG] Append completed without triggering exception block")
                 print("[DEBUG] APPEND SUCCESS", flush=True)
 
@@ -277,7 +276,6 @@ def enforce_bans_on_sub(sub):
         print(f"[INFO] No bans or unbans needed/performed via queue in r/{sub}.")
         
 # --- Main ---
-import time  
 
 if __name__ == '__main__':
     print("=== Running Cross-Sub Ban Bot ===")
