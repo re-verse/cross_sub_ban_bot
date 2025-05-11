@@ -51,3 +51,54 @@ def check_superuser_command():
 
     except Exception as e:
         print(f"[ERROR] In superuser command handler: {e}")
+
+def handle_status_command(username):
+    username_lc = username.lower()
+    subs_banned_in = []
+    last_action = None
+
+    # Find sheet row
+    sheet_rows = [
+        row for row in SHEET_CACHE
+        if row.get("Username", "").strip().lower() == username_lc
+    ]
+    if sheet_rows:
+        row = sheet_rows[0]
+        source_sub = row.get("SourceSub", "❓")
+        forgiven = bool(row.get("ForgiveTimestamp", "").strip())
+        exemptions = row.get("ExemptSubs", "").strip()
+    else:
+        source_sub = "No entry"
+        forgiven = False
+        exemptions = ""
+
+    # Live ban check
+    for sub in TRUSTED_SUBS:
+        try:
+            sr = reddit.subreddit(sub)
+            if username_lc in [b.name.lower() for b in sr.banned(limit=100)]:
+                subs_banned_in.append(sub)
+        except Exception:
+            continue
+
+    # Check last modlog entry
+    for sub in TRUSTED_SUBS:
+        try:
+            for log in reddit.subreddit(sub).mod.log(limit=50):
+                if getattr(log, "target_author", "").lower() == username_lc:
+                    last_action = f"{log.action} in r/{sub} by u/{log.mod} on {datetime.utcfromtimestamp(log.created_utc).strftime('%Y-%m-%d')}"
+                    break
+        except Exception:
+            continue
+        if last_action:
+            break
+
+    # Assemble message
+    lines = [f"Status report for u/{username}:"]
+    lines.append(f"🧾 Sheet Entry: {'Yes' if sheet_rows else 'No'} (origin: {source_sub})")
+    lines.append(f"⛔ Currently Banned In: {', '.join(subs_banned_in) or 'None'}")
+    lines.append(f"✅ Forgiven: {'Yes' if forgiven else 'No'}")
+    lines.append(f"✳️ Exempt in: {exemptions or 'None'}")
+    lines.append(f"🗑️ Last ModLog Action: {last_action or 'None found'}")
+
+    reddit.redditor("re-verse").message("User Status", "\n".join(lines))
