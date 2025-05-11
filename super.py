@@ -1,9 +1,9 @@
 from datetime import datetime
 import time
 from log_utils import log_public_action
-from bot_config import reddit, SHEET_CACHE, CROSS_SUB_BAN_REASON, TRUSTED_SUBS
 
 def check_superuser_command():
+    from bot_config import reddit, SHEET_CACHE, CROSS_SUB_BAN_REASON, TRUSTED_SUBS
     try:
         inbox = reddit.inbox.unread(limit=None)
         for item in inbox:
@@ -64,6 +64,7 @@ def check_superuser_command():
         print(f"[ERROR] In superuser command handler: {e}")
 
 def handle_status_command(username):
+    from bot_config import reddit, SHEET_CACHE, TRUSTED_SUBS
     username_lc = username.lower()
     subs_banned_in = []
     last_action = None
