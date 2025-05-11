@@ -1,3 +1,8 @@
+from datetime import datetime
+import time
+from log_utils import log_public_action
+from bot_config import reddit, SHEET_CACHE, CROSS_SUB_BAN_REASON, TRUSTED_SUBS
+
 def check_superuser_command():
     try:
         inbox = reddit.inbox.unread(limit=None)
@@ -15,7 +20,7 @@ def check_superuser_command():
             print(f"[SUPER] Received superuser command from u/{author}: {body}")
             tokens = body.split()
             if len(tokens) < 4:
-                print("[SUPER] Invalid format. Use: /xsub super <ban|unban> u/username [reason...]")
+                print("[SUPER] Invalid format. Use: /xsub super <ban|unban|status> u/username [reason...]")
                 item.mark_read()
                 continue
 
@@ -29,6 +34,12 @@ def check_superuser_command():
                 continue
 
             username = raw_user[2:]
+
+            if action == "status":
+                handle_status_command(username)
+                item.reply(f"✅ Status report for u/{username} sent via Reddit DM.")
+                item.mark_read()
+                continue
 
             for sub in TRUSTED_SUBS:
                 try:
