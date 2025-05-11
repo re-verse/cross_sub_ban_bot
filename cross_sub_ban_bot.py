@@ -65,41 +65,71 @@ def sync_bans_from_sub(sub):
     try:
         sr = reddit.subreddit(sub)
 
-        print(f"[INFO] Scanning latest 200 ban logs for r/{sub}...")
-        for log in sr.mod.log(action='banuser', limit=200):
+        print(f"[INFO] Scanning latest 200 mod actions for r/{sub}...")
+        for log in sr.mod.log(limit=200):  # includes both ban and unban actions
             log_id = log.id
             mod = getattr(log.mod, 'name', 'unknown')
+            action = log.action
             desc = (log.description or '').strip()
             source = f"r/{log.subreddit}".lower()
             ts = datetime.utcfromtimestamp(log.created_utc)
-
             user = getattr(log, "target_author", None)
+
             if not isinstance(user, str) or not user.strip():
                 user = "[unknown_user]"
 
             if user == "[unknown_user]":
-                print(f"[WARN] Skipping log {log_id} - No valid target user found (user={user})")
+                print(f"[WARN] Skipping log {log_id} - No valid target user found")
                 continue
 
             if datetime.utcnow() - ts > timedelta(minutes=MAX_LOG_AGE_MINUTES):
                 continue
 
-            if CROSS_SUB_BAN_REASON.lower() not in desc.lower() and desc.strip().lower() != "auto xsub pact ban":
-                print(f"[WARN] Skipping log {log_id} for {user}: Description doesn't contain expected reason ('{desc}')")
+            user_lc = user.strip().lower()
+
+            # --- Handle UNBAN actions as forgiveness ---
+            if action == "unbanuser":
+                match = [
+                    (i, row)
+                    for i, row in enumerate(SHEET_CACHE, start=2)
+                    if row.get("Username", "").strip().lower() == user_lc
+                    and row.get("SourceSub", "").strip().lower() == source
+                    and not row.get("ForgiveTimestamp", "").strip()
+                ]
+                if match:
+                    row_num, row = match[0]
+                    forgive_time = datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
+                    print(f"[FORGIVE] u/{user} unbanned in {source} by {mod} – marking as forgiven.")
+                    try:
+                        sheet.update_cell(row_num, 5, "yes")  # ManualOverride
+                        sheet.update_cell(row_num, 7, mod)    # OverriddenBy
+                        sheet.update_cell(row_num, 8, sub)    # ModSub
+                        sheet.update_cell(row_num, 9, forgive_time)  # ForgiveTimestamp
+                        SHEET_CACHE[row_num - 2]["ManualOverride"] = "yes"
+                        SHEET_CACHE[row_num - 2]["OverriddenBy"] = mod
+                        SHEET_CACHE[row_num - 2]["ModSub"] = sub
+                        SHEET_CACHE[row_num - 2]["ForgiveTimestamp"] = forgive_time
+                    except Exception as e:
+                        print(f"[ERROR] Failed to update forgiveness for u/{user}: {e}")
+                    continue
+
+            # --- Handle BAN actions ---
+            if action != "banuser":
+                continue
+
+            if CROSS_SUB_BAN_REASON.lower() not in desc.lower() and desc.lower() != "auto xsub pact ban":
+                print(f"[WARN] Skipping log {log_id} for {user}: Description doesn't match ('{desc}')")
                 continue
 
             if source not in TRUSTED_SOURCES:
                 print(f"[DEBUG] SKIP {log_id} for {user!r}: source {source!r} not trusted")
                 continue
 
-            if user.lower() in EXEMPT_USERS or is_mod(sr, user):
+            if user_lc in EXEMPT_USERS or is_mod(sr, user):
                 continue
 
-            # New deduping logic by user only
-            user_lc = user.strip().lower()
             if user_lc in seen_user_sources or any(
-                r.get('Username', '').strip().lower() == user_lc
-                for r in SHEET_CACHE
+                r.get('Username', '').strip().lower() == user_lc for r in SHEET_CACHE
             ):
                 print(f"[SKIP] Already logged user {user_lc} to sheet (from any sub)")
                 continue
@@ -119,33 +149,26 @@ def sync_bans_from_sub(sub):
                     ''   # ExemptSubs
                 ]
                 print("[DEBUG] About to append row:", row_data)
-
                 sheet.append_row(row_data, value_input_option='USER_ENTERED')
-                print("[DEBUG] APPEND SUCCESS")
             except Exception as e:
-                print(f"[ERROR] FAILED to log user '{user}' to sheet for r/{sub}")
-                print("[CRITICAL] Row data that caused failure:", row_data)
-                print(f"Error Type: {type(e).__name__}, Message: {e}")
+                print(f"[ERROR] FAILED to log user '{user}' to sheet for r/{sub}: {e}")
                 traceback.print_exc()
-                raise
-            else:  
-                print("[DEBUG] Append completed without triggering exception block")
-                print("[DEBUG] APPEND SUCCESS", flush=True)
+                continue
 
-                SHEET_CACHE.append({
-                    'Username': user,
-                    'SourceSub': source,
-                    'Reason': CROSS_SUB_BAN_REASON,
-                    'Timestamp': ts.strftime('%Y-%m-%d %H:%M:%S'),
-                    'ManualOverride': '',
-                    'ModLogID': log_id,
-                    'Mod': mod,
-                    'ModSub': '',
-                    'ForgiveTimestamp': '',
-                    'ExemptSubs': ''
-                })
+            SHEET_CACHE.append({
+                'Username': user,
+                'SourceSub': source,
+                'Reason': CROSS_SUB_BAN_REASON,
+                'Timestamp': ts.strftime('%Y-%m-%d %H:%M:%S'),
+                'ManualOverride': '',
+                'ModLogID': log_id,
+                'Mod': mod,
+                'ModSub': '',
+                'ForgiveTimestamp': '',
+                'ExemptSubs': ''
+            })
 
-                print(f"[LOGGED] {user} banned in {source} by {mod}")
+            print(f"[LOGGED] {user} banned in {source} by {mod}")
 
     except (prawcore.exceptions.Forbidden, prawcore.exceptions.NotFound):
         print(f"[WARN] Cannot access modlog for r/{sub}, skipping.")
