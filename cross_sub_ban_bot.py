@@ -57,7 +57,6 @@ def load_sheet_cache():
         SHEET_CACHE = []
 
 # --- Ban Sync ---
-
 def sync_bans_from_sub(sub):
     print(f"[STEP] Checking modlog for r/{sub}")
     seen_user_sources = set()
@@ -79,7 +78,7 @@ def sync_bans_from_sub(sub):
                 user = "[unknown_user]"
 
             if user == "[unknown_user]":
-                if log.action in ("banuser", "unbanuser"):
+                if action in ("banuser", "unbanuser"):
                     print(f"[WARN] Skipping log {log_id} - No valid target user found")
                 continue
 
@@ -88,30 +87,46 @@ def sync_bans_from_sub(sub):
 
             user_lc = user.strip().lower()
 
-            # --- Handle UNBAN actions as forgiveness ---
+            # --- Handle UNBAN actions ---
             if action == "unbanuser":
-                match = [
+                # Match by username
+                matches = [
                     (i, row)
                     for i, row in enumerate(SHEET_CACHE, start=2)
                     if row.get("Username", "").strip().lower() == user_lc
-                    and row.get("SourceSub", "").strip().lower() == source
                     and not row.get("ForgiveTimestamp", "").strip()
                 ]
-                if match:
-                    row_num, row = match[0]
+                if matches:
+                    row_num, row = matches[0]
                     forgive_time = datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
-                    print(f"[FORGIVE] u/{user} unbanned in {source} by {mod} – marking as forgiven.")
-                    try:
-                        sheet.update_cell(row_num, 5, "yes")  # ManualOverride
-                        sheet.update_cell(row_num, 7, mod)    # OverriddenBy
-                        sheet.update_cell(row_num, 8, sub)    # ModSub
-                        sheet.update_cell(row_num, 9, forgive_time)  # ForgiveTimestamp
-                        SHEET_CACHE[row_num - 2]["ManualOverride"] = "yes"
-                        SHEET_CACHE[row_num - 2]["OverriddenBy"] = mod
-                        SHEET_CACHE[row_num - 2]["ModSub"] = sub
-                        SHEET_CACHE[row_num - 2]["ForgiveTimestamp"] = forgive_time
-                    except Exception as e:
-                        print(f"[ERROR] Failed to update forgiveness for u/{user}: {e}")
+                    origin_sub = row.get("SourceSub", "").strip().lower()
+
+                    if origin_sub == source:
+                        # Mark as forgiven if unbanned by source sub
+                        print(f"[FORGIVE] u/{user} unbanned in {source} by {mod} – marking as forgiven.")
+                        try:
+                            sheet.update_cell(row_num, 5, "yes")
+                            sheet.update_cell(row_num, 7, mod)
+                            sheet.update_cell(row_num, 8, sub)
+                            sheet.update_cell(row_num, 9, forgive_time)
+                            SHEET_CACHE[row_num - 2]["ManualOverride"] = "yes"
+                            SHEET_CACHE[row_num - 2]["OverriddenBy"] = mod
+                            SHEET_CACHE[row_num - 2]["ModSub"] = sub
+                            SHEET_CACHE[row_num - 2]["ForgiveTimestamp"] = forgive_time
+                        except Exception as e:
+                            print(f"[ERROR] Failed to update forgiveness for u/{user}: {e}")
+                    else:
+                        # Otherwise treat it as an exemption
+                        print(f"[EXEMPT] u/{user} unbanned in r/{sub} (not origin sub {origin_sub}) – marking exemption.")
+                        try:
+                            current = str(row.get("ExemptSubs", "")).strip().lower()
+                            parts = {p.strip() for p in current.split(",") if p.strip()}
+                            parts.add(sub.lower())
+                            new_field = ', '.join(sorted(parts))
+                            sheet.update_cell(row_num, 10, new_field)
+                            SHEET_CACHE[row_num - 2]["ExemptSubs"] = new_field
+                        except Exception as e:
+                            print(f"[ERROR] Failed to update exemption for u/{user}: {e}")
                     continue
 
             # --- Handle BAN actions ---
@@ -173,6 +188,7 @@ def sync_bans_from_sub(sub):
 
     except (prawcore.exceptions.Forbidden, prawcore.exceptions.NotFound):
         print(f"[WARN] Cannot access modlog for r/{sub}, skipping.")
+
 
 # --- Ban Enforcer ---
 def enforce_bans_on_sub(sub):
