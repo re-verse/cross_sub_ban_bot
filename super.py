@@ -1,63 +1,53 @@
-#!/usr/bin/env python3
+def check_superuser_command():
+    try:
+        inbox = reddit.inbox.unread(limit=None)
+        for item in inbox:
+            if not hasattr(item, 'author') or item.author is None:
+                continue
+            author = str(item.author.name).lower()
+            if author != "re-verse":
+                continue  # only accept from you
 
-import sys
-import time
-from datetime import datetime
-from bot_config import reddit, TRUSTED_SUBS, CROSS_SUB_BAN_REASON
-from log_utils import log_public_action
+            body = item.body.strip()
+            if not body.lower().startswith("/xsub super"):
+                continue
 
-# --- AUTHORIZATION ---
-AUTHORIZED_USER = "re-verse"
+            print(f"[SUPER] Received superuser command from u/{author}: {body}")
+            tokens = body.split()
+            if len(tokens) < 4:
+                print("[SUPER] Invalid format. Use: /xsub super <ban|unban> u/username [reason...]")
+                item.mark_read()
+                continue
 
-def usage():
-    print("Usage: python3 super.py <ban|unban> u/username [reason]")
-    sys.exit(1)
+            action = tokens[2].lower()
+            raw_user = tokens[3]
+            reason = " ".join(tokens[4:]) if len(tokens) > 4 else "Superuser override"
 
-def main():
-    if len(sys.argv) < 3:
-        usage()
+            if not raw_user.startswith("u/"):
+                print("[SUPER] Username must start with 'u/'")
+                item.mark_read()
+                continue
 
-    action = sys.argv[1].lower()
-    raw_user = sys.argv[2]
-    reason = sys.argv[3] if len(sys.argv) > 3 else "Manual override"
+            username = raw_user[2:]
 
-    if not raw_user.startswith("u/"):
-        print("[ERROR] Username must start with 'u/'")
-        usage()
+            for sub in TRUSTED_SUBS:
+                try:
+                    sr = reddit.subreddit(sub)
+                    if action == "ban":
+                        note = f"Superuser manual ban. Reason: {reason}"
+                        sr.banned.add(username, ban_reason=CROSS_SUB_BAN_REASON, note=note)
+                        print(f"[BANNED] u/{username} in r/{sub} by superuser")
+                        log_public_action("BANNED", username, sub, "manual", f"re-verse (supermodmail)", reason)
+                    elif action == "unban":
+                        sr.banned.remove(username)
+                        print(f"[UNBANNED] u/{username} in r/{sub} by superuser")
+                        log_public_action("UNBANNED", username, sub, "manual", f"re-verse (supermodmail)", reason)
+                    time.sleep(2)
+                except Exception as e:
+                    print(f"[ERROR] Failed to {action} u/{username} in r/{sub}: {e}")
 
-    username = raw_user[2:]
+            item.reply(f"✅ Action complete: {action.upper()} u/{username} in all participating subs.")
+            item.mark_read()
 
-    print(f"== Superuser Action: {action.upper()} user u/{username} ==")
-    print(f"[INFO] Reason: {reason}")
-    print(f"[INFO] Acting on subs: {TRUSTED_SUBS}")
-    print("")
-
-    for sub in TRUSTED_SUBS:
-        try:
-            sr = reddit.subreddit(sub)
-            if action == "ban":
-                note = (
-                    f"Superuser manual ban. Reason: {reason}"
-                )
-                sr.banned.add(username, ban_reason=CROSS_SUB_BAN_REASON, note=note)
-                print(f"[BANNED] u/{username} in r/{sub}")
-                log_public_action("BANNED", username, sub, "manual", f"{AUTHORIZED_USER} (super.py)", reason)
-
-            elif action == "unban":
-                sr.banned.remove(username)
-                print(f"[UNBANNED] u/{username} in r/{sub}")
-                log_public_action("UNBANNED", username, sub, "manual", f"{AUTHORIZED_USER} (super.py)", reason)
-
-            else:
-                print(f"[ERROR] Unknown action '{action}'")
-                usage()
-
-            time.sleep(2)  # Respect Reddit API rate limits
-
-        except Exception as e:
-            print(f"[ERROR] Failed in r/{sub} for u/{username}: {type(e).__name__}: {e}")
-
-    print(f"== Superuser {action.upper()} complete for u/{username} ==")
-
-if __name__ == "__main__":
-    main()
+    except Exception as e:
+        print(f"[ERROR] In superuser command handler: {e}")
