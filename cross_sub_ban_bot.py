@@ -19,6 +19,7 @@ from core_utils import (
 )
 from log_utils import log_public_action, flush_public_markdown_log
 from modmail_utils import check_modmail, apply_override, apply_exemption
+from super import check_superuser_command
 from stats_utils import write_stats_sheet
 from bot_config import (
     WORK_DIR,
@@ -320,18 +321,21 @@ if __name__ == '__main__':
     print("[INFO] Loading sheet cache...")
     load_sheet_cache()
     print("[INFO] Sheet cache loaded.")
+    
     print("[INFO] Checking modmail threads...")
-    check_modmail() # Modmail check already loops internally
+    check_modmail()  # Modmail check already loops internally
     print("[INFO] Modmail check complete.")
     
+    print("[INFO] Checking for superuser modmail commands...")
+    check_superuser_command()  # <-- Indented properly
+
     print("[INFO] Starting ban sync phase...")
     for s in TRUSTED_SUBS:
         print(f"\n=== [SYNC] Processing r/{s} ===")
         load_sheet_cache()
         sync_bans_from_sub(s)
-        # --- DELAY 1 ---
         print(f"[INFO] Pausing briefly after checking r/{s} modlog...")
-        time.sleep(2)  # Pause for 2 seconds 
+        time.sleep(2) 
         
     print("[INFO] Sync phase complete. Pausing before enforcement phase...")
     time.sleep(15) 
