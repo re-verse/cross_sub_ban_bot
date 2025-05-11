@@ -79,7 +79,8 @@ def sync_bans_from_sub(sub):
                 user = "[unknown_user]"
 
             if user == "[unknown_user]":
-                print(f"[WARN] Skipping log {log_id} - No valid target user found")
+                if log.action in ("banuser", "unbanuser"):
+                    print(f"[WARN] Skipping log {log_id} - No valid target user found")
                 continue
 
             if datetime.utcnow() - ts > timedelta(minutes=MAX_LOG_AGE_MINUTES):
