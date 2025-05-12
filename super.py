@@ -37,7 +37,6 @@ def check_superuser_command():
             # Status command is open to any mod
             if action == "status":
                 handle_status_command(username)
-                item.reply(f"✅ Status report for u/{username} sent via Reddit DM.")
                 item.mark_read()
                 continue
 
