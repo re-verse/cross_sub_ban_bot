@@ -11,8 +11,6 @@ def check_superuser_command():
             if not hasattr(item, 'author') or item.author is None:
                 continue
             author = str(item.author.name).lower()
-            if author != "re-verse":
-                continue  # only accept from you
 
             body = item.body.strip()
             if not body.lower().startswith("/xsub super"):
@@ -36,9 +34,17 @@ def check_superuser_command():
 
             username = raw_user[2:]
 
+            # Status command is open to any mod
             if action == "status":
                 handle_status_command(username)
                 item.reply(f"✅ Status report for u/{username} sent via Reddit DM.")
+                item.mark_read()
+                continue
+
+            # All other super commands restricted to u/re-verse
+            if author != "re-verse":
+                print(f"[SUPER] Ignoring restricted action from non-owner u/{author}")
+                item.reply("❌ Only u/re-verse is allowed to run this command.")
                 item.mark_read()
                 continue
 
