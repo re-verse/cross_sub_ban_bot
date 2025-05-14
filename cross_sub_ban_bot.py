@@ -230,7 +230,7 @@ def enforce_bans_on_sub(sub):
         except:
             continue
         if entry_time < cutoff:
-            continue  # Skip old rows
+            continue
 
         key = (user.lower(), src.lower())
         if key in seen:
@@ -242,7 +242,6 @@ def enforce_bans_on_sub(sub):
         if deleted_marker:
             continue
 
-        # --- Check for UNBAN actions ---
         should_unban = False
         unban_reason = ""
         if is_forgiven(user, SHEET_CACHE):
@@ -257,7 +256,6 @@ def enforce_bans_on_sub(sub):
                 actions_to_take.append(('unban', user, src, unban_reason))
             continue
 
-        # --- Check for BAN actions ---
         if ul in EXEMPT_USERS or is_mod(sr, user):
             continue
 
@@ -277,17 +275,30 @@ def enforce_bans_on_sub(sub):
                 print(f"[UNBANNED] (Queued) u/{username} in r/{sub} ({reason_note})")
                 log_public_action("UNBANNED", username, sub, source_sub, "Bot (Queued)", reason_note)
                 action_was_taken_by_queue = True
+
             elif action_type == 'ban':
                 ban_note = (
                     f"Cross-sub ban from {source_sub}. NHL subs share a pact to fight trolling. "
                     f"To appeal, message mods of {source_sub}, admit what you did, and promise to follow rules. "
                     f"If they forgive, a global unban will follow."
-
                 )
                 sr.banned.add(username, ban_reason=CROSS_SUB_BAN_REASON, note=ban_note)
                 print(f"[BANNED] (Queued) u/{username} in r/{sub} from {source_sub}")
                 log_public_action("BANNED", username, sub, source_sub, "Bot (Queued)", "")
                 action_was_taken_by_queue = True
+
+                # Send DM to the user once per full enforcement cycle (avoid spamming per sub)
+                reddit.redditor(username).message(
+                    "You've been banned from NHL subreddits",
+                    (
+                        f"You were banned from {source_sub} for breaking subreddit rules. "
+                        f"Because of the NHL cross-sub ban pact, this ban now applies to all participating team subs.\n\n"
+                        f"If you think this was a mistake or want to appeal, message the mods of {source_sub}. "
+                        f"If they forgive the ban, it will be automatically removed across the network.\n\n"
+                        f"Don't message mods of other subs — they can’t help.\n\n"
+                        f"This message was sent automatically by the bot that enforces the pact."
+                    )
+                )
             time.sleep(2)
 
         except prawcore.exceptions.TooManyRequests:
@@ -312,7 +323,7 @@ def enforce_bans_on_sub(sub):
 
     if not action_was_taken_by_queue:
         print(f"[INFO] No bans or unbans needed/performed via queue in r/{sub}.")
-        
+
 # --- Main ---
 
 if __name__ == '__main__':
