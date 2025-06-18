@@ -281635,5 +281635,95 @@
     "source_sub": "r/floridapanthers",
     "actor": "Bot (Queued)",
     "note": ""
+  },
+  {
+    "timestamp": "2025-06-18 14:58:15",
+    "action": "BANNED",
+    "username": "Alt_Makin_Urns",
+    "subreddit": "habs",
+    "source_sub": "r/leafs",
+    "actor": "Bot (Queued)",
+    "note": ""
+  },
+  {
+    "timestamp": "2025-06-18 14:58:22",
+    "action": "BANNED",
+    "username": "Rleblanc9",
+    "subreddit": "leafs",
+    "source_sub": "r/floridapanthers",
+    "actor": "Bot (Queued)",
+    "note": ""
+  },
+  {
+    "timestamp": "2025-06-18 14:58:29",
+    "action": "BANNED",
+    "username": "Alt_Makin_Urns",
+    "subreddit": "floridapanthers",
+    "source_sub": "r/leafs",
+    "actor": "Bot (Queued)",
+    "note": ""
+  },
+  {
+    "timestamp": "2025-06-18 14:58:35",
+    "action": "BANNED",
+    "username": "Alt_Makin_Urns",
+    "subreddit": "winnipegjets",
+    "source_sub": "r/leafs",
+    "actor": "Bot (Queued)",
+    "note": ""
+  },
+  {
+    "timestamp": "2025-06-18 14:58:43",
+    "action": "BANNED",
+    "username": "Alt_Makin_Urns",
+    "subreddit": "caps",
+    "source_sub": "r/leafs",
+    "actor": "Bot (Queued)",
+    "note": ""
+  },
+  {
+    "timestamp": "2025-06-18 14:58:51",
+    "action": "BANNED",
+    "username": "Alt_Makin_Urns",
+    "subreddit": "goldenknights",
+    "source_sub": "r/leafs",
+    "actor": "Bot (Queued)",
+    "note": ""
+  },
+  {
+    "timestamp": "2025-06-18 14:58:57",
+    "action": "BANNED",
+    "username": "Rleblanc9",
+    "subreddit": "anaheimducks",
+    "source_sub": "r/floridapanthers",
+    "actor": "Bot (Queued)",
+    "note": ""
+  },
+  {
+    "timestamp": "2025-06-18 14:59:00",
+    "action": "BANNED",
+    "username": "Alt_Makin_Urns",
+    "subreddit": "anaheimducks",
+    "source_sub": "r/leafs",
+    "actor": "Bot (Queued)",
+    "note": ""
+  },
+  {
+    "timestamp": "2025-06-18 14:59:07",
+    "action": "BANNED",
+    "username": "Alt_Makin_Urns",
+    "subreddit": "ottawasenators",
+    "source_sub": "r/leafs",
+    "actor": "Bot (Queued)",
+    "note": ""
+  },
+  {
+    "timestamp": "2025-06-18 14:59:13",
+    "action": "BANNED",
+    "username": "Alt_Makin_Urns",
+    "subreddit": "xsubpacttest1",
+    "source_sub": "r/leafs",
+    "actor": "Bot (Queued)",
+    "note": ""
   }
 ]
