@@ -281833,5 +281833,23 @@
     "source_sub": "r/floridapanthers",
     "actor": "Bot (Queued)",
     "note": ""
+  },
+  {
+    "timestamp": "2025-06-18 17:40:25",
+    "action": "BANNED",
+    "username": "Rleblanc9",
+    "subreddit": "leafs",
+    "source_sub": "r/floridapanthers",
+    "actor": "Bot (Queued)",
+    "note": ""
+  },
+  {
+    "timestamp": "2025-06-18 17:40:51",
+    "action": "BANNED",
+    "username": "Rleblanc9",
+    "subreddit": "anaheimducks",
+    "source_sub": "r/floridapanthers",
+    "actor": "Bot (Queued)",
+    "note": ""
   }
 ]
