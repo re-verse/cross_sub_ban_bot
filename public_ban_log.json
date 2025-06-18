@@ -281095,5 +281095,77 @@
     "source_sub": "r/floridapanthers",
     "actor": "Bot (Queued)",
     "note": ""
+  },
+  {
+    "timestamp": "2025-06-18 05:38:16",
+    "action": "BANNED",
+    "username": "Rleblanc9",
+    "subreddit": "habs",
+    "source_sub": "r/floridapanthers",
+    "actor": "Bot (Queued)",
+    "note": ""
+  },
+  {
+    "timestamp": "2025-06-18 05:38:22",
+    "action": "BANNED",
+    "username": "Rleblanc9",
+    "subreddit": "leafs",
+    "source_sub": "r/floridapanthers",
+    "actor": "Bot (Queued)",
+    "note": ""
+  },
+  {
+    "timestamp": "2025-06-18 05:38:33",
+    "action": "BANNED",
+    "username": "Rleblanc9",
+    "subreddit": "winnipegjets",
+    "source_sub": "r/floridapanthers",
+    "actor": "Bot (Queued)",
+    "note": ""
+  },
+  {
+    "timestamp": "2025-06-18 05:38:39",
+    "action": "BANNED",
+    "username": "Rleblanc9",
+    "subreddit": "caps",
+    "source_sub": "r/floridapanthers",
+    "actor": "Bot (Queued)",
+    "note": ""
+  },
+  {
+    "timestamp": "2025-06-18 05:38:45",
+    "action": "BANNED",
+    "username": "Rleblanc9",
+    "subreddit": "goldenknights",
+    "source_sub": "r/floridapanthers",
+    "actor": "Bot (Queued)",
+    "note": ""
+  },
+  {
+    "timestamp": "2025-06-18 05:38:52",
+    "action": "BANNED",
+    "username": "Rleblanc9",
+    "subreddit": "anaheimducks",
+    "source_sub": "r/floridapanthers",
+    "actor": "Bot (Queued)",
+    "note": ""
+  },
+  {
+    "timestamp": "2025-06-18 05:38:58",
+    "action": "BANNED",
+    "username": "Rleblanc9",
+    "subreddit": "ottawasenators",
+    "source_sub": "r/floridapanthers",
+    "actor": "Bot (Queued)",
+    "note": ""
+  },
+  {
+    "timestamp": "2025-06-18 05:39:05",
+    "action": "BANNED",
+    "username": "Rleblanc9",
+    "subreddit": "xsubpacttest1",
+    "source_sub": "r/floridapanthers",
+    "actor": "Bot (Queued)",
+    "note": ""
   }
 ]
