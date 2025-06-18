@@ -281437,5 +281437,95 @@
     "source_sub": "r/floridapanthers",
     "actor": "Bot (Queued)",
     "note": ""
+  },
+  {
+    "timestamp": "2025-06-18 11:34:07",
+    "action": "BANNED",
+    "username": "Mother_Assumption448",
+    "subreddit": "habs",
+    "source_sub": "r/leafs",
+    "actor": "Bot (Queued)",
+    "note": ""
+  },
+  {
+    "timestamp": "2025-06-18 11:34:14",
+    "action": "BANNED",
+    "username": "Rleblanc9",
+    "subreddit": "leafs",
+    "source_sub": "r/floridapanthers",
+    "actor": "Bot (Queued)",
+    "note": ""
+  },
+  {
+    "timestamp": "2025-06-18 11:34:21",
+    "action": "BANNED",
+    "username": "Mother_Assumption448",
+    "subreddit": "floridapanthers",
+    "source_sub": "r/leafs",
+    "actor": "Bot (Queued)",
+    "note": ""
+  },
+  {
+    "timestamp": "2025-06-18 11:34:28",
+    "action": "BANNED",
+    "username": "Mother_Assumption448",
+    "subreddit": "winnipegjets",
+    "source_sub": "r/leafs",
+    "actor": "Bot (Queued)",
+    "note": ""
+  },
+  {
+    "timestamp": "2025-06-18 11:34:36",
+    "action": "BANNED",
+    "username": "Mother_Assumption448",
+    "subreddit": "caps",
+    "source_sub": "r/leafs",
+    "actor": "Bot (Queued)",
+    "note": ""
+  },
+  {
+    "timestamp": "2025-06-18 11:34:43",
+    "action": "BANNED",
+    "username": "Mother_Assumption448",
+    "subreddit": "goldenknights",
+    "source_sub": "r/leafs",
+    "actor": "Bot (Queued)",
+    "note": ""
+  },
+  {
+    "timestamp": "2025-06-18 11:34:50",
+    "action": "BANNED",
+    "username": "Rleblanc9",
+    "subreddit": "anaheimducks",
+    "source_sub": "r/floridapanthers",
+    "actor": "Bot (Queued)",
+    "note": ""
+  },
+  {
+    "timestamp": "2025-06-18 11:34:52",
+    "action": "BANNED",
+    "username": "Mother_Assumption448",
+    "subreddit": "anaheimducks",
+    "source_sub": "r/leafs",
+    "actor": "Bot (Queued)",
+    "note": ""
+  },
+  {
+    "timestamp": "2025-06-18 11:34:59",
+    "action": "BANNED",
+    "username": "Mother_Assumption448",
+    "subreddit": "ottawasenators",
+    "source_sub": "r/leafs",
+    "actor": "Bot (Queued)",
+    "note": ""
+  },
+  {
+    "timestamp": "2025-06-18 11:35:06",
+    "action": "BANNED",
+    "username": "Mother_Assumption448",
+    "subreddit": "xsubpacttest1",
+    "source_sub": "r/leafs",
+    "actor": "Bot (Queued)",
+    "note": ""
   }
 ]
