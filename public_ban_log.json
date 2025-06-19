@@ -282571,5 +282571,77 @@
     "source_sub": "r/floridapanthers",
     "actor": "Bot (Queued)",
     "note": ""
+  },
+  {
+    "timestamp": "2025-06-19 13:48:21",
+    "action": "BANNED",
+    "username": "Futur3P4st",
+    "subreddit": "habs",
+    "source_sub": "r/leafs",
+    "actor": "Bot (Queued)",
+    "note": ""
+  },
+  {
+    "timestamp": "2025-06-19 13:48:34",
+    "action": "BANNED",
+    "username": "Futur3P4st",
+    "subreddit": "floridapanthers",
+    "source_sub": "r/leafs",
+    "actor": "Bot (Queued)",
+    "note": ""
+  },
+  {
+    "timestamp": "2025-06-19 13:48:42",
+    "action": "BANNED",
+    "username": "Futur3P4st",
+    "subreddit": "winnipegjets",
+    "source_sub": "r/leafs",
+    "actor": "Bot (Queued)",
+    "note": ""
+  },
+  {
+    "timestamp": "2025-06-19 13:48:50",
+    "action": "BANNED",
+    "username": "Futur3P4st",
+    "subreddit": "caps",
+    "source_sub": "r/leafs",
+    "actor": "Bot (Queued)",
+    "note": ""
+  },
+  {
+    "timestamp": "2025-06-19 13:48:58",
+    "action": "BANNED",
+    "username": "Futur3P4st",
+    "subreddit": "goldenknights",
+    "source_sub": "r/leafs",
+    "actor": "Bot (Queued)",
+    "note": ""
+  },
+  {
+    "timestamp": "2025-06-19 13:49:06",
+    "action": "BANNED",
+    "username": "Futur3P4st",
+    "subreddit": "anaheimducks",
+    "source_sub": "r/leafs",
+    "actor": "Bot (Queued)",
+    "note": ""
+  },
+  {
+    "timestamp": "2025-06-19 13:49:13",
+    "action": "BANNED",
+    "username": "Futur3P4st",
+    "subreddit": "ottawasenators",
+    "source_sub": "r/leafs",
+    "actor": "Bot (Queued)",
+    "note": ""
+  },
+  {
+    "timestamp": "2025-06-19 13:49:20",
+    "action": "BANNED",
+    "username": "Futur3P4st",
+    "subreddit": "xsubpacttest1",
+    "source_sub": "r/leafs",
+    "actor": "Bot (Queued)",
+    "note": ""
   }
 ]
