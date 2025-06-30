@@ -282931,5 +282931,77 @@
     "source_sub": "r/floridapanthers",
     "actor": "Bot (Queued)",
     "note": ""
+  },
+  {
+    "timestamp": "2025-06-30 00:55:52",
+    "action": "BANNED",
+    "username": "Available_Summer_418",
+    "subreddit": "habs",
+    "source_sub": "r/goldenknights",
+    "actor": "Bot (Queued)",
+    "note": ""
+  },
+  {
+    "timestamp": "2025-06-30 00:55:59",
+    "action": "BANNED",
+    "username": "Available_Summer_418",
+    "subreddit": "leafs",
+    "source_sub": "r/goldenknights",
+    "actor": "Bot (Queued)",
+    "note": ""
+  },
+  {
+    "timestamp": "2025-06-30 00:56:06",
+    "action": "BANNED",
+    "username": "Available_Summer_418",
+    "subreddit": "floridapanthers",
+    "source_sub": "r/goldenknights",
+    "actor": "Bot (Queued)",
+    "note": ""
+  },
+  {
+    "timestamp": "2025-06-30 00:56:13",
+    "action": "BANNED",
+    "username": "Available_Summer_418",
+    "subreddit": "winnipegjets",
+    "source_sub": "r/goldenknights",
+    "actor": "Bot (Queued)",
+    "note": ""
+  },
+  {
+    "timestamp": "2025-06-30 00:56:19",
+    "action": "BANNED",
+    "username": "Available_Summer_418",
+    "subreddit": "caps",
+    "source_sub": "r/goldenknights",
+    "actor": "Bot (Queued)",
+    "note": ""
+  },
+  {
+    "timestamp": "2025-06-30 00:56:30",
+    "action": "BANNED",
+    "username": "Available_Summer_418",
+    "subreddit": "anaheimducks",
+    "source_sub": "r/goldenknights",
+    "actor": "Bot (Queued)",
+    "note": ""
+  },
+  {
+    "timestamp": "2025-06-30 00:56:38",
+    "action": "BANNED",
+    "username": "Available_Summer_418",
+    "subreddit": "ottawasenators",
+    "source_sub": "r/goldenknights",
+    "actor": "Bot (Queued)",
+    "note": ""
+  },
+  {
+    "timestamp": "2025-06-30 00:56:44",
+    "action": "BANNED",
+    "username": "Available_Summer_418",
+    "subreddit": "xsubpacttest1",
+    "source_sub": "r/goldenknights",
+    "actor": "Bot (Queued)",
+    "note": ""
   }
 ]
