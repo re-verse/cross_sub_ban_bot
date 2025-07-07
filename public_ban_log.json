@@ -283075,5 +283075,77 @@
     "source_sub": "r/leafs",
     "actor": "Bot (Queued)",
     "note": ""
+  },
+  {
+    "timestamp": "2025-07-07 00:57:08",
+    "action": "BANNED",
+    "username": "My3rdReddit",
+    "subreddit": "leafs",
+    "source_sub": "r/habs",
+    "actor": "Bot (Queued)",
+    "note": ""
+  },
+  {
+    "timestamp": "2025-07-07 00:57:15",
+    "action": "BANNED",
+    "username": "My3rdReddit",
+    "subreddit": "floridapanthers",
+    "source_sub": "r/habs",
+    "actor": "Bot (Queued)",
+    "note": ""
+  },
+  {
+    "timestamp": "2025-07-07 00:57:22",
+    "action": "BANNED",
+    "username": "My3rdReddit",
+    "subreddit": "winnipegjets",
+    "source_sub": "r/habs",
+    "actor": "Bot (Queued)",
+    "note": ""
+  },
+  {
+    "timestamp": "2025-07-07 00:57:28",
+    "action": "BANNED",
+    "username": "My3rdReddit",
+    "subreddit": "caps",
+    "source_sub": "r/habs",
+    "actor": "Bot (Queued)",
+    "note": ""
+  },
+  {
+    "timestamp": "2025-07-07 00:57:35",
+    "action": "BANNED",
+    "username": "My3rdReddit",
+    "subreddit": "goldenknights",
+    "source_sub": "r/habs",
+    "actor": "Bot (Queued)",
+    "note": ""
+  },
+  {
+    "timestamp": "2025-07-07 00:57:41",
+    "action": "BANNED",
+    "username": "My3rdReddit",
+    "subreddit": "anaheimducks",
+    "source_sub": "r/habs",
+    "actor": "Bot (Queued)",
+    "note": ""
+  },
+  {
+    "timestamp": "2025-07-07 00:57:48",
+    "action": "BANNED",
+    "username": "My3rdReddit",
+    "subreddit": "ottawasenators",
+    "source_sub": "r/habs",
+    "actor": "Bot (Queued)",
+    "note": ""
+  },
+  {
+    "timestamp": "2025-07-07 00:57:54",
+    "action": "BANNED",
+    "username": "My3rdReddit",
+    "subreddit": "xsubpacttest1",
+    "source_sub": "r/habs",
+    "actor": "Bot (Queued)",
+    "note": ""
   }
 ]
