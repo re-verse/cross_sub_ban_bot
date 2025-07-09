@@ -283147,5 +283147,77 @@
     "source_sub": "r/habs",
     "actor": "Bot (Queued)",
     "note": ""
+  },
+  {
+    "timestamp": "2025-07-09 00:49:43",
+    "action": "BANNED",
+    "username": "goat-mob",
+    "subreddit": "leafs",
+    "source_sub": "r/habs",
+    "actor": "Bot (Queued)",
+    "note": ""
+  },
+  {
+    "timestamp": "2025-07-09 00:49:49",
+    "action": "BANNED",
+    "username": "goat-mob",
+    "subreddit": "floridapanthers",
+    "source_sub": "r/habs",
+    "actor": "Bot (Queued)",
+    "note": ""
+  },
+  {
+    "timestamp": "2025-07-09 00:49:56",
+    "action": "BANNED",
+    "username": "goat-mob",
+    "subreddit": "winnipegjets",
+    "source_sub": "r/habs",
+    "actor": "Bot (Queued)",
+    "note": ""
+  },
+  {
+    "timestamp": "2025-07-09 00:50:03",
+    "action": "BANNED",
+    "username": "goat-mob",
+    "subreddit": "caps",
+    "source_sub": "r/habs",
+    "actor": "Bot (Queued)",
+    "note": ""
+  },
+  {
+    "timestamp": "2025-07-09 00:50:10",
+    "action": "BANNED",
+    "username": "goat-mob",
+    "subreddit": "goldenknights",
+    "source_sub": "r/habs",
+    "actor": "Bot (Queued)",
+    "note": ""
+  },
+  {
+    "timestamp": "2025-07-09 00:50:17",
+    "action": "BANNED",
+    "username": "goat-mob",
+    "subreddit": "anaheimducks",
+    "source_sub": "r/habs",
+    "actor": "Bot (Queued)",
+    "note": ""
+  },
+  {
+    "timestamp": "2025-07-09 00:50:24",
+    "action": "BANNED",
+    "username": "goat-mob",
+    "subreddit": "ottawasenators",
+    "source_sub": "r/habs",
+    "actor": "Bot (Queued)",
+    "note": ""
+  },
+  {
+    "timestamp": "2025-07-09 00:50:31",
+    "action": "BANNED",
+    "username": "goat-mob",
+    "subreddit": "xsubpacttest1",
+    "source_sub": "r/habs",
+    "actor": "Bot (Queued)",
+    "note": ""
   }
 ]
