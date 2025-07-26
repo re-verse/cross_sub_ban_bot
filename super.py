@@ -59,7 +59,6 @@ def check_superuser_command():
                         sr.banned.remove(username)
                         print(f"[UNBANNED] u/{username} in r/{sub} by superuser")
                         log_public_action("UNBANNED", username, sub, "manual", f"re-verse (supermodmail)", reason)
-                    time.sleep(2)
                 except Exception as e:
                     print(f"[ERROR] Failed to {action} u/{username} in r/{sub}: {e}")
 
