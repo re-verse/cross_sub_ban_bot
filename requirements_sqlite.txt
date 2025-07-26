@@ -1,0 +1,10 @@
+# Cross-Sub Ban Bot Requirements - SQLite Version
+# Removed: gspread, oauth2client (Google Sheets dependencies)
+# Added: sqlite3 (built into Python, no installation needed)
+
+praw
+
+# Optional: Keep Google Sheets support for migration
+# Uncomment these lines if you need to run migration script:
+# gspread
+# oauth2client

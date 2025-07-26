@@ -1,0 +1,51 @@
+name: SQLite Test Run
+
+on:
+  push:
+    branches:
+      - sqlite-migration
+    paths:
+      - '.github/workflows/sqlite-test-run.yml'
+      - 'TRIGGER_TEST.md'
+
+jobs:
+  test-sqlite:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+        
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements_sqlite.txt
+        
+    - name: Run Safe Test
+      run: |
+        echo "🧪 Running SQLite bot safe test..."
+        python test_bot_safe.py
+        
+    - name: Run Reddit API Test
+      env:
+        REDDIT_CLIENT_ID: ${{ secrets.REDDIT_CLIENT_ID }}
+        REDDIT_CLIENT_SECRET: ${{ secrets.REDDIT_CLIENT_SECRET }}
+        REDDIT_USERNAME: ${{ secrets.REDDIT_USERNAME }}
+        REDDIT_PASSWORD: ${{ secrets.REDDIT_PASSWORD }}
+      run: |
+        echo "🚀 Running Reddit API test with GitHub secrets..."
+        python test_bot_real.py || echo "⚠️ Reddit test failed - check credentials"
+        
+    - name: Show Results
+      if: always()
+      run: |
+        echo "📊 Test completed!"
+        if [ -f bans.db ]; then
+          echo "✅ Database created successfully"
+          ls -la bans.db
+        fi

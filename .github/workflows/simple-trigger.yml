@@ -1,0 +1,28 @@
+name: Simple Test Trigger
+
+on:
+  push:
+    paths:
+      - 'trigger_test_now.txt'
+    branches:
+      - sqlite-migration
+
+jobs:
+  simple-test:
+    runs-on: ubuntu-latest
+    if: contains(github.event.head_commit.message, 'RUN_REAL_TEST')
+    
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+    - run: |
+        pip install -r requirements_sqlite.txt
+        echo "🚀 Running REAL Reddit API test..."
+        python test_bot_real.py
+      env:
+        REDDIT_CLIENT_ID: ${{ secrets.REDDIT_CLIENT_ID }}
+        REDDIT_CLIENT_SECRET: ${{ secrets.REDDIT_CLIENT_SECRET }}
+        REDDIT_USERNAME: ${{ secrets.REDDIT_USERNAME }}
+        REDDIT_PASSWORD: ${{ secrets.REDDIT_PASSWORD }}
