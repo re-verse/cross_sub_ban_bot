@@ -2,6 +2,7 @@ import time
 import traceback
 import prawcore
 import sys
+import gspread
 from datetime import datetime, timedelta
 
 # Assuming these are imported from a config file
