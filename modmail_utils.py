@@ -41,7 +41,6 @@ def check_modmail():
                             convo.reply(body=f"✅ u/{user} has been exempted from bans in r/{sub}.")
         except Exception as e:
             print(f"[WARN] Could not check modmail for r/{sub}: {e}")
-        time.sleep(2)  # Throttle to avoid hitting 429
 
 def apply_override(username, moderator, modsub):
     records = sheet.get_all_records()
