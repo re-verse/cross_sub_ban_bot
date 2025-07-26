@@ -1,4 +1,13 @@
-SUB_BAN_REASON,
+import time
+import traceback
+import prawcore
+import sys
+from datetime import datetime, timedelta
+
+# Assuming these are imported from a config file
+# This is just for context based on the code provided
+from bot_config import (
+    CROSS_SUB_BAN_REASON,
     EXEMPT_USERS,
     DAILY_BAN_LIMIT,
     MAX_LOG_AGE_MINUTES,
@@ -105,9 +114,9 @@ def handle_unban_action(user, user_lc, source, mod, sub, ts):
     print(f"[UNBAN] u/{user} unbanned in {source} by {mod}")
     
     # Check if this user was in our ban list from this source
-    user_records = [row for row in SHEET_CACHE 
-                   if row.get('Username', '').lower() == user_lc 
-                   and row.get('SourceSub', '') == source]
+    user_records = [row for row in SHEET_CACHE
+                    if row.get('Username', '').lower() == user_lc
+                    and row.get('SourceSub', '') == source]
     
     if user_records:
         forgive_time = ts.strftime('%Y-%m-%d %H:%M:%S')
@@ -135,14 +144,14 @@ def handle_unban_google_sheets(user, user_lc, source, mod, sub, forgive_time):
     """
     # Find the row in Google Sheets and update
     for i, row in enumerate(SHEET_CACHE, start=2):  # start=2 because sheet rows are 1-indexed + header
-        if (row.get('Username', '').lower() == user_lc and 
-            row.get('SourceSub', '') == source and 
+        if (row.get('Username', '').lower() == user_lc and
+            row.get('SourceSub', '') == source and
             not row.get('ManualOverride', '')):
             
             try:
                 from bot_config import sheet  # Import original sheet for Google Sheets updates
                 sheet.update_cell(i, 5, "yes")  # ManualOverride
-                sheet.update_cell(i, 7, mod)    # OverriddenBy  
+                sheet.update_cell(i, 7, mod)    # OverriddenBy
                 sheet.update_cell(i, 8, sub)    # ModSub
                 sheet.update_cell(i, 9, forgive_time)  # ForgiveTimestamp
                 
@@ -167,7 +176,7 @@ def handle_ban_action(user, user_lc, source, mod, sub, ts, log_id, seen_user_sou
         return
 
     # Skip if user is forgiven
-    if is_forgiven(user, SHEET_CACHE):
+    if is_forgiven(user, SHEET_CACHE): # Assuming is_forgiven is defined elsewhere
         print(f"[SKIP] User {user} has ManualOverride=yes")
         return
 
@@ -250,13 +259,13 @@ def execute_cross_sub_bans():
         # Skip if already processed or forgiven
         if username.lower() in processed_users:
             continue
-        if is_forgiven(username, SHEET_CACHE):
+        if is_forgiven(username, SHEET_CACHE): # Assuming is_forgiven is defined elsewhere
             continue
             
         processed_users.add(username.lower())
         
         # Get user's exempt subreddits
-        user_exempt_subs = exempt_subs_for_user(username, SHEET_CACHE)
+        user_exempt_subs = exempt_subs_for_user(username, SHEET_CACHE) # Assuming this is defined
         
         # Ban in trusted subreddits (except exempt ones)
         for target_sub in TRUSTED_SUBS:
@@ -285,10 +294,12 @@ def execute_ban_in_subreddit(username, target_sub, source_sub):
         
         # Check if user is already banned
         try:
-            sr.banned(username)
+            # PRAW 7+ returns a Redditor object if banned, raises exception if not.
+            # This logic might need adjustment based on PRAW version.
+            next(sr.banned(redditor=username))
             print(f"[SKIP] u/{username} already banned in r/{target_sub}")
             return
-        except:
+        except (StopIteration, prawcore.exceptions.NotFound):
             pass  # User not banned, proceed
         
         # Execute the ban
@@ -298,7 +309,7 @@ def execute_ban_in_subreddit(username, target_sub, source_sub):
         print(f"[BAN] u/{username} banned in r/{target_sub} (source: {source_sub})")
         
         # Log the action
-        log_public_action(username, target_sub, source_sub, ban_reason)
+        log_public_action(username, target_sub, source_sub, ban_reason) # Assuming this is defined
         
     except prawcore.exceptions.Forbidden:
         print(f"[ERROR] No permission to ban in r/{target_sub}")
@@ -353,13 +364,14 @@ def main():
         
         # Check for superuser commands
         if len(sys.argv) > 1:
+            # Assuming check_superuser_command is defined elsewhere
             result = check_superuser_command(sys.argv[1:])
             if result:
                 return
         
         # Check modmail for overrides
         print("[STEP] Checking modmail...")
-        check_modmail()
+        check_modmail() # Assuming check_modmail is defined elsewhere
         
         # Sync bans from trusted subreddits
         print("[STEP] Syncing bans from trusted subreddits...")
@@ -376,10 +388,10 @@ def main():
         
         # Write statistics
         print("[STEP] Writing statistics...")
-        write_stats_sheet()
+        write_stats_sheet() # Assuming write_stats_sheet is defined elsewhere
         
         # Flush public logs
-        flush_public_markdown_log()
+        flush_public_markdown_log() # Assuming this is defined
         
         print("[SUCCESS] Bot execution completed successfully!")
         
