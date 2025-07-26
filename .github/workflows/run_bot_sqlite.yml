@@ -8,6 +8,7 @@ on:
 jobs:
   run:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -21,8 +22,14 @@ jobs:
         run: |
           pip install -r requirements_sqlite.txt
 
+      - name: Print working directory (debug)
+        run: |
+          echo "Running from: $(pwd)"
+          ls -alh
+
       - name: Run SQLite bot
         run: python3 cross_sub_ban_bot_sqlite.py
+        working-directory: ${{ github.workspace }}
         env:
           REDDIT_CLIENT_ID: ${{ secrets.REDDIT_CLIENT_ID }}
           REDDIT_CLIENT_SECRET: ${{ secrets.REDDIT_CLIENT_SECRET }}
@@ -30,18 +37,13 @@ jobs:
           REDDIT_PASSWORD: ${{ secrets.REDDIT_PASSWORD }}
 
       - name: Commit and push database updates
+        working-directory: ${{ github.workspace }}
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git pull origin ${{ github.ref_name }} --rebase || echo "No upstream changes to rebase"
-          
-          # Add database and any public logs
           git add bans.db public_ban_log.md public_ban_log.json || echo "Some files may not exist yet"
-          
-          # Commit if there are changes
           git diff --cached --quiet || git commit -m "Update ban database and logs"
-          
-          # Push changes
           git push || echo "Push failed (may indicate no changes were committed)"
 
       - name: Upload artifacts
