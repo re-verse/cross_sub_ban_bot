@@ -3,6 +3,7 @@
 # Added: sqlite3 (built into Python, no installation needed)
 
 praw
+gspread
 
 # Optional: Keep Google Sheets support for migration
 # Uncomment these lines if you need to run migration script:
