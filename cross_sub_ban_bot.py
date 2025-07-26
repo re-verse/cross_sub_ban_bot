@@ -7,10 +7,8 @@ import sys
 import time
 import praw
 import prawcore
-import gspread
 import traceback
 import re
-from oauth2client.service_account import ServiceAccountCredentials
 from datetime import datetime, timedelta
 from core_utils import (
     is_mod,
