@@ -1,0 +1,29 @@
+name: Test SQLite Bot Now
+
+on:
+  workflow_dispatch:
+  
+jobs:
+  test-bot:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        ref: sqlite-migration
+        
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+        
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements_sqlite.txt
+        
+    - name: Run Safe Test
+      run: |
+        echo "Running SQLite bot safe test..."
+        python test_bot_safe.py

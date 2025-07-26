@@ -31,6 +31,16 @@ jobs:
         echo "🧪 Running SQLite bot safe test..."
         python test_bot_safe.py
         
+    - name: Run Reddit API Test
+      env:
+        REDDIT_CLIENT_ID: ${{ secrets.REDDIT_CLIENT_ID }}
+        REDDIT_CLIENT_SECRET: ${{ secrets.REDDIT_CLIENT_SECRET }}
+        REDDIT_USERNAME: ${{ secrets.REDDIT_USERNAME }}
+        REDDIT_PASSWORD: ${{ secrets.REDDIT_PASSWORD }}
+      run: |
+        echo "🚀 Running Reddit API test with GitHub secrets..."
+        python test_bot_real.py || echo "⚠️ Reddit test failed - check credentials"
+        
     - name: Show Results
       if: always()
       run: |

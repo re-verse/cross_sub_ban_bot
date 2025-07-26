@@ -2,4 +2,4 @@
 
 Modify this file to trigger the SQLite test workflow.
 
-Test run: 1
+Test run: 2 - Testing with GitHub secrets
