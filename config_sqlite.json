@@ -5,6 +5,6 @@
   "MAX_LOG_AGE_MINUTES": 60,
   "ROW_RETENTION_DAYS": 10,
   "_comment_sqlite": "Set USE_SQLITE to true to enable high-performance SQLite backend",
-  "USE_SQLITE": true,
+  "USE_SQLITE": false,
   "SQLITE_DB_PATH": "bans.db"
 }
