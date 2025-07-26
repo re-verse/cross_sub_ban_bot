@@ -1,5 +1,0 @@
-# Test trigger for SQLite bot
-# This file triggers the workflow to test with real Reddit API
-
-Test mode: real
-Timestamp: 2025-07-26 18:30:00
