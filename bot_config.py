@@ -1,7 +1,6 @@
 import os
 import json
 import base64
-import gspread
 import praw
 from oauth2client.service_account import ServiceAccountCredentials
 
