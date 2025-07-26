@@ -128,7 +128,6 @@ def main():
         print("\n[PHASE 2] Syncing Bans from Source Subreddits")
         for sub in TRUSTED_SUBS:
             sync_bans_from_sub(sub)
-            time.sleep(2) # Be nice to Reddit's API
 
         print("\n[PHASE 3] Database Maintenance")
         deleted_count = database.cleanup_old_records(ROW_RETENTION_DAYS)
