@@ -34,17 +34,21 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git pull origin main --rebase
           
-          # Add the database file. The || echo part prevents an error if the file doesn't exist yet.
-          git add bans.db || echo "bans.db not found to commit."
+          # Stage the changed database file FIRST
+          git add bans.db
           
-          # Commit only if there are staged changes
+          # Commit the changes, but only if the file has actually changed
           if ! git diff --cached --quiet; then
             git commit -m "Update ban database"
+            
+            # Now pull with rebase to sync with the remote repository
+            git pull origin main --rebase
+            
+            # Finally, push your commit
             git push
           else
-            echo "No changes to commit."
+            echo "No changes to the database to commit."
           fi
 
       - name: Upload database artifact
