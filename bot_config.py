@@ -28,31 +28,6 @@ def load_trusted_subs(path="trusted_subs.txt"):
 TRUSTED_SUBS    = load_trusted_subs()
 TRUSTED_SOURCES = {f"r/{sub}" for sub in TRUSTED_SUBS}
 
-# --- Google Sheets setup ---
-def setup_google_sheet():
-    creds_env = os.environ.get('GOOGLE_SERVICE_ACCOUNT_JSON')
-    if not creds_env:
-        raise SystemExit("[FATAL] Missing GOOGLE_SERVICE_ACCOUNT_JSON env var.")
-
-    try:
-        decoded = base64.b64decode(creds_env)
-        creds_str = decoded.decode('utf-8')
-        creds_dict = json.loads(creds_str)
-    except Exception:
-        creds_dict = json.loads(creds_env)
-
-    scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
-    creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_dict, scope)
-    client = gspread.authorize(creds)
-
-    sheet_key = os.environ.get('GOOGLE_SHEET_ID')
-    if not sheet_key:
-        raise SystemExit("[FATAL] Missing GOOGLE_SHEET_ID env var.")
-
-    sheet = client.open_by_key(sheet_key).sheet1
-    print(f"[INFO] Google Sheet '{sheet_key}' opened, worksheet '{sheet.title}' loaded.")
-    return sheet, client, sheet_key
-
 # --- Reddit API setup ---
 def setup_reddit():
     return praw.Reddit(
