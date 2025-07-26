@@ -2,7 +2,6 @@ import os
 import json
 import base64
 import praw
-from oauth2client.service_account import ServiceAccountCredentials
 
 # --- Directory and log paths ---
 WORK_DIR = "/home/runner/work/cross_sub_ban_bot/cross_sub_ban_bot"
