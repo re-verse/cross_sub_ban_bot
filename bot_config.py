@@ -38,5 +38,4 @@ def setup_reddit():
     )
 
 # --- Instantiate API clients here ---
-sheet, client, sheet_key = setup_google_sheet()
 reddit = setup_reddit()
