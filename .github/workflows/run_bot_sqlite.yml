@@ -1,4 +1,4 @@
-name: Run Cross-Sub Ban Bot
+name: Run Cross-Sub Ban Bot (SQLite)
 
 on:
   schedule:
@@ -19,10 +19,9 @@ jobs:
 
       - name: Install dependencies
         run: |
-          # SQLite version dependencies
-          pip install praw
+          pip install -r requirements_sqlite.txt
 
-      - name: Run bot (SQLite version)
+      - name: Run SQLite bot
         run: python3 cross_sub_ban_bot_sqlite.py
         env:
           REDDIT_CLIENT_ID: ${{ secrets.REDDIT_CLIENT_ID }}
@@ -30,26 +29,28 @@ jobs:
           REDDIT_USERNAME: ${{ secrets.REDDIT_USERNAME }}
           REDDIT_PASSWORD: ${{ secrets.REDDIT_PASSWORD }}
 
-      - name: Commit and push updated ban database
+      - name: Commit and push database updates
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git pull origin main --rebase || echo "No upstream changes to rebase"
+          git pull origin ${{ github.ref_name }} --rebase || echo "No upstream changes to rebase"
           
-          # Add database and logs
-          git add bans.db || echo "No database to add"
-          git add public_ban_log.md public_ban_log.json || echo "No logs to add"
+          # Add database and any public logs
+          git add bans.db public_ban_log.md public_ban_log.json || echo "Some files may not exist yet"
           
-          git diff --cached --quiet || git commit -m "Update ban database"
-          git push || echo "Push failed (may indicate no changes)"
+          # Commit if there are changes
+          git diff --cached --quiet || git commit -m "Update ban database and logs"
+          
+          # Push changes
+          git push || echo "Push failed (may indicate no changes were committed)"
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: bot-run-${{ github.run_number }}
+          name: bot-run-artifacts
           path: |
             bans.db
             *.log
             modlog_dump_*.txt
-          retention-days: 30
+          retention-days: 7
