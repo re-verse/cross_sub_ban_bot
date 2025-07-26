@@ -1,0 +1,64 @@
+name: Manual Test Run
+
+on:
+  workflow_dispatch:
+    inputs:
+      test_mode:
+        description: 'Test mode to run'
+        required: true
+        default: 'safe'
+        type: choice
+        options:
+        - safe
+        - real
+
+jobs:
+  run-sqlite-test:
+    runs-on: ubuntu-latest
+    
+    steps:
+      # Step 1: Check out repository code
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          ref: sqlite-migration
+
+      # Step 2: Set up Python
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+
+      # Step 3: Install dependencies
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements_sqlite.txt
+
+      # Step 4: Run safe test
+      - name: Run safe SQLite test
+        if: ${{ github.event.inputs.test_mode == 'safe' }}
+        run: |
+          echo "Running safe SQLite test (no Reddit API)"
+          python test_bot_safe.py
+
+      # Step 5: Run real test with Reddit API
+      - name: Run real Reddit API test
+        if: ${{ github.event.inputs.test_mode == 'real' }}
+        env:
+          REDDIT_CLIENT_ID: ${{ secrets.REDDIT_CLIENT_ID }}
+          REDDIT_CLIENT_SECRET: ${{ secrets.REDDIT_CLIENT_SECRET }}
+          REDDIT_USERNAME: ${{ secrets.REDDIT_USERNAME }}
+          REDDIT_PASSWORD: ${{ secrets.REDDIT_PASSWORD }}
+        run: |
+          echo "Running real Reddit API test (limited to xsubpacttest1)"
+          python test_bot_real.py
+
+      # Step 6: Show results
+      - name: Show test results
+        run: |
+          echo "Test completed: ${{ github.event.inputs.test_mode }} mode"
+          if [ -f "bans.db" ]; then
+            echo "SQLite database created successfully"
+            ls -la bans.db
+          fi
