@@ -110,6 +110,75 @@ class Database:
             con.commit()
             return deleted_count
 
+    # -- Modmail-driven lookups & mutations ----------------------------------
+
+    def find_user_records(self, username):
+        """All ban records for a username (case-insensitive). Most recent first."""
+        try:
+            with closing(self._get_conn()) as con:
+                con.row_factory = sqlite3.Row
+                rows = con.execute(
+                    "SELECT * FROM bans WHERE lower(username) = ? "
+                    "ORDER BY timestamp DESC",
+                    (username.lower(),),
+                ).fetchall()
+                return [dict(r) for r in rows]
+        except Exception as e:
+            print(f"[DB_ERROR] find_user_records({username}): {e}")
+            return []
+
+    def apply_pardon(self, username, source_sub, mod, mod_sub, when):
+        """
+        Mark a (username, source_sub) row as pardoned. Same effect as the
+        modlog-driven unban: sets manual_override='yes' and records who
+        forgave, where, and when. Returns True if a row was updated.
+        """
+        try:
+            with closing(self._get_conn()) as con:
+                cur = con.execute(
+                    "UPDATE bans SET manual_override = 'yes', "
+                    "moderator_name = ?, mod_sub = ?, forgive_timestamp = ? "
+                    "WHERE lower(username) = ? AND lower(source_sub) = ?",
+                    (mod, mod_sub, when, username.lower(), source_sub.lower()),
+                )
+                con.commit()
+                return cur.rowcount > 0
+        except Exception as e:
+            print(f"[DB_ERROR] apply_pardon({username}, {source_sub}): {e}")
+            return False
+
+    def add_exemption(self, row_id, exempt_sub):
+        """
+        Append a sub to the exempt_subs CSV on a single row, deduped and
+        case-folded. Returns True on success.
+        """
+        exempt_sub = exempt_sub.lower().lstrip("r/").strip("/")
+        if not exempt_sub:
+            return False
+        try:
+            with closing(self._get_conn()) as con:
+                con.row_factory = sqlite3.Row
+                row = con.execute(
+                    "SELECT exempt_subs FROM bans WHERE id = ?", (row_id,)
+                ).fetchone()
+                if row is None:
+                    return False
+                current = (row["exempt_subs"] or "").lower()
+                parts = {p.strip() for p in current.split(",") if p.strip()}
+                if exempt_sub in parts:
+                    return True  # already exempt, no-op success
+                parts.add(exempt_sub)
+                new_field = ", ".join(sorted(parts))
+                con.execute(
+                    "UPDATE bans SET exempt_subs = ? WHERE id = ?",
+                    (new_field, row_id),
+                )
+                con.commit()
+                return True
+        except Exception as e:
+            print(f"[DB_ERROR] add_exemption(id={row_id}, {exempt_sub}): {e}")
+            return False
+
 # --- Reddit API Setup ---
 def setup_reddit():
     return praw.Reddit(

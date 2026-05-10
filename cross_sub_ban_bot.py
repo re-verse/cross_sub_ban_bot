@@ -16,9 +16,18 @@ from bot_config import (
     reddit
 )
 from log_utils import log_public_action, flush_views
+from health_utils import (
+    load_health,
+    save_health,
+    record_success,
+    record_failure,
+    summary as health_summary,
+)
+from modmail_utils import check_modmail
 
 # --- Global Cache ---
 BAN_CACHE = []
+HEALTH_STATE = None  # populated in main()
 
 # When DRY_RUN is set, propagation calls log intent but don't hit Reddit.
 DRY_RUN = os.environ.get('DRY_RUN', '').lower() in ('1', 'true', 'yes')
@@ -116,11 +125,23 @@ def sync_bans_from_sub(sub):
             elif log.action == "unbanuser":
                 handle_unban_action(user, user_lc, source, log.mod.name, sub, log.created_utc)
 
+        # Modlog walked successfully — record the sub as healthy
+        if HEALTH_STATE is not None:
+            record_success(HEALTH_STATE, sub)
+
     except prawcore.exceptions.Forbidden as e:
         print(f"[ERROR] Access forbidden for r/{sub}: {e}")
+        if HEALTH_STATE is not None:
+            record_failure(HEALTH_STATE, sub, f"Forbidden: {e}")
+    except prawcore.exceptions.NotFound as e:
+        print(f"[ERROR] NotFound for r/{sub}: {e}")
+        if HEALTH_STATE is not None:
+            record_failure(HEALTH_STATE, sub, f"NotFound: {e}")
     except Exception as e:
         print(f"[ERROR] Failed to process r/{sub}: {e}")
         traceback.print_exc()
+        if HEALTH_STATE is not None:
+            record_failure(HEALTH_STATE, sub, e)
 
 def handle_unban_action(user, user_lc, source, mod, sub, timestamp):
     """Process an unban action: forgive in DB, propagate the unban."""
@@ -179,10 +200,13 @@ def handle_ban_action(user, user_lc, source, mod, sub, timestamp, log_id):
 
 def main():
     """Main bot execution function."""
+    global HEALTH_STATE
     print("="*60)
     print("Cross-Sub Ban Bot - SQLite Edition")
     print(f"Timestamp: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
     print("="*60)
+
+    HEALTH_STATE = load_health()
 
     try:
         print("\n[PHASE 1] Loading Data")
@@ -192,6 +216,17 @@ def main():
         for sub in TRUSTED_SUBS:
             sync_bans_from_sub(sub)
 
+        print("\n[PHASE 2.5] Checking Modmail for /xsub commands")
+        try:
+            check_modmail(
+                health_state=HEALTH_STATE,
+                dry_run=DRY_RUN,
+                propagate_unban=apply_unban_across_network,
+            )
+        except Exception as e:
+            print(f"[ERROR] Modmail check raised: {e}")
+            traceback.print_exc()
+
         print("\n[PHASE 3] Database Maintenance")
         deleted_count = database.cleanup_old_records(ROW_RETENTION_DAYS)
         if deleted_count > 0:
@@ -200,6 +235,10 @@ def main():
         print("\n[PHASE 4] Refreshing public log views")
         flush_views()
 
+        print("\n[PHASE 5] Health summary")
+        health_summary(HEALTH_STATE)
+        save_health(HEALTH_STATE)
+
         print("\n[SUCCESS] Bot execution completed successfully!")
 
     except KeyboardInterrupt:
@@ -207,6 +246,12 @@ def main():
     except Exception as e:
         print(f"\n[CRITICAL ERROR] Bot execution failed: {e}")
         traceback.print_exc()
+        # Try to persist whatever health info we have, even on partial failure
+        if HEALTH_STATE is not None:
+            try:
+                save_health(HEALTH_STATE)
+            except Exception:
+                pass
 
 if __name__ == "__main__":
     main()
