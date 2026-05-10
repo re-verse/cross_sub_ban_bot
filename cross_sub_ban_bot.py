@@ -15,6 +15,7 @@ from bot_config import (
     database,
     reddit
 )
+from log_utils import log_public_action, flush_views
 
 # --- Global Cache ---
 BAN_CACHE = []
@@ -50,6 +51,7 @@ def apply_ban_across_network(username, source_sub):
             sr = reddit.subreddit(sub)
             sr.banned.add(username, ban_reason=CROSS_SUB_BAN_REASON, note=ban_note)
             print(f"[PROPAGATE-BAN] u/{username} -> r/{sub} (from {source_sub})")
+            log_public_action("BANNED", username, sub, source_sub=source_sub, actor="Bot")
         except prawcore.exceptions.Forbidden:
             print(f"[WARN] No ban permission in r/{sub}, skipping.")
         except Exception as e:
@@ -68,6 +70,7 @@ def apply_unban_across_network(username, source_sub):
             sr = reddit.subreddit(sub)
             sr.banned.remove(username)
             print(f"[PROPAGATE-UNBAN] u/{username} -> r/{sub} (from {source_sub})")
+            log_public_action("UNBANNED", username, sub, source_sub=source_sub, actor="Bot")
         except prawcore.exceptions.NotFound:
             pass  # not banned in target sub, fine
         except prawcore.exceptions.Forbidden:
@@ -193,6 +196,9 @@ def main():
         deleted_count = database.cleanup_old_records(ROW_RETENTION_DAYS)
         if deleted_count > 0:
             print(f"[CLEANUP] Removed {deleted_count} records older than {ROW_RETENTION_DAYS} days.")
+
+        print("\n[PHASE 4] Refreshing public log views")
+        flush_views()
 
         print("\n[SUCCESS] Bot execution completed successfully!")
 
