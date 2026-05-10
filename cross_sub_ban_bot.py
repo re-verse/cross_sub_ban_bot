@@ -24,6 +24,7 @@ from health_utils import (
     summary as health_summary,
 )
 from modmail_utils import check_modmail
+from inbox_utils import check_dm_inbox
 
 # --- Global Cache ---
 BAN_CACHE = []
@@ -225,6 +226,13 @@ def main():
             )
         except Exception as e:
             print(f"[ERROR] Modmail check raised: {e}")
+            traceback.print_exc()
+
+        print("\n[PHASE 2.6] Checking DM inbox for /xsub help")
+        try:
+            check_dm_inbox(dry_run=DRY_RUN)
+        except Exception as e:
+            print(f"[ERROR] DM inbox check raised: {e}")
             traceback.print_exc()
 
         print("\n[PHASE 3] Database Maintenance")

@@ -33,8 +33,12 @@ _MAX_CONVOS_PER_SUB = 25
 
 _HELP_TEXT = (
     "**Cross-Sub Ban Pact Bot — Help**\n\n"
-    "Send these commands as a modmail to me from your sub. I check "
-    "modmail every 20 minutes.\n\n"
+    "I take commands in two ways:\n"
+    "1. **Modmail to your sub** (this thread) — supports the full command set "
+    "below. Send a command as the modmail body, I'll reply within 20 minutes.\n"
+    "2. **DM to me directly** — only `/xsub help` works that way. "
+    "Mutating commands have to go through modmail so the action is "
+    "attributable to a specific mod team.\n\n"
     "    /xsub help                 — this message\n"
     "    /xsub status u/username    — show this user's status across the network\n"
     "    /xsub pardon u/username    — forgive + unban a user (origin-sub mods only)\n"
