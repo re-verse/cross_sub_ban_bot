@@ -21,7 +21,7 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
-          
+
       - name: Run bot
         env:
           REDDIT_CLIENT_ID: ${{ secrets.REDDIT_CLIENT_ID }}
@@ -30,29 +30,26 @@ jobs:
           REDDIT_PASSWORD: ${{ secrets.REDDIT_PASSWORD }}
         run: python3 cross_sub_ban_bot.py
 
-      - name: Commit and push database
+      - name: Commit and push state
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          
-          # Stage the changed database file FIRST
-          git add bans.db
-          
-          # Commit the changes, but only if the file has actually changed
+
+          # Stage the database and any public log files that changed.
+          # The bot only re-writes .md/.html when something was actually logged,
+          # so on idle runs only bans.db touches will be committed (or nothing).
+          git add bans.db public_ban_log.json public_ban_log.md public_ban_log.html 2>/dev/null || true
+
           if ! git diff --cached --quiet; then
-            git commit -m "Update ban database"
-            
-            # Now pull with rebase to sync with the remote repository
+            git commit -m "Update ban database and public log"
             git pull origin main --rebase
-            
-            # Finally, push your commit
             git push
           else
-            echo "No changes to the database to commit."
+            echo "No state changes to commit."
           fi
 
       - name: Upload database artifact
-        if: always() # Run this step even if previous steps fail
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: ban-database
