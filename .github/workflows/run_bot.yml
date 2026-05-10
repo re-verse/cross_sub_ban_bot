@@ -35,10 +35,11 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
-          # Stage the database and any public log files that changed.
-          # The bot only re-writes .md/.html when something was actually logged,
-          # so on idle runs only bans.db touches will be committed (or nothing).
-          git add bans.db public_ban_log.json public_ban_log.md public_ban_log.html 2>/dev/null || true
+          # Stage the database, public log files, and the per-sub health
+          # tracker that flag access regressions. The bot only re-writes
+          # .md/.html when something was actually logged, so on idle runs
+          # mostly bans.db and bot_health.json will see touches.
+          git add bans.db bot_health.json public_ban_log.json public_ban_log.md public_ban_log.html 2>/dev/null || true
 
           if ! git diff --cached --quiet; then
             git commit -m "Update ban database and public log"
