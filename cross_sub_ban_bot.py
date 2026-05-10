@@ -1,3 +1,4 @@
+import os
 import time
 import traceback
 import prawcore
@@ -18,6 +19,11 @@ from bot_config import (
 # --- Global Cache ---
 BAN_CACHE = []
 
+# When DRY_RUN is set, propagation calls log intent but don't hit Reddit.
+DRY_RUN = os.environ.get('DRY_RUN', '').lower() in ('1', 'true', 'yes')
+if DRY_RUN:
+    print("[DRY-RUN] No bans/unbans will be applied. Detection + DB writes still happen.")
+
 # --- Helper Functions ---
 def is_forgiven(username, cache):
     """Check if a user has been manually forgiven."""
@@ -26,6 +32,48 @@ def is_forgiven(username, cache):
             if record.get('manual_override', '').lower() == 'yes':
                 return True
     return False
+
+def apply_ban_across_network(username, source_sub):
+    """Apply a ban to every trusted sub except the originating one."""
+    ban_note = (
+        f"Cross-sub ban from {source_sub}. NHL subs share a pact to fight trolling. "
+        f"To appeal, message mods of {source_sub}."
+    )
+    src_lc = source_sub.lower().lstrip('r/').strip('/')
+    for sub in TRUSTED_SUBS:
+        if sub.lower() == src_lc:
+            continue
+        if DRY_RUN:
+            print(f"[DRY-RUN][PROPAGATE-BAN] would ban u/{username} in r/{sub} (from {source_sub})")
+            continue
+        try:
+            sr = reddit.subreddit(sub)
+            sr.banned.add(username, ban_reason=CROSS_SUB_BAN_REASON, note=ban_note)
+            print(f"[PROPAGATE-BAN] u/{username} -> r/{sub} (from {source_sub})")
+        except prawcore.exceptions.Forbidden:
+            print(f"[WARN] No ban permission in r/{sub}, skipping.")
+        except Exception as e:
+            print(f"[ERROR] Failed to ban u/{username} in r/{sub}: {e}")
+
+def apply_unban_across_network(username, source_sub):
+    """Remove a ban from every trusted sub except the originating one."""
+    src_lc = source_sub.lower().lstrip('r/').strip('/')
+    for sub in TRUSTED_SUBS:
+        if sub.lower() == src_lc:
+            continue
+        if DRY_RUN:
+            print(f"[DRY-RUN][PROPAGATE-UNBAN] would unban u/{username} in r/{sub} (from {source_sub})")
+            continue
+        try:
+            sr = reddit.subreddit(sub)
+            sr.banned.remove(username)
+            print(f"[PROPAGATE-UNBAN] u/{username} -> r/{sub} (from {source_sub})")
+        except prawcore.exceptions.NotFound:
+            pass  # not banned in target sub, fine
+        except prawcore.exceptions.Forbidden:
+            print(f"[WARN] No ban permission in r/{sub}, skipping.")
+        except Exception as e:
+            print(f"[ERROR] Failed to unban u/{username} in r/{sub}: {e}")
 
 # --- Core Bot Logic ---
 def load_ban_cache():
@@ -47,16 +95,20 @@ def sync_bans_from_sub(sub):
         subreddit = reddit.subreddit(sub)
         for log in subreddit.mod.log(limit=100):
             if datetime.utcnow() - datetime.utcfromtimestamp(log.created_utc) > timedelta(minutes=MAX_LOG_AGE_MINUTES):
-                break # Modlog is chronological, so we can stop early
+                break  # Modlog is chronological, so we can stop early
 
             user = getattr(log, "target_author", None)
-            if not user or ' ' in user: # Skip if no user or invalid username
+            if not user or ' ' in user:
                 continue
 
             user_lc = user.lower()
             source = f"r/{log.subreddit}".lower()
 
             if log.action == "banuser":
+                # Only act on bans whose reason matches the pact reason
+                desc = (getattr(log, 'description', '') or '').lower()
+                if CROSS_SUB_BAN_REASON.lower() not in desc:
+                    continue
                 handle_ban_action(user, user_lc, source, log.mod.name, sub, log.created_utc, log.id)
             elif log.action == "unbanuser":
                 handle_unban_action(user, user_lc, source, log.mod.name, sub, log.created_utc)
@@ -68,20 +120,29 @@ def sync_bans_from_sub(sub):
         traceback.print_exc()
 
 def handle_unban_action(user, user_lc, source, mod, sub, timestamp):
-    """Process an unban action by marking the user as forgiven in the database."""
+    """Process an unban action: forgive in DB, propagate the unban."""
+    # Only forgive when the unban happens IN the originating sub
+    matching = [
+        r for r in BAN_CACHE
+        if r.get('username', '').lower() == user_lc
+        and r.get('source_sub', '').lower() == source
+    ]
+    if not matching:
+        return
+
     print(f"[UNBAN] Detected unban for u/{user} in {source} by {mod}.")
     forgiven_time = datetime.utcfromtimestamp(timestamp).strftime('%Y-%m-%d %H:%M:%S')
-    success = database.update_forgiveness(user, source, mod, sub, forgiven_time)
-    if success:
+    if database.update_forgiveness(user, source, mod, sub, forgiven_time):
         print(f"[FORGIVE] Marked u/{user} as forgiven in the database.")
-        # Update local cache to reflect the change immediately
         for record in BAN_CACHE:
-            if record.get('username', '').lower() == user_lc and record.get('source_sub') == source:
+            if record.get('username', '').lower() == user_lc and record.get('source_sub', '').lower() == source:
                 record['manual_override'] = 'yes'
                 break
+        # Propagate the unban across the network
+        apply_unban_across_network(user, source)
 
 def handle_ban_action(user, user_lc, source, mod, sub, timestamp, log_id):
-    """Process a ban action by logging it to the database."""
+    """Process a ban action: log it, propagate it."""
     if user_lc in EXEMPT_USERS:
         print(f"[SKIP] User u/{user} is exempt.")
         return
@@ -90,29 +151,28 @@ def handle_ban_action(user, user_lc, source, mod, sub, timestamp, log_id):
         print(f"[SKIP] User u/{user} has a manual override (forgiven).")
         return
 
-    # Prevent re-adding a ban that's already in our database
-    if any(r.get('username', '').lower() == user_lc and r.get('source_sub') == source for r in BAN_CACHE):
-        # print(f"[DEBUG] Ban for u/{user} from {source} already in database.")
-        return
+    if any(r.get('username', '').lower() == user_lc and r.get('source_sub', '').lower() == source for r in BAN_CACHE):
+        return  # already in DB, already propagated on a previous run
 
     recent_count = database.get_recent_entries(source, hours=24)
     if recent_count >= DAILY_BAN_LIMIT:
         print(f"[SKIP] Daily limit ({DAILY_BAN_LIMIT}) reached for {source}.")
         return
 
-    print(f"[BAN] Detected ban for u/{user} in {source}. Logging to DB.")
+    print(f"[BAN] Detected pact ban for u/{user} in {source}. Logging + propagating.")
     row_data = [
         user,
         source,
         CROSS_SUB_BAN_REASON,
         datetime.utcfromtimestamp(timestamp).strftime('%Y-%m-%d %H:%M:%S'),
-        '', # manual_override
+        '',  # manual_override
         log_id,
         mod
     ]
     if database.append_row(row_data):
-        # Add to local cache to avoid re-processing in the same run
         BAN_CACHE.append({'username': user, 'source_sub': source, 'manual_override': 'no'})
+        # Propagate the ban across the network
+        apply_ban_across_network(user, source)
 
 def main():
     """Main bot execution function."""
