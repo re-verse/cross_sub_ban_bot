@@ -33,6 +33,7 @@ _HELP_TEXT = (
     "action is attributable to a specific mod team.\n\n"
     "    /xsub help                 — this message\n"
     "    /xsub status u/username    — show this user's status across the network\n"
+    "    /xsub history u/username   — chronological audit trail (modmail only)\n"
     "    /xsub pardon u/username    — forgive + unban a user (origin-sub mods only, modmail only)\n"
     "    /xsub exempt u/username    — exempt user from bans in your sub only (modmail only)\n\n"
     "The pact triggers on bans whose reason is exactly "
@@ -134,7 +135,7 @@ def check_dm_inbox(dry_run=False):
         if cmd == "help":
             reply_body = _HELP_TEXT
             log_tag = "help"
-        elif cmd in ("status", "pardon", "exempt"):
+        elif cmd in ("status", "history", "pardon", "exempt"):
             reply_body = (
                 f"ℹ️ `/xsub {cmd}` is only available via modmail to your own sub, "
                 "not via DM. This keeps every action attributable to a specific "

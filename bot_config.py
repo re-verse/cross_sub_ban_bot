@@ -192,3 +192,26 @@ def setup_reddit():
 # --- Instantiate APIs ---
 reddit = setup_reddit()
 database = Database(SQLITE_DB_PATH)
+
+# --- Owner Alerts ---
+OWNER_USERNAME = config.get("OWNER_USERNAME", "re-verse")
+
+
+def notify_owner(subject, body, dry_run=False):
+    """
+    Send a DM to the bot owner. Used by the health tracker to flag
+    sub-level access regressions in near-real-time.
+
+    Returns True on success (or dry-run skip), False on error. Failures
+    are logged but never raised — alerting must not break the cron tick.
+    """
+    if dry_run:
+        print(f"[DRY-RUN][NOTIFY-OWNER] would DM u/{OWNER_USERNAME}: {subject}")
+        return True
+    try:
+        reddit.redditor(OWNER_USERNAME).message(subject=subject, message=body)
+        print(f"[NOTIFY-OWNER] DM sent to u/{OWNER_USERNAME}: {subject}")
+        return True
+    except Exception as e:
+        print(f"[NOTIFY-OWNER-ERROR] Could not DM u/{OWNER_USERNAME}: {e}")
+        return False
