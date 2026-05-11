@@ -13,7 +13,8 @@ from bot_config import (
     ROW_RETENTION_DAYS,
     TRUSTED_SUBS,
     database,
-    reddit
+    reddit,
+    notify_owner,
 )
 from log_utils import log_public_action, flush_views
 from health_utils import (
@@ -22,6 +23,7 @@ from health_utils import (
     record_success,
     record_failure,
     summary as health_summary,
+    dispatch_alerts,
 )
 from modmail_utils import check_modmail
 from inbox_utils import check_dm_inbox
@@ -245,6 +247,11 @@ def main():
 
         print("\n[PHASE 5] Health summary")
         health_summary(HEALTH_STATE)
+        try:
+            dispatch_alerts(HEALTH_STATE, notify_owner, dry_run=DRY_RUN)
+        except Exception as e:
+            print(f"[ERROR] dispatch_alerts raised: {e}")
+            traceback.print_exc()
         save_health(HEALTH_STATE)
 
         print("\n[SUCCESS] Bot execution completed successfully!")

@@ -41,6 +41,7 @@ _HELP_TEXT = (
     "attributable to a specific mod team.\n\n"
     "    /xsub help                 — this message\n"
     "    /xsub status u/username    — show this user's status across the network\n"
+    "    /xsub history u/username   — chronological audit trail for this user\n"
     "    /xsub pardon u/username    — forgive + unban a user (origin-sub mods only)\n"
     "    /xsub exempt u/username    — exempt this user from bans in your sub only\n\n"
     "The pact triggers on bans whose reason is exactly "
@@ -174,6 +175,8 @@ def _handle_convo(convo, sr, sub, bot_name, dry_run=False, propagate_unban=None)
 
     if cmd == "status":
         _handle_status(convo, user, dry_run=dry_run, sub=sub, sender=sender)
+    elif cmd == "history":
+        _handle_history(convo, user, dry_run=dry_run, sub=sub, sender=sender)
     elif cmd == "pardon":
         _handle_pardon(
             convo, user, sub, sender,
@@ -237,6 +240,51 @@ def _handle_status(convo, user, dry_run, sub, sender):
     _reply(
         convo, "\n".join(lines),
         dry_run=dry_run, sub=sub, sender=sender, cmd="status",
+    )
+
+
+def _handle_history(convo, user, dry_run, sub, sender):
+    """Render a chronological audit trail across all DB rows for this user."""
+    rows = database.find_user_records(user)
+    if not rows:
+        _reply(
+            convo,
+            f"📭 No record of u/{user} in the pact database.",
+            dry_run=dry_run, sub=sub, sender=sender, cmd="history",
+        )
+        return
+
+    # find_user_records returns most-recent-first; reverse for chronological.
+    events = []
+    exempt_lines = []
+    for r in reversed(rows):
+        ts = r.get("timestamp") or "?"
+        src = r.get("source_sub") or "?"
+        actor = r.get("moderator_name") or "?"
+        events.append(
+            f"- `{ts}`  **BANNED** in {src} by u/{actor}"
+        )
+        if (r.get("manual_override") or "").lower() == "yes":
+            f_ts = r.get("forgive_timestamp") or "?"
+            f_by = r.get("moderator_name") or "?"
+            f_sub = r.get("mod_sub") or "?"
+            events.append(
+                f"- `{f_ts}`  **FORGIVEN** by u/{f_by} (in {f_sub})"
+            )
+        ex = (r.get("exempt_subs") or "").strip()
+        if ex:
+            exempt_lines.append(f"  - from row in {src}: exempt in {ex}")
+
+    lines = [f"**Audit trail for u/{user}** ({len(rows)} DB row(s))", ""]
+    lines.extend(events)
+    if exempt_lines:
+        lines.append("")
+        lines.append("Current exemptions:")
+        lines.extend(exempt_lines)
+
+    _reply(
+        convo, "\n".join(lines),
+        dry_run=dry_run, sub=sub, sender=sender, cmd="history",
     )
 
 

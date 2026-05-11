@@ -21,6 +21,7 @@ PUBLIC_LOG_HTML = "public_ban_log.html"
 
 RECENT_DAYS = 30
 HTML_MAX_ROWS = 200
+HTML_RECENT_DAYS = 7  # default-tab cutoff in the HTML dashboard
 
 # Module-level flag: did this run actually log anything?
 _logged_this_run = False
@@ -114,23 +115,26 @@ def _write_markdown(recent, total):
 
 
 def _write_html(rows, total):
-    """Compact searchable table for GitHub Pages."""
+    """Compact searchable table for GitHub Pages with Recent (7d) / All tabs."""
     try:
         last_updated = datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S UTC')
-        # Headline stats
-        cutoff_dt = datetime.utcnow() - timedelta(days=RECENT_DAYS)
-        cutoff_s = cutoff_dt.strftime('%Y-%m-%d %H:%M:%S')
-        recent_count = sum(1 for e in rows if e.get('timestamp', '') >= cutoff_s)
-        bans_recent = sum(1 for e in rows if e.get('timestamp', '') >= cutoff_s and e.get('action') == 'BANNED')
-        unbans_recent = recent_count - bans_recent
+        cutoff_30d = (datetime.utcnow() - timedelta(days=RECENT_DAYS)).strftime('%Y-%m-%d %H:%M:%S')
+        cutoff_7d = (datetime.utcnow() - timedelta(days=HTML_RECENT_DAYS)).strftime('%Y-%m-%d %H:%M:%S')
+
+        recent_30d_count = sum(1 for e in rows if e.get('timestamp', '') >= cutoff_30d)
+        bans_30d = sum(1 for e in rows if e.get('timestamp', '') >= cutoff_30d and e.get('action') == 'BANNED')
+        unbans_30d = recent_30d_count - bans_30d
+        recent_7d_count = sum(1 for e in rows if e.get('timestamp', '') >= cutoff_7d)
 
         body_rows = []
         for e in rows:
             action = e.get('action', '')
             cls = 'banned' if action == 'BANNED' else 'unbanned'
+            ts = e.get('timestamp', '')
+            is_recent = '1' if ts >= cutoff_7d else '0'
             body_rows.append(
-                f'<tr class="{cls}">'
-                f'<td>{escape(e.get("timestamp", ""))}</td>'
+                f'<tr class="{cls}" data-recent="{is_recent}">'
+                f'<td>{escape(ts)}</td>'
                 f'<td>{escape(action)}</td>'
                 f'<td>u/{escape(e.get("username", ""))}</td>'
                 f'<td>r/{escape(e.get("subreddit", ""))}</td>'
@@ -155,6 +159,11 @@ def _write_html(rows, total):
   .stats {{ display: flex; gap: 1.5rem; margin-bottom: 1rem; flex-wrap: wrap; }}
   .stat {{ background: rgba(127,127,127,.08); padding: .5rem 1rem; border-radius: 6px; }}
   .stat strong {{ display: block; font-size: 1.4rem; }}
+  .tabs {{ display: flex; gap: .25rem; margin-bottom: .5rem; border-bottom: 1px solid rgba(127,127,127,.2); }}
+  .tab {{ padding: .5rem .9rem; cursor: pointer; border: none; background: none;
+         color: CanvasText; font: inherit; border-bottom: 2px solid transparent; }}
+  .tab[aria-selected="true"] {{ border-bottom-color: #36c; font-weight: 600; }}
+  .tab:hover {{ background: rgba(127,127,127,.06); }}
   input[type=search] {{ width: 100%; padding: .5rem .75rem; margin-bottom: 1rem;
                        border: 1px solid rgba(127,127,127,.3); border-radius: 6px;
                        background: Canvas; color: CanvasText; font: inherit; }}
@@ -165,6 +174,7 @@ def _write_html(rows, total):
   tr.banned td:nth-child(2) {{ color: #c33; }}
   tr.unbanned td:nth-child(2) {{ color: #2a8; }}
   tr.hidden {{ display: none; }}
+  .empty {{ color: #888; text-align: center; padding: 1.5rem; }}
   .footer {{ color: #888; font-size: .85rem; margin-top: 1.5rem; }}
   a {{ color: #36c; }}
 </style>
@@ -175,8 +185,14 @@ def _write_html(rows, total):
 
 <div class="stats">
   <div class="stat"><strong>{total}</strong>total actions</div>
-  <div class="stat"><strong>{bans_recent}</strong>bans, last {RECENT_DAYS}d</div>
-  <div class="stat"><strong>{unbans_recent}</strong>unbans, last {RECENT_DAYS}d</div>
+  <div class="stat"><strong>{recent_7d_count}</strong>last 7 days</div>
+  <div class="stat"><strong>{bans_30d}</strong>bans, last {RECENT_DAYS}d</div>
+  <div class="stat"><strong>{unbans_30d}</strong>unbans, last {RECENT_DAYS}d</div>
+</div>
+
+<div class="tabs" role="tablist">
+  <button class="tab" id="tab-recent" role="tab" aria-selected="true" aria-controls="rows">Recent ({HTML_RECENT_DAYS}d)</button>
+  <button class="tab" id="tab-all" role="tab" aria-selected="false" aria-controls="rows">All ({len(rows)})</button>
 </div>
 
 <input id="filter" type="search" placeholder="Filter by user, subreddit, action, source…">
@@ -186,9 +202,10 @@ def _write_html(rows, total):
     <tr><th>Timestamp (UTC)</th><th>Action</th><th>User</th><th>Subreddit</th><th>Source</th><th>Actor</th></tr>
   </thead>
   <tbody id="rows">
-    {''.join(body_rows) if body_rows else '<tr><td colspan="6" style="color:#888;text-align:center;padding:1rem;">No actions yet.</td></tr>'}
+    {''.join(body_rows) if body_rows else '<tr><td colspan="6" class="empty">No actions yet.</td></tr>'}
   </tbody>
 </table>
+<div id="empty-recent" class="empty" hidden>No actions in the last {HTML_RECENT_DAYS} days.</div>
 
 <div class="footer">
   Full audit trail: <a href="public_ban_log.json">public_ban_log.json</a> ·
@@ -199,12 +216,37 @@ def _write_html(rows, total):
 <script>
   const input = document.getElementById('filter');
   const rows = document.querySelectorAll('#rows tr');
-  input.addEventListener('input', () => {{
+  const tabRecent = document.getElementById('tab-recent');
+  const tabAll = document.getElementById('tab-all');
+  const emptyRecent = document.getElementById('empty-recent');
+  let scope = 'recent';
+
+  function apply() {{
     const q = input.value.toLowerCase().trim();
+    let shownInScope = 0;
     rows.forEach(r => {{
-      r.classList.toggle('hidden', q && !r.textContent.toLowerCase().includes(q));
+      const inScope = (scope === 'all') || r.dataset.recent === '1';
+      const matchesQuery = !q || r.textContent.toLowerCase().includes(q);
+      const show = inScope && matchesQuery;
+      r.classList.toggle('hidden', !show);
+      if (inScope) shownInScope++;
     }});
-  }});
+    if (emptyRecent) {{
+      emptyRecent.hidden = !(scope === 'recent' && shownInScope === 0);
+    }}
+  }}
+
+  function selectTab(which) {{
+    scope = which;
+    tabRecent.setAttribute('aria-selected', which === 'recent');
+    tabAll.setAttribute('aria-selected', which === 'all');
+    apply();
+  }}
+
+  tabRecent.addEventListener('click', () => selectTab('recent'));
+  tabAll.addEventListener('click', () => selectTab('all'));
+  input.addEventListener('input', apply);
+  apply();
 </script>
 </body>
 </html>
