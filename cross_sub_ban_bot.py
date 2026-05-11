@@ -46,24 +46,38 @@ def is_forgiven(username, cache):
                 return True
     return False
 
-def apply_ban_across_network(username, source_sub):
-    """Apply a ban to every trusted sub except the originating one."""
-    ban_note = (
-        f"Cross-sub ban from {source_sub}. NHL subs share a pact to fight trolling. "
-        f"To appeal, message mods of {source_sub}."
-    )
+def apply_ban_across_network(username, source_sub, actor="Bot", note=None):
+    """
+    Apply a ban to every trusted sub except the originating one.
+
+    actor: who to attribute the public-log entries to. Defaults to 'Bot'
+        for normal modlog-driven propagation. Pass a string like
+        'u/re-verse (modmail-super-ban)' for manually-initiated bans.
+    note: ban note shown in modmail to the banned user. Defaults to the
+        standard 'NHL subs share a pact' note. Pass a custom string for
+        super-bans or other special cases.
+
+    When source_sub doesn't match any TRUSTED_SUB (e.g. 'manual'), the
+    skip clause is a no-op and all 9 subs get the ban — used by the
+    /xsub super ban modmail command.
+    """
+    if note is None:
+        note = (
+            f"Cross-sub ban from {source_sub}. NHL subs share a pact to fight trolling. "
+            f"To appeal, message mods of {source_sub}."
+        )
     src_lc = source_sub.lower().lstrip('r/').strip('/')
     for sub in TRUSTED_SUBS:
         if sub.lower() == src_lc:
             continue
         if DRY_RUN:
-            print(f"[DRY-RUN][PROPAGATE-BAN] would ban u/{username} in r/{sub} (from {source_sub})")
+            print(f"[DRY-RUN][PROPAGATE-BAN] would ban u/{username} in r/{sub} (from {source_sub}, actor={actor})")
             continue
         try:
             sr = reddit.subreddit(sub)
-            sr.banned.add(username, ban_reason=CROSS_SUB_BAN_REASON, note=ban_note)
-            print(f"[PROPAGATE-BAN] u/{username} -> r/{sub} (from {source_sub})")
-            log_public_action("BANNED", username, sub, source_sub=source_sub, actor="Bot")
+            sr.banned.add(username, ban_reason=CROSS_SUB_BAN_REASON, note=note)
+            print(f"[PROPAGATE-BAN] u/{username} -> r/{sub} (from {source_sub}, actor={actor})")
+            log_public_action("BANNED", username, sub, source_sub=source_sub, actor=actor)
         except prawcore.exceptions.Forbidden:
             print(f"[WARN] No ban permission in r/{sub}, skipping.")
         except Exception as e:
@@ -225,6 +239,7 @@ def main():
                 health_state=HEALTH_STATE,
                 dry_run=DRY_RUN,
                 propagate_unban=apply_unban_across_network,
+                propagate_ban=apply_ban_across_network,
             )
         except Exception as e:
             print(f"[ERROR] Modmail check raised: {e}")
