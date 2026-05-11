@@ -46,8 +46,22 @@ jobs:
 
           if ! git diff --cached --quiet; then
             git commit -m "Update ban database and public log"
-            git pull origin main --rebase
-            git push
+            # Retry pull+push with backoff. GitHub occasionally returns
+            # 500 on push (transient backend hiccup); without a retry,
+            # the whole run gets flagged failure even though the bot
+            # work itself succeeded. Three attempts: 5s, 30s, 120s.
+            for delay in 0 5 30 120; do
+              if [ "$delay" != "0" ]; then
+                echo "::warning::Push attempt failed; retrying in ${delay}s..."
+                sleep "$delay"
+              fi
+              if git pull origin main --rebase && git push; then
+                echo "Push succeeded."
+                exit 0
+              fi
+            done
+            echo "::error::Push failed after 4 attempts (5s/30s/120s backoff)."
+            exit 1
           else
             echo "No state changes to commit."
           fi
