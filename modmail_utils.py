@@ -21,7 +21,7 @@ Behaviour notes:
   the health tracker so they surface alongside modlog access drift.
 """
 from datetime import datetime
-from bot_config import database, reddit, TRUSTED_SUBS
+from bot_config import database, reddit, TRUSTED_SUBS, OWNER_USERNAME, CROSS_SUB_BAN_REASON
 from core_utils import is_mod
 from log_utils import log_public_action
 import os
@@ -39,11 +39,12 @@ _HELP_TEXT = (
     "2. **DM to me directly** — only `/xsub help` works that way. "
     "Mutating commands have to go through modmail so the action is "
     "attributable to a specific mod team.\n\n"
-    "    /xsub help                 — this message\n"
-    "    /xsub status u/username    — show this user's status across the network\n"
-    "    /xsub history u/username   — chronological audit trail for this user\n"
-    "    /xsub pardon u/username    — forgive + unban a user (origin-sub mods only)\n"
-    "    /xsub exempt u/username    — exempt this user from bans in your sub only\n\n"
+    "    /xsub help                       — this message\n"
+    "    /xsub status u/username          — show this user's status across the network\n"
+    "    /xsub history u/username         — chronological audit trail for this user\n"
+    "    /xsub pardon u/username          — forgive + unban a user (origin-sub mods only)\n"
+    "    /xsub exempt u/username          — exempt this user from bans in your sub only\n"
+    "    /xsub super ban u/username ...   — manual cross-sub ban (bot owner only)\n\n"
     "The pact triggers on bans whose reason is exactly "
     "**Auto XSub Pact Ban**.\n\n"
     "Public log: https://re-verse.github.io/cross_sub_ban_bot/public_ban_log.html"
@@ -80,7 +81,7 @@ def _parse_username(token):
     return t.strip()
 
 
-def check_modmail(health_state=None, dry_run=False, propagate_unban=None):
+def check_modmail(health_state=None, dry_run=False, propagate_unban=None, propagate_ban=None):
     """
     Walk modmail on each trusted sub and act on /xsub commands.
 
@@ -93,6 +94,9 @@ def check_modmail(health_state=None, dry_run=False, propagate_unban=None):
         /xsub pardon to apply the unban across the trusted-sub network.
         Passed in by the main bot so the propagation path is shared with
         the modlog-driven unban handler.
+    propagate_ban: optional callable(username, source_sub, actor, note)
+        used by /xsub super ban to apply the ban across the entire
+        trusted-sub network. Owner-only command.
     """
     print("[MODMAIL] Checking for /xsub commands...")
     bot_name = _bot_username()
@@ -109,6 +113,7 @@ def check_modmail(health_state=None, dry_run=False, propagate_unban=None):
                     convo, sr, sub, bot_name,
                     dry_run=dry_run,
                     propagate_unban=propagate_unban,
+                    propagate_ban=propagate_ban,
                 )
         except prawcore.exceptions.Forbidden as e:
             print(f"[MODMAIL-WARN] Forbidden on r/{sub}: {e}")
@@ -124,7 +129,7 @@ def check_modmail(health_state=None, dry_run=False, propagate_unban=None):
             print(f"[MODMAIL-ERROR] r/{sub}: {e}")
 
 
-def _handle_convo(convo, sr, sub, bot_name, dry_run=False, propagate_unban=None):
+def _handle_convo(convo, sr, sub, bot_name, dry_run=False, propagate_unban=None, propagate_ban=None):
     """Process a single conversation if it looks like a fresh /xsub command."""
     if not convo.messages:
         return
@@ -154,6 +159,16 @@ def _handle_convo(convo, sr, sub, bot_name, dry_run=False, propagate_unban=None)
 
     if cmd == "help":
         _reply(convo, _HELP_TEXT, dry_run=dry_run, sub=sub, sender=sender, cmd="help")
+        return
+
+    # /xsub super <subcmd> u/user [reason...]  — owner-only.
+    # Handled separately because the argument layout differs from the
+    # other commands (subcommand at parts[2], not a username).
+    if cmd == "super":
+        _handle_super(
+            convo, parts, sub, sender,
+            dry_run=dry_run, propagate_ban=propagate_ban,
+        )
         return
 
     if len(parts) < 3:
@@ -411,3 +426,153 @@ def _reply(convo, body, dry_run, sub, sender, cmd):
         print(f"[MODMAIL-REPLY] r/{sub} u/{sender} cmd={cmd}: replied")
     except Exception as e:
         print(f"[MODMAIL-ERROR] r/{sub} u/{sender} cmd={cmd}: reply failed: {e}")
+
+
+def _handle_super(convo, parts, sub, sender, dry_run, propagate_ban):
+    """
+    Owner-only /xsub super <subcmd> handler.
+
+    Current subcommands:
+      ban u/username [reason...]  -> apply pact ban across ALL trusted subs
+                                     with source_sub='manual' so it doesn't
+                                     get re-processed by modlog propagation.
+
+    Only the configured OWNER_USERNAME can run super commands. Any other
+    mod gets a flat refusal. We don't silently drop because the sender
+    already passed is_mod for this sub — they deserve to know why.
+    """
+    # parts = ['/xsub', 'super', '<subcmd>', '<user>', 'reason', ...]
+    if sender != OWNER_USERNAME.lower():
+        _reply(
+            convo,
+            f"❌ `/xsub super` commands are restricted to u/{OWNER_USERNAME}.",
+            dry_run=dry_run, sub=sub, sender=sender, cmd="super",
+        )
+        return
+
+    if len(parts) < 4:
+        _reply(
+            convo,
+            "⚠️ Format: `/xsub super ban u/username <reason>`",
+            dry_run=dry_run, sub=sub, sender=sender, cmd="super",
+        )
+        return
+
+    subcmd = parts[2]
+    user = _parse_username(parts[3])
+    reason = " ".join(parts[4:]).strip() or "Manual cross-sub ban (no reason given)"
+
+    if not user:
+        _reply(
+            convo,
+            "⚠️ Could not parse the username. Format: `/xsub super ban u/username <reason>`",
+            dry_run=dry_run, sub=sub, sender=sender, cmd="super",
+        )
+        return
+
+    if subcmd != "ban":
+        _reply(
+            convo,
+            f"⚠️ Unknown super subcommand `{subcmd}`. Only `ban` is supported.",
+            dry_run=dry_run, sub=sub, sender=sender, cmd="super",
+        )
+        return
+
+    _handle_super_ban(
+        convo, user, reason, sub, sender,
+        dry_run=dry_run, propagate_ban=propagate_ban,
+    )
+
+
+def _handle_super_ban(convo, user, reason, sub, sender, dry_run, propagate_ban):
+    """
+    Apply a manual cross-sub ban initiated by the owner.
+
+    Uses source_sub='manual' for two reasons:
+    1. It signals in the public log that this didn't originate from any
+       trusted sub's modlog.
+    2. apply_ban_across_network's skip-the-source-sub clause becomes a
+       no-op, so all 9 subs get the ban.
+
+    The DB row is inserted so the same user can't be super-banned twice
+    by accident, and so /xsub status / /xsub history surface the action.
+    """
+    if propagate_ban is None:
+        _reply(
+            convo,
+            "❌ Internal error: super-ban not wired to a propagation handler.",
+            dry_run=dry_run, sub=sub, sender=sender, cmd="super",
+        )
+        return
+
+    when = datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
+    log_id = f"supermodmail_{when.replace(' ', 'T')}_{user}"
+    note = (
+        f"Manual cross-sub ban applied by u/{OWNER_USERNAME} via modmail. "
+        f"Reason: {reason}. NHL subs share a pact to fight trolling. "
+        f"To appeal, message mods of any participating sub."
+    )
+
+    if dry_run:
+        print(
+            f"[DRY-RUN][MODMAIL-SUPER-BAN] would super-ban u/{user} across all "
+            f"{len(TRUSTED_SUBS)} trusted subs (reason: {reason}, by u/{sender})"
+        )
+        # Still call propagate_ban so the dry-run log shows the per-sub intent
+        propagate_ban(
+            user, "manual",
+            actor=f"{sender} (modmail-super-ban)",
+            note=note,
+        )
+        return
+
+    # Insert the DB row first so a partial Reddit failure still leaves a
+    # record. append_row is silently idempotent on (username, source_sub)
+    # unique constraint — repeat super-bans of the same user are no-ops.
+    row_data = [
+        user,
+        "manual",
+        CROSS_SUB_BAN_REASON,
+        when,
+        '',  # manual_override blank — this is a fresh ban, not forgiven
+        log_id,
+        sender,
+    ]
+    try:
+        database.append_row(row_data)
+    except Exception as e:
+        print(f"[MODMAIL-SUPER-BAN-WARN] DB insert failed (may be duplicate): {e}")
+
+    # Public log gets one top-level row too, so the audit trail clearly
+    # shows the SUPER-BAN action was initiated, not just the propagation.
+    log_public_action(
+        "BANNED", user, "manual", source_sub="manual",
+        actor=f"{sender} (modmail-super-ban)",
+        note=reason,
+    )
+
+    print(
+        f"[MODMAIL-SUPER-BAN] u/{user} super-banned by u/{sender} (reason: {reason})"
+    )
+
+    try:
+        propagate_ban(
+            user, "manual",
+            actor=f"{sender} (modmail-super-ban)",
+            note=note,
+        )
+    except Exception as e:
+        print(f"[MODMAIL-SUPER-BAN-WARN] propagation raised: {e}")
+        _reply(
+            convo,
+            f"⚠️ u/{user} ban initiated but propagation raised an error — check logs.",
+            dry_run=False, sub=sub, sender=sender, cmd="super",
+        )
+        return
+
+    _reply(
+        convo,
+        f"✅ u/{user} has been banned across the pact network ({len(TRUSTED_SUBS)} subs attempted).\n\n"
+        f"Reason: {reason}",
+        dry_run=False, sub=sub, sender=sender, cmd="super",
+    )

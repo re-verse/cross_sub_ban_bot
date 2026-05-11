@@ -31,11 +31,12 @@ _HELP_TEXT = (
     "2. **Direct message to me** — only `/xsub help` works over DM. "
     "All mutating commands must go through your sub's modmail so the "
     "action is attributable to a specific mod team.\n\n"
-    "    /xsub help                 — this message\n"
-    "    /xsub status u/username    — show this user's status across the network\n"
-    "    /xsub history u/username   — chronological audit trail (modmail only)\n"
-    "    /xsub pardon u/username    — forgive + unban a user (origin-sub mods only, modmail only)\n"
-    "    /xsub exempt u/username    — exempt user from bans in your sub only (modmail only)\n\n"
+    "    /xsub help                       — this message\n"
+    "    /xsub status u/username          — show this user's status across the network\n"
+    "    /xsub history u/username         — chronological audit trail (modmail only)\n"
+    "    /xsub pardon u/username          — forgive + unban a user (origin-sub mods only, modmail only)\n"
+    "    /xsub exempt u/username          — exempt user from bans in your sub only (modmail only)\n"
+    "    /xsub super ban u/username ...   — manual cross-sub ban (bot owner only, modmail only)\n\n"
     "The pact triggers on bans whose reason is exactly "
     "**Auto XSub Pact Ban**.\n\n"
     "Public log: https://re-verse.github.io/cross_sub_ban_bot/public_ban_log.html"
@@ -135,7 +136,7 @@ def check_dm_inbox(dry_run=False):
         if cmd == "help":
             reply_body = _HELP_TEXT
             log_tag = "help"
-        elif cmd in ("status", "history", "pardon", "exempt"):
+        elif cmd in ("status", "history", "pardon", "exempt", "super"):
             reply_body = (
                 f"ℹ️ `/xsub {cmd}` is only available via modmail to your own sub, "
                 "not via DM. This keeps every action attributable to a specific "
