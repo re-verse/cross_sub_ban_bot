@@ -5,55 +5,55 @@
     "floridapanthers::escalation_12": "2026-05-11T21:44:24+00:00",
     "floridapanthers:modmail::escalation_12": "2026-05-11T21:44:24+00:00"
   },
-  "last_run": "2026-05-12T22:58:40+00:00",
+  "last_run": "2026-05-12T23:56:56+00:00",
   "subs": {
     "anaheimducks": {
       "consecutive_failures": 0,
-      "last_ok": "2026-05-12T22:58:22+00:00"
+      "last_ok": "2026-05-12T23:56:34+00:00"
     },
     "caps": {
-      "consecutive_failures": 25,
+      "consecutive_failures": 26,
       "last_error": "NotFound: received 404 HTTP response",
-      "last_failure": "2026-05-12T22:58:22+00:00"
+      "last_failure": "2026-05-12T23:56:28+00:00"
     },
     "caps:modmail": {
-      "consecutive_failures": 25,
+      "consecutive_failures": 26,
       "last_error": "received 403 HTTP response",
-      "last_failure": "2026-05-12T22:58:35+00:00"
+      "last_failure": "2026-05-12T23:56:51+00:00"
     },
     "floridapanthers": {
-      "consecutive_failures": 25,
+      "consecutive_failures": 26,
       "last_error": "NotFound: received 404 HTTP response",
-      "last_failure": "2026-05-12T22:58:21+00:00"
+      "last_failure": "2026-05-12T23:56:25+00:00"
     },
     "floridapanthers:modmail": {
-      "consecutive_failures": 25,
+      "consecutive_failures": 26,
       "last_error": "received 403 HTTP response",
-      "last_failure": "2026-05-12T22:58:29+00:00"
+      "last_failure": "2026-05-12T23:56:46+00:00"
     },
     "goldenknights": {
       "consecutive_failures": 0,
-      "last_ok": "2026-05-12T22:58:22+00:00"
+      "last_ok": "2026-05-12T23:56:31+00:00"
     },
     "habs": {
       "consecutive_failures": 0,
-      "last_ok": "2026-05-12T22:58:21+00:00"
+      "last_ok": "2026-05-12T23:56:22+00:00"
     },
     "leafs": {
       "consecutive_failures": 0,
-      "last_ok": "2026-05-12T22:58:21+00:00"
+      "last_ok": "2026-05-12T23:56:25+00:00"
     },
     "ottawasenators": {
       "consecutive_failures": 0,
-      "last_ok": "2026-05-12T22:58:23+00:00"
+      "last_ok": "2026-05-12T23:56:37+00:00"
     },
     "winnipegjets": {
       "consecutive_failures": 0,
-      "last_ok": "2026-05-12T22:58:22+00:00"
+      "last_ok": "2026-05-12T23:56:28+00:00"
     },
     "xsubpacttest1": {
       "consecutive_failures": 0,
-      "last_ok": "2026-05-12T22:58:23+00:00"
+      "last_ok": "2026-05-12T23:56:40+00:00"
     }
   }
 }
