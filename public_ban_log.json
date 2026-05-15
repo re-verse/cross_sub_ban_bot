@@ -285343,5 +285343,167 @@
     "source_sub": "r/xsubpacttest1",
     "actor": "Bot",
     "note": ""
+  },
+  {
+    "timestamp": "2026-05-15 05:35:41",
+    "action": "BANNED",
+    "username": "Miserable_Avocado768",
+    "subreddit": "habs",
+    "source_sub": "r/goldenknights",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-05-15 05:35:41",
+    "action": "BANNED",
+    "username": "Miserable_Avocado768",
+    "subreddit": "leafs",
+    "source_sub": "r/goldenknights",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-05-15 05:35:42",
+    "action": "BANNED",
+    "username": "Miserable_Avocado768",
+    "subreddit": "winnipegjets",
+    "source_sub": "r/goldenknights",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-05-15 05:35:43",
+    "action": "BANNED",
+    "username": "Miserable_Avocado768",
+    "subreddit": "anaheimducks",
+    "source_sub": "r/goldenknights",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-05-15 05:35:44",
+    "action": "BANNED",
+    "username": "Miserable_Avocado768",
+    "subreddit": "ottawasenators",
+    "source_sub": "r/goldenknights",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-05-15 05:35:45",
+    "action": "BANNED",
+    "username": "Miserable_Avocado768",
+    "subreddit": "xsubpacttest1",
+    "source_sub": "r/goldenknights",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-05-15 05:35:45",
+    "action": "BANNED",
+    "username": "Miserable_Avocado768",
+    "subreddit": "habs",
+    "source_sub": "r/anaheimducks",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-05-15 05:35:46",
+    "action": "BANNED",
+    "username": "Miserable_Avocado768",
+    "subreddit": "leafs",
+    "source_sub": "r/anaheimducks",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-05-15 05:35:46",
+    "action": "BANNED",
+    "username": "Miserable_Avocado768",
+    "subreddit": "winnipegjets",
+    "source_sub": "r/anaheimducks",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-05-15 05:35:47",
+    "action": "BANNED",
+    "username": "Miserable_Avocado768",
+    "subreddit": "goldenknights",
+    "source_sub": "r/anaheimducks",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-05-15 05:35:47",
+    "action": "BANNED",
+    "username": "Miserable_Avocado768",
+    "subreddit": "ottawasenators",
+    "source_sub": "r/anaheimducks",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-05-15 05:35:48",
+    "action": "BANNED",
+    "username": "Miserable_Avocado768",
+    "subreddit": "xsubpacttest1",
+    "source_sub": "r/anaheimducks",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-05-15 05:35:49",
+    "action": "BANNED",
+    "username": "Miserable_Avocado768",
+    "subreddit": "habs",
+    "source_sub": "r/xsubpacttest1",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-05-15 05:35:49",
+    "action": "BANNED",
+    "username": "Miserable_Avocado768",
+    "subreddit": "leafs",
+    "source_sub": "r/xsubpacttest1",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-05-15 05:35:50",
+    "action": "BANNED",
+    "username": "Miserable_Avocado768",
+    "subreddit": "winnipegjets",
+    "source_sub": "r/xsubpacttest1",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-05-15 05:35:50",
+    "action": "BANNED",
+    "username": "Miserable_Avocado768",
+    "subreddit": "goldenknights",
+    "source_sub": "r/xsubpacttest1",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-05-15 05:35:51",
+    "action": "BANNED",
+    "username": "Miserable_Avocado768",
+    "subreddit": "anaheimducks",
+    "source_sub": "r/xsubpacttest1",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-05-15 05:35:51",
+    "action": "BANNED",
+    "username": "Miserable_Avocado768",
+    "subreddit": "ottawasenators",
+    "source_sub": "r/xsubpacttest1",
+    "actor": "Bot",
+    "note": ""
   }
 ]
