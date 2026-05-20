@@ -292957,5 +292957,383 @@
     "source_sub": "r/xsubpacttest1",
     "actor": "Bot",
     "note": ""
+  },
+  {
+    "timestamp": "2026-05-20 14:26:57",
+    "action": "BANNED",
+    "username": "Valuable_Recording41",
+    "subreddit": "leafs",
+    "source_sub": "r/habs",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-05-20 14:26:57",
+    "action": "BANNED",
+    "username": "Valuable_Recording41",
+    "subreddit": "winnipegjets",
+    "source_sub": "r/habs",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-05-20 14:26:58",
+    "action": "BANNED",
+    "username": "Valuable_Recording41",
+    "subreddit": "goldenknights",
+    "source_sub": "r/habs",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-05-20 14:26:59",
+    "action": "BANNED",
+    "username": "Valuable_Recording41",
+    "subreddit": "anaheimducks",
+    "source_sub": "r/habs",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-05-20 14:26:59",
+    "action": "BANNED",
+    "username": "Valuable_Recording41",
+    "subreddit": "ottawasenators",
+    "source_sub": "r/habs",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-05-20 14:27:00",
+    "action": "BANNED",
+    "username": "Valuable_Recording41",
+    "subreddit": "xsubpacttest1",
+    "source_sub": "r/habs",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-05-20 14:27:01",
+    "action": "BANNED",
+    "username": "Valuable_Recording41",
+    "subreddit": "habs",
+    "source_sub": "r/leafs",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-05-20 14:27:01",
+    "action": "BANNED",
+    "username": "Valuable_Recording41",
+    "subreddit": "winnipegjets",
+    "source_sub": "r/leafs",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-05-20 14:27:02",
+    "action": "BANNED",
+    "username": "Valuable_Recording41",
+    "subreddit": "goldenknights",
+    "source_sub": "r/leafs",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-05-20 14:27:02",
+    "action": "BANNED",
+    "username": "Valuable_Recording41",
+    "subreddit": "anaheimducks",
+    "source_sub": "r/leafs",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-05-20 14:27:03",
+    "action": "BANNED",
+    "username": "Valuable_Recording41",
+    "subreddit": "ottawasenators",
+    "source_sub": "r/leafs",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-05-20 14:27:03",
+    "action": "BANNED",
+    "username": "Valuable_Recording41",
+    "subreddit": "xsubpacttest1",
+    "source_sub": "r/leafs",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-05-20 14:27:04",
+    "action": "BANNED",
+    "username": "Valuable_Recording41",
+    "subreddit": "habs",
+    "source_sub": "r/winnipegjets",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-05-20 14:27:05",
+    "action": "BANNED",
+    "username": "Valuable_Recording41",
+    "subreddit": "leafs",
+    "source_sub": "r/winnipegjets",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-05-20 14:27:05",
+    "action": "BANNED",
+    "username": "Valuable_Recording41",
+    "subreddit": "goldenknights",
+    "source_sub": "r/winnipegjets",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-05-20 14:27:06",
+    "action": "BANNED",
+    "username": "Valuable_Recording41",
+    "subreddit": "anaheimducks",
+    "source_sub": "r/winnipegjets",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-05-20 14:27:06",
+    "action": "BANNED",
+    "username": "Valuable_Recording41",
+    "subreddit": "ottawasenators",
+    "source_sub": "r/winnipegjets",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-05-20 14:27:07",
+    "action": "BANNED",
+    "username": "Valuable_Recording41",
+    "subreddit": "xsubpacttest1",
+    "source_sub": "r/winnipegjets",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-05-20 14:27:08",
+    "action": "BANNED",
+    "username": "Valuable_Recording41",
+    "subreddit": "habs",
+    "source_sub": "r/goldenknights",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-05-20 14:27:08",
+    "action": "BANNED",
+    "username": "Valuable_Recording41",
+    "subreddit": "leafs",
+    "source_sub": "r/goldenknights",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-05-20 14:27:09",
+    "action": "BANNED",
+    "username": "Valuable_Recording41",
+    "subreddit": "winnipegjets",
+    "source_sub": "r/goldenknights",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-05-20 14:27:09",
+    "action": "BANNED",
+    "username": "Valuable_Recording41",
+    "subreddit": "anaheimducks",
+    "source_sub": "r/goldenknights",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-05-20 14:27:10",
+    "action": "BANNED",
+    "username": "Valuable_Recording41",
+    "subreddit": "ottawasenators",
+    "source_sub": "r/goldenknights",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-05-20 14:27:10",
+    "action": "BANNED",
+    "username": "Valuable_Recording41",
+    "subreddit": "xsubpacttest1",
+    "source_sub": "r/goldenknights",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-05-20 14:27:12",
+    "action": "BANNED",
+    "username": "Valuable_Recording41",
+    "subreddit": "habs",
+    "source_sub": "r/anaheimducks",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-05-20 14:27:12",
+    "action": "BANNED",
+    "username": "Valuable_Recording41",
+    "subreddit": "leafs",
+    "source_sub": "r/anaheimducks",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-05-20 14:27:13",
+    "action": "BANNED",
+    "username": "Valuable_Recording41",
+    "subreddit": "winnipegjets",
+    "source_sub": "r/anaheimducks",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-05-20 14:27:13",
+    "action": "BANNED",
+    "username": "Valuable_Recording41",
+    "subreddit": "goldenknights",
+    "source_sub": "r/anaheimducks",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-05-20 14:27:14",
+    "action": "BANNED",
+    "username": "Valuable_Recording41",
+    "subreddit": "ottawasenators",
+    "source_sub": "r/anaheimducks",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-05-20 14:27:14",
+    "action": "BANNED",
+    "username": "Valuable_Recording41",
+    "subreddit": "xsubpacttest1",
+    "source_sub": "r/anaheimducks",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-05-20 14:27:15",
+    "action": "BANNED",
+    "username": "Valuable_Recording41",
+    "subreddit": "habs",
+    "source_sub": "r/ottawasenators",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-05-20 14:27:15",
+    "action": "BANNED",
+    "username": "Valuable_Recording41",
+    "subreddit": "leafs",
+    "source_sub": "r/ottawasenators",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-05-20 14:27:16",
+    "action": "BANNED",
+    "username": "Valuable_Recording41",
+    "subreddit": "winnipegjets",
+    "source_sub": "r/ottawasenators",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-05-20 14:27:16",
+    "action": "BANNED",
+    "username": "Valuable_Recording41",
+    "subreddit": "goldenknights",
+    "source_sub": "r/ottawasenators",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-05-20 14:27:17",
+    "action": "BANNED",
+    "username": "Valuable_Recording41",
+    "subreddit": "anaheimducks",
+    "source_sub": "r/ottawasenators",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-05-20 14:27:17",
+    "action": "BANNED",
+    "username": "Valuable_Recording41",
+    "subreddit": "xsubpacttest1",
+    "source_sub": "r/ottawasenators",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-05-20 14:27:18",
+    "action": "BANNED",
+    "username": "Valuable_Recording41",
+    "subreddit": "habs",
+    "source_sub": "r/xsubpacttest1",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-05-20 14:27:18",
+    "action": "BANNED",
+    "username": "Valuable_Recording41",
+    "subreddit": "leafs",
+    "source_sub": "r/xsubpacttest1",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-05-20 14:27:19",
+    "action": "BANNED",
+    "username": "Valuable_Recording41",
+    "subreddit": "winnipegjets",
+    "source_sub": "r/xsubpacttest1",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-05-20 14:27:19",
+    "action": "BANNED",
+    "username": "Valuable_Recording41",
+    "subreddit": "goldenknights",
+    "source_sub": "r/xsubpacttest1",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-05-20 14:27:20",
+    "action": "BANNED",
+    "username": "Valuable_Recording41",
+    "subreddit": "anaheimducks",
+    "source_sub": "r/xsubpacttest1",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-05-20 14:27:21",
+    "action": "BANNED",
+    "username": "Valuable_Recording41",
+    "subreddit": "ottawasenators",
+    "source_sub": "r/xsubpacttest1",
+    "actor": "Bot",
+    "note": ""
   }
 ]
