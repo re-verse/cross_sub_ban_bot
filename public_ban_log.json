@@ -294847,5 +294847,113 @@
     "source_sub": "r/xsubpacttest1",
     "actor": "Bot",
     "note": ""
+  },
+  {
+    "timestamp": "2026-05-30 15:56:19",
+    "action": "BANNED",
+    "username": "sex_panther_by_odeon",
+    "subreddit": "habs",
+    "source_sub": "r/ottawasenators",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-05-30 15:56:20",
+    "action": "BANNED",
+    "username": "sex_panther_by_odeon",
+    "subreddit": "leafs",
+    "source_sub": "r/ottawasenators",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-05-30 15:56:21",
+    "action": "BANNED",
+    "username": "sex_panther_by_odeon",
+    "subreddit": "winnipegjets",
+    "source_sub": "r/ottawasenators",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-05-30 15:56:22",
+    "action": "BANNED",
+    "username": "sex_panther_by_odeon",
+    "subreddit": "goldenknights",
+    "source_sub": "r/ottawasenators",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-05-30 15:56:22",
+    "action": "BANNED",
+    "username": "sex_panther_by_odeon",
+    "subreddit": "anaheimducks",
+    "source_sub": "r/ottawasenators",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-05-30 15:56:23",
+    "action": "BANNED",
+    "username": "sex_panther_by_odeon",
+    "subreddit": "xsubpacttest1",
+    "source_sub": "r/ottawasenators",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-05-30 15:56:24",
+    "action": "BANNED",
+    "username": "sex_panther_by_odeon",
+    "subreddit": "habs",
+    "source_sub": "r/xsubpacttest1",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-05-30 15:56:24",
+    "action": "BANNED",
+    "username": "sex_panther_by_odeon",
+    "subreddit": "leafs",
+    "source_sub": "r/xsubpacttest1",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-05-30 15:56:24",
+    "action": "BANNED",
+    "username": "sex_panther_by_odeon",
+    "subreddit": "winnipegjets",
+    "source_sub": "r/xsubpacttest1",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-05-30 15:56:25",
+    "action": "BANNED",
+    "username": "sex_panther_by_odeon",
+    "subreddit": "goldenknights",
+    "source_sub": "r/xsubpacttest1",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-05-30 15:56:25",
+    "action": "BANNED",
+    "username": "sex_panther_by_odeon",
+    "subreddit": "anaheimducks",
+    "source_sub": "r/xsubpacttest1",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-05-30 15:56:26",
+    "action": "BANNED",
+    "username": "sex_panther_by_odeon",
+    "subreddit": "ottawasenators",
+    "source_sub": "r/xsubpacttest1",
+    "actor": "Bot",
+    "note": ""
   }
 ]
