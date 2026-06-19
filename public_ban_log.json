@@ -299707,5 +299707,59 @@
     "source_sub": "r/xsubpacttest1",
     "actor": "Bot",
     "note": ""
+  },
+  {
+    "timestamp": "2026-06-19 22:40:52",
+    "action": "BANNED",
+    "username": "canucknfack",
+    "subreddit": "leafs",
+    "source_sub": "r/habs",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-06-19 22:40:53",
+    "action": "BANNED",
+    "username": "canucknfack",
+    "subreddit": "winnipegjets",
+    "source_sub": "r/habs",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-06-19 22:40:54",
+    "action": "BANNED",
+    "username": "canucknfack",
+    "subreddit": "goldenknights",
+    "source_sub": "r/habs",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-06-19 22:40:54",
+    "action": "BANNED",
+    "username": "canucknfack",
+    "subreddit": "anaheimducks",
+    "source_sub": "r/habs",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-06-19 22:40:54",
+    "action": "BANNED",
+    "username": "canucknfack",
+    "subreddit": "ottawasenators",
+    "source_sub": "r/habs",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-06-19 22:40:55",
+    "action": "BANNED",
+    "username": "canucknfack",
+    "subreddit": "xsubpacttest1",
+    "source_sub": "r/habs",
+    "actor": "Bot",
+    "note": ""
   }
 ]
