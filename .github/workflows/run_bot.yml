@@ -40,7 +40,7 @@ jobs:
           # actually logged, so on idle runs mostly bans.db and
           # bot_health.json will see touches. -- ignores files that don't
           # exist yet (first creation) without masking other failures.
-          for f in bans.db bot_health.json public_ban_log.json public_ban_log.md public_ban_log.html; do
+          for f in bans.db bot_health.json public_ban_log.json public_ban_log.md public_ban_log.html trusted_subs.txt pending_subs.json; do
             if [ -e "$f" ]; then git add "$f"; fi
           done
 
