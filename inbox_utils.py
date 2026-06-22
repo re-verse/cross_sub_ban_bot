@@ -7,17 +7,26 @@ account directly instead of going through their own sub's modmail. This
 module catches that path and auto-replies with the help text, gated on
 the sender being a moderator of at least one trusted sub.
 
-Strictly read-only:
-- Only /xsub help (and unknown /xsub commands) get a reply
-- Mutating commands over DM are deliberately not supported. Asking a
-  user to do those through modmail keeps every action attributable to
-  a specific sub's mod team, which matters for audit + abuse cases.
+Strictly read-only for everyone except the bot owner:
+- /xsub help (and unknown /xsub commands) get a reply
+- Mutating sub-action commands (pardon/exempt/super) are deliberately
+  not supported over DM. Asking a mod to use modmail keeps every
+  action attributable to a specific sub's mod team, which matters
+  for audit + abuse cases.
+- Owner-only network management commands DO work over DM, since
+  they're cross-network (approve a new sub, decline, remove from
+  trusted list) rather than sub-specific. Owner is identified by
+  OWNER_USERNAME in config.
 - Non-mods get no reply at all (no engagement signal to drive-bys).
 """
 import os
 import prawcore
-from bot_config import reddit, TRUSTED_SUBS
+from bot_config import reddit, TRUSTED_SUBS, OWNER_USERNAME
 from core_utils import is_mod
+from subreddit_discovery import (
+    load_trusted, save_trusted, load_pending, save_pending,
+    approve_sub, decline_sub, remove_sub,
+)
 
 # Cap inbox scan per run. Reddit's unread inbox shouldn't be large for a
 # bot account, but defensively bound it so a flood can't stall a cron tick.
@@ -36,7 +45,10 @@ _HELP_TEXT = (
     "    /xsub history u/username         — chronological audit trail (modmail only)\n"
     "    /xsub pardon u/username          — forgive + unban a user (origin-sub mods only, modmail only)\n"
     "    /xsub exempt u/username          — exempt user from bans in your sub only (modmail only)\n"
-    "    /xsub super ban u/username ...   — manual cross-sub ban (bot owner only, modmail only)\n\n"
+    "    /xsub super ban u/username ...   — manual cross-sub ban (bot owner only, modmail only)\n"
+    "    /xsub approve r/subname          — move sub from pending to trusted (owner only, DM or modmail)\n"
+    "    /xsub decline r/subname          — drop pending sub without trusting (owner only)\n"
+    "    /xsub remove r/subname           — remove sub from trusted list (owner only)\n\n"
     "The pact triggers on bans whose reason is exactly "
     "**Auto XSub Pact Ban**.\n\n"
     "Public log: https://re-verse.github.io/cross_sub_ban_bot/public_ban_log.html"
@@ -136,6 +148,8 @@ def check_dm_inbox(dry_run=False):
         if cmd == "help":
             reply_body = _HELP_TEXT
             log_tag = "help"
+        elif cmd in ("approve", "decline", "remove"):
+            reply_body, log_tag = _handle_management_cmd(cmd, parts, sender, dry_run)
         elif cmd in ("status", "history", "pardon", "exempt", "super"):
             reply_body = (
                 f"ℹ️ `/xsub {cmd}` is only available via modmail to your own sub, "
@@ -165,3 +179,59 @@ def check_dm_inbox(dry_run=False):
 
     if handled or skipped:
         print(f"[DM-INBOX] done: {handled} replied, {skipped} non-mod skipped")
+
+
+def _handle_management_cmd(cmd, parts, sender, dry_run):
+    """
+    Owner-only DM commands for managing the trusted-subs list.
+
+    /xsub approve r/SubName  -> move from pending to trusted
+    /xsub decline r/SubName  -> drop from pending without trusting
+    /xsub remove  r/SubName  -> remove from trusted list
+
+    Returns (reply_body, log_tag) for the caller to dispatch.
+    """
+    if sender != OWNER_USERNAME.lower():
+        return (
+            f"❌ `/xsub {cmd}` is restricted to u/{OWNER_USERNAME}.",
+            f"{cmd}-unauthorized",
+        )
+    if len(parts) < 3:
+        return (
+            f"⚠️ Format: `/xsub {cmd} r/<subname>`",
+            f"{cmd}-no-arg",
+        )
+
+    target = parts[2]
+
+    if dry_run:
+        return (
+            f"🧪 (dry-run) would `/xsub {cmd} {target}` — no state changed.",
+            f"{cmd}-dry-run",
+        )
+
+    try:
+        trusted = load_trusted()
+        pending = load_pending()
+        if cmd == "approve":
+            ok, msg = approve_sub(target, trusted, pending)
+        elif cmd == "decline":
+            ok, msg = decline_sub(target, pending)
+        elif cmd == "remove":
+            ok, msg = remove_sub(target, trusted, pending)
+        else:
+            return (f"⚠️ Unknown management cmd `{cmd}`.", f"{cmd}-unknown")
+
+        if ok:
+            save_trusted(trusted)
+            save_pending(pending)
+            return (
+                f"✅ {msg}. Takes effect on the next cron tick (~20 min).",
+                f"{cmd}-ok",
+            )
+        else:
+            return (f"⚠️ {msg}.", f"{cmd}-fail")
+    except Exception as e:
+        print(f"[MGMT-CMD-ERROR] cmd={cmd} target={target}: {e}")
+        return (f"❌ Internal error processing `/xsub {cmd} {target}` — see bot logs.",
+                f"{cmd}-error")

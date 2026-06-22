@@ -27,6 +27,10 @@ from health_utils import (
 )
 from modmail_utils import check_modmail
 from inbox_utils import check_dm_inbox
+from subreddit_discovery import (
+    discover, load_allowlist, load_trusted, save_trusted,
+    load_pending, save_pending,
+)
 
 # --- Global Cache ---
 BAN_CACHE = []
@@ -250,6 +254,29 @@ def main():
             check_dm_inbox(dry_run=DRY_RUN)
         except Exception as e:
             print(f"[ERROR] DM inbox check raised: {e}")
+            traceback.print_exc()
+
+        print("\n[PHASE 2.7] Subreddit discovery + auto-onboarding")
+        try:
+            bot_name = (os.environ.get("REDDIT_USERNAME", "") or "").lower()
+            if not bot_name:
+                try:
+                    bot_name = reddit.user.me().name.lower()
+                except Exception:
+                    pass
+            trusted_before = load_trusted()
+            allowlist = load_allowlist()
+            pending = load_pending()
+            trusted_after = discover(
+                reddit, bot_name, list(trusted_before), allowlist, pending,
+                notify_func=notify_owner, dry_run=DRY_RUN,
+            )
+            if not DRY_RUN:
+                if trusted_after != trusted_before:
+                    save_trusted(trusted_after)
+                save_pending(pending)
+        except Exception as e:
+            print(f"[ERROR] Subreddit discovery raised: {e}")
             traceback.print_exc()
 
         print("\n[PHASE 3] Database Maintenance")

@@ -1,0 +1,49 @@
+# NHL team subreddit allowlist for auto-approval.
+#
+# Lines starting with # are comments. Blank lines ignored. Lowercased
+# on read. When the bot is added as a mod to a sub on this list, it
+# auto-approves and propagates bans immediately. Subs not on this list
+# go through the pending-approval queue (DM to owner) instead.
+#
+# These names are best-effort. Verify and correct as needed — the file
+# is hand-edited and changes take effect on the next cron tick.
+
+# Atlantic Division
+BostonBruins
+sabres
+DetroitRedWings
+FloridaPanthers
+Habs
+OttawaSenators
+TampaBayLightning
+leafs
+
+# Metropolitan Division
+canes
+ColumbusBlueJackets
+Devils
+NewYorkIslanders
+rangers
+Flyers
+penguins
+caps
+
+# Central Division
+hawks
+coloradoavalanche
+DallasStars
+wildhockey
+predators
+StLouisBlues
+UtahMammoth
+winnipegjets
+
+# Pacific Division
+AnaheimDucks
+CalgaryFlames
+EdmontonOilers
+losangeleskings
+sanjosesharks
+seattlekraken
+goldenknights
+canucks

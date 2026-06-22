@@ -24,6 +24,10 @@ from datetime import datetime
 from bot_config import database, reddit, TRUSTED_SUBS, OWNER_USERNAME, CROSS_SUB_BAN_REASON
 from core_utils import is_mod
 from log_utils import log_public_action
+from subreddit_discovery import (
+    load_trusted, save_trusted, load_pending, save_pending,
+    approve_sub, decline_sub, remove_sub,
+)
 import os
 import prawcore
 
@@ -44,7 +48,10 @@ _HELP_TEXT = (
     "    /xsub history u/username         — chronological audit trail for this user\n"
     "    /xsub pardon u/username          — forgive + unban a user (origin-sub mods only)\n"
     "    /xsub exempt u/username          — exempt this user from bans in your sub only\n"
-    "    /xsub super ban u/username ...   — manual cross-sub ban (bot owner only)\n\n"
+    "    /xsub super ban u/username ...   — manual cross-sub ban (bot owner only)\n"
+    "    /xsub approve r/subname          — move sub from pending to trusted (owner only)\n"
+    "    /xsub decline r/subname          — drop pending sub without trusting (owner only)\n"
+    "    /xsub remove r/subname           — remove sub from trusted list (owner only)\n\n"
     "The pact triggers on bans whose reason is exactly "
     "**Auto XSub Pact Ban**.\n\n"
     "Public log: https://re-verse.github.io/cross_sub_ban_bot/public_ban_log.html"
@@ -169,6 +176,12 @@ def _handle_convo(convo, sr, sub, bot_name, dry_run=False, propagate_unban=None,
             convo, parts, sub, sender,
             dry_run=dry_run, propagate_ban=propagate_ban,
         )
+        return
+
+    # Network management commands (owner-only) — work via both DM and
+    # modmail. Argument is r/subname, not a username.
+    if cmd in ("approve", "decline", "remove"):
+        _handle_management(convo, cmd, parts, sub, sender, dry_run=dry_run)
         return
 
     if len(parts) < 3:
@@ -576,3 +589,73 @@ def _handle_super_ban(convo, user, reason, sub, sender, dry_run, propagate_ban):
         f"Reason: {reason}",
         dry_run=False, sub=sub, sender=sender, cmd="super",
     )
+
+
+def _handle_management(convo, cmd, parts, sub, sender, dry_run):
+    """
+    Owner-only modmail handler for /xsub approve | decline | remove.
+
+    Argument is r/subname, not a username. Mirrors the DM-side
+    handler in inbox_utils so both surfaces accept the commands.
+    """
+    if sender != OWNER_USERNAME.lower():
+        _reply(
+            convo,
+            f"❌ `/xsub {cmd}` is restricted to u/{OWNER_USERNAME}.",
+            dry_run=dry_run, sub=sub, sender=sender, cmd=cmd,
+        )
+        return
+
+    if len(parts) < 3:
+        _reply(
+            convo,
+            f"⚠️ Format: `/xsub {cmd} r/<subname>`",
+            dry_run=dry_run, sub=sub, sender=sender, cmd=cmd,
+        )
+        return
+
+    target = parts[2]
+
+    if dry_run:
+        print(
+            f"[DRY-RUN][MODMAIL-MGMT] would `/xsub {cmd} {target}` "
+            f"(by u/{sender} from r/{sub})"
+        )
+        return
+
+    try:
+        trusted = load_trusted()
+        pending = load_pending()
+        if cmd == "approve":
+            ok, msg = approve_sub(target, trusted, pending)
+        elif cmd == "decline":
+            ok, msg = decline_sub(target, pending)
+        elif cmd == "remove":
+            ok, msg = remove_sub(target, trusted, pending)
+        else:
+            _reply(convo, f"⚠️ Unknown management cmd `{cmd}`.",
+                   dry_run=False, sub=sub, sender=sender, cmd=cmd)
+            return
+
+        if ok:
+            save_trusted(trusted)
+            save_pending(pending)
+            print(f"[MODMAIL-MGMT] u/{sender} {cmd} {target}: {msg}")
+            _reply(
+                convo,
+                f"✅ {msg}. Takes effect on the next cron tick (~20 min).",
+                dry_run=False, sub=sub, sender=sender, cmd=cmd,
+            )
+        else:
+            _reply(
+                convo,
+                f"⚠️ {msg}.",
+                dry_run=False, sub=sub, sender=sender, cmd=cmd,
+            )
+    except Exception as e:
+        print(f"[MODMAIL-MGMT-ERROR] cmd={cmd} target={target}: {e}")
+        _reply(
+            convo,
+            f"❌ Internal error processing `/xsub {cmd} {target}` — check logs.",
+            dry_run=False, sub=sub, sender=sender, cmd=cmd,
+        )
