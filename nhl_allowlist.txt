@@ -32,10 +32,19 @@ caps
 hawks
 coloradoavalanche
 DallasStars
+# r/wildhockey is the Minnesota Wild sub but is reportedly quarantined.
+# The bot may have restricted API access there until that's resolved
+# by Reddit admins.
 wildhockey
 predators
 StLouisBlues
+# Utah rebranded from Utah Hockey Club -> Utah Mammoth in May 2025.
+# Both legacy sub names exist plus the new one. Include all three
+# variants — only the one the bot actually gets modded into will
+# trigger auto-approval; the rest are harmless dead entries.
 UtahMammoth
+UtahHockeyClub
+Utah_Hockey
 winnipegjets
 
 # Pacific Division
