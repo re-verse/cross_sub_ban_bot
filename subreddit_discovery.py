@@ -145,8 +145,25 @@ def discover(reddit, bot_username, trusted, allowlist, pending_state,
     new_pending = []
     perm_issues = []
 
+    # Cleanup pass: prune the pending queue of entries that no longer
+    # belong there. Two cases:
+    # 1. Sub is now in trusted (manual edit to trusted_subs.txt, or
+    #    a previous /xsub approve that didn't fully clean up).
+    # 2. Sub is a profile sub (u_<username>) — every Reddit user is
+    #    "mod" of their own profile sub, including the bot. These
+    #    can never be ban-propagation participants by design.
+    pending = pending_state.get("pending", {})
+    for stale in list(pending.keys()):
+        if stale in trusted_set or stale.startswith("u_"):
+            pending.pop(stale)
+
     for sr in modded_subs:
         name = sr.display_name.lower()
+        # Skip the bot's own user-profile sub before any other work.
+        # Same reason as the cleanup pass above: these are not real
+        # participating subs.
+        if name.startswith("u_"):
+            continue
         seen.add(name)
         if name in trusted_set:
             continue  # already participating

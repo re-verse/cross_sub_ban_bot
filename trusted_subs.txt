@@ -7,3 +7,4 @@ goldenknights
 AnaheimDucks
 OttawaSenators
 xsubpacttest1
+xsubpacttest2
