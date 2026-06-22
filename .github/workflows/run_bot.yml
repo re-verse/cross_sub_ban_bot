@@ -10,10 +10,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Set up Python 3.9
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: '3.9'
 
@@ -68,8 +68,33 @@ jobs:
 
       - name: Upload database artifact
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: ban-database
           path: bans.db
           retention-days: 7
+
+      # Healthchecks.io dead-man's switch.
+      # If HEALTHCHECK_URL secret is set, ping it on successful runs.
+      # The healthchecks.io free tier alerts when pings stop arriving on
+      # the configured schedule, catching the failure mode the bot
+      # cannot signal itself: GitHub Actions silently stops dispatching
+      # the cron. Without this, you only notice when something feels
+      # wrong (like wondering why a DM hasn't arrived).
+      #
+      # Setup (one-time):
+      # 1. Create a check at healthchecks.io with 20-min schedule + 40-min grace.
+      # 2. Copy the ping URL.
+      # 3. Add it as a repo secret named HEALTHCHECK_URL.
+      # Once the secret is set, this step starts pinging automatically.
+      - name: Ping healthcheck (dead-man's switch)
+        if: success()
+        env:
+          HEALTHCHECK_URL: ${{ secrets.HEALTHCHECK_URL }}
+        run: |
+          if [ -n "$HEALTHCHECK_URL" ]; then
+            curl -fsS -m 10 --retry 3 "$HEALTHCHECK_URL" || \
+              echo "::warning::Healthcheck ping failed (non-fatal)."
+          else
+            echo "HEALTHCHECK_URL not set — skipping (this is fine if you haven't enrolled yet)."
+          fi
