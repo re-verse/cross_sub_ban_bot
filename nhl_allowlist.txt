@@ -38,12 +38,8 @@ DallasStars
 wildhockey
 predators
 StLouisBlues
-# Utah rebranded from Utah Hockey Club -> Utah Mammoth in May 2025.
-# Both legacy sub names exist plus the new one. Include all three
-# variants — only the one the bot actually gets modded into will
-# trigger auto-approval; the rest are harmless dead entries.
-UtahMammoth
-UtahHockeyClub
+# Utah's sub is r/Utah_Hockey — team rebranded to Utah Mammoth in
+# May 2025 but the sub name stayed.
 Utah_Hockey
 winnipegjets
 
