@@ -68,9 +68,14 @@ class Database:
     def append_row(self, row_data):
         try:
             with closing(self._get_conn()) as con:
+                # moderator_name is deliberately NOT stored (privacy):
+                # this repo is public, so bans.db is downloadable by the
+                # very users it records. The origin sub's own private
+                # modlog remains the authoritative record of which mod
+                # acted; the pact only needs to know the source sub.
                 con.execute(
                     "INSERT OR IGNORE INTO bans (username, source_sub, reason, timestamp, log_id, moderator_name) VALUES (?, ?, ?, ?, ?, ?)",
-                    (row_data[0], row_data[1], row_data[2], row_data[3], row_data[5], row_data[6])
+                    (row_data[0], row_data[1], row_data[2], row_data[3], row_data[5], '')
                 )
                 con.commit()
             return True
@@ -81,12 +86,13 @@ class Database:
     def update_forgiveness(self, username, source, mod, sub, forgive_time):
         try:
             with closing(self._get_conn()) as con:
+                # mod name not stored — see append_row privacy note.
                 con.execute(
                     """
-                    UPDATE bans SET manual_override = 'yes', moderator_name = ?, mod_sub = ?, forgive_timestamp = ?
+                    UPDATE bans SET manual_override = 'yes', moderator_name = '', mod_sub = ?, forgive_timestamp = ?
                     WHERE lower(username) = ? AND source_sub = ?
                     """,
-                    (mod, sub, forgive_time, username.lower(), source)
+                    (sub, forgive_time, username.lower(), source)
                 )
                 con.commit()
             return True
@@ -130,16 +136,17 @@ class Database:
     def apply_pardon(self, username, source_sub, mod, mod_sub, when):
         """
         Mark a (username, source_sub) row as pardoned. Same effect as the
-        modlog-driven unban: sets manual_override='yes' and records who
-        forgave, where, and when. Returns True if a row was updated.
+        modlog-driven unban: sets manual_override='yes' and records where
+        and when. The pardoning mod's name is NOT stored — see the
+        privacy note on append_row. Returns True if a row was updated.
         """
         try:
             with closing(self._get_conn()) as con:
                 cur = con.execute(
                     "UPDATE bans SET manual_override = 'yes', "
-                    "moderator_name = ?, mod_sub = ?, forgive_timestamp = ? "
+                    "moderator_name = '', mod_sub = ?, forgive_timestamp = ? "
                     "WHERE lower(username) = ? AND lower(source_sub) = ?",
-                    (mod, mod_sub, when, username.lower(), source_sub.lower()),
+                    (mod_sub, when, username.lower(), source_sub.lower()),
                 )
                 con.commit()
                 return cur.rowcount > 0

@@ -33,6 +33,11 @@ _ESCALATION_RUNS = {3, 12, 72}
 # Don't re-alert on the same (sub, event_type) inside this window.
 THROTTLE_HOURS = 24
 
+# DM the owner when the gap since the previous run exceeds this.
+# Cron is */20; GHA free-tier routinely slips 1-2h. 90 min = clearly
+# degraded without alerting on ordinary slippage.
+CRON_GAP_ALERT_MINUTES = 90
+
 
 def _now():
     return datetime.now(timezone.utc)
@@ -229,3 +234,46 @@ def _describe(event_type):
         approx_hours = n * 20 // 60
         return f"has failed {n} consecutive runs (~{approx_hours}h)"
     return event_type
+
+
+def maybe_alert_cron_gap(state, notify_func, dry_run=False):
+    """
+    Called at the START of a run, before last_run is bumped: if the gap
+    since the previous run exceeds CRON_GAP_ALERT_MINUTES, DM the owner.
+    Detects GHA scheduler degradation after the fact — the bot can only
+    report a gap once it finally runs again, so this complements (not
+    replaces) external monitoring.
+
+    Throttled via alert_history under 'scheduler::cron_gap' so chronic
+    flakiness produces at most one DM per THROTTLE_HOURS.
+    """
+    prev = _parse_iso(state.get("last_run"))
+    if prev is None:
+        return  # first run ever, nothing to compare against
+    gap_min = int((_now() - prev).total_seconds() // 60)
+    if gap_min <= CRON_GAP_ALERT_MINUTES:
+        return
+
+    print(f"[CRON-GAP] {gap_min} min since previous run (expected ~20).")
+
+    history = state.setdefault("alert_history", {})
+    key = "scheduler::cron_gap"
+    last_sent = _parse_iso(history.get(key))
+    if last_sent and last_sent > _now() - timedelta(hours=THROTTLE_HOURS):
+        print(f"[ALERT-THROTTLED] {key} suppressed (within {THROTTLE_HOURS}h window)")
+        return
+
+    subject = f"[xsub-pact-bot] cron gap: {gap_min} min since previous run"
+    body = (
+        f"The bot just ran after a {gap_min}-minute gap (schedule is every "
+        f"20 min; alert threshold {CRON_GAP_ALERT_MINUTES} min).\n\n"
+        "This usually means GitHub Actions deprioritized the scheduled "
+        "job. The watchdog workflow re-dispatches stale runs, but if "
+        "these DMs become frequent, the long-term fixes are enrolling "
+        "healthchecks.io (repo secret HEALTHCHECK_URL) or migrating the "
+        f"cron to a server-side systemd timer.\n\n"
+        f"Throttled to one DM per {THROTTLE_HOURS}h."
+    )
+    if notify_func(subject, body, dry_run=dry_run):
+        if not dry_run:
+            history[key] = _now_iso()
