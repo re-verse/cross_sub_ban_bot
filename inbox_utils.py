@@ -35,11 +35,12 @@ _MAX_INBOX_ITEMS = 50
 _HELP_TEXT = (
     "**Cross-Sub Ban Pact Bot — Help**\n\n"
     "I can take commands via either:\n"
-    "1. **Modmail to your sub** — preferred for any action that changes "
-    "state (pardon, exempt). Mention me or just send the command.\n"
-    "2. **Direct message to me** — only `/xsub help` works over DM. "
-    "All mutating commands must go through your sub's modmail so the "
-    "action is attributable to a specific mod team.\n\n"
+    "1. **Modmail to your sub** — required for any sub-specific action "
+    "(status, history, pardon, exempt, super ban), so the action is "
+    "attributable to a specific mod team.\n"
+    "2. **Direct message to me** — `/xsub help` works for any trusted-sub "
+    "mod; the owner-only network-management commands (approve/decline/"
+    "remove) also work here.\n\n"
     "    /xsub help                       — this message\n"
     "    /xsub status u/username          — show this user's status across the network\n"
     "    /xsub history u/username         — chronological audit trail (modmail only)\n"
@@ -85,6 +86,16 @@ def _is_trusted_mod(sender):
     return False
 
 
+def _mark_read(item, dry_run):
+    """Mark an inbox item read, honoring dry_run. Never raises."""
+    if dry_run:
+        return
+    try:
+        item.mark_read()
+    except Exception:
+        pass
+
+
 def check_dm_inbox(dry_run=False):
     """
     Read unread DMs to the bot and respond to /xsub help from trusted mods.
@@ -110,25 +121,35 @@ def check_dm_inbox(dry_run=False):
             kind = getattr(item, "kind", "") or item.__class__.__name__.lower()
             if "comment" in kind:
                 # Comment replies / username mentions — not our path.
+                # Mark read so they don't clog the unread window: we only
+                # scan the first _MAX_INBOX_ITEMS unread items, so any
+                # item left unread forever eventually starves real
+                # commands out of the scan.
+                _mark_read(item, dry_run)
                 continue
         except Exception:
             pass
 
         author_obj = getattr(item, "author", None)
         if author_obj is None:
+            _mark_read(item, dry_run)
             continue
         sender = (getattr(author_obj, "name", "") or "").lower()
         if not sender or sender == bot_name:
+            _mark_read(item, dry_run)
             continue
 
         body = (getattr(item, "body", "") or "").strip()
         if not body:
+            _mark_read(item, dry_run)
             continue
 
         body_l = body.lower().lstrip("> ").strip()
         if not body_l.startswith("/xsub"):
-            # Not a command DM — don't even confirm we read it. The bot
-            # account isn't a help desk for arbitrary user questions.
+            # Not a command DM — don't reply (the bot account isn't a
+            # help desk for arbitrary user questions), but DO mark read
+            # to keep the unread window clear for real commands.
+            _mark_read(item, dry_run)
             continue
 
         # Gate on mod status before doing anything else

@@ -178,9 +178,9 @@ def dispatch_alerts(state, notify_func, dry_run=False):
 
     subject, body = _format_alert(surviving)
     if notify_func(subject, body, dry_run=dry_run):
-        # Record-as-sent even in dry-run, so dry-run output reflects what
-        # production would send. The throttle window is still meaningful
-        # because the same json gets committed back to the repo.
+        # Record send timestamps only on real sends. Dry-runs must not
+        # pollute alert_history — otherwise a dry-run would suppress the
+        # next real alert for 24h.
         if not dry_run:
             stamp = _now_iso()
             for ev in surviving:

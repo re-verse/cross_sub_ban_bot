@@ -10,10 +10,11 @@ modmail thread (state="new") on each trusted sub:
   /xsub exempt u/<username>   -> exempt user from bans in this sub only
 
 Behaviour notes:
-- The bot will not reply twice to the same conversation (it checks for
-  any prior message authored by itself). A new mod message after a bot
-  reply will be treated as a fresh request.
-- /xsub pardon now also propagates the unban across the network. The
+- The bot replies at most once per modmail conversation: any thread the
+  bot has ever replied in is skipped on later scans. To issue another
+  command, start a new modmail thread. (Deliberate — prevents reply
+  loops at the cost of no in-thread follow-ups.)
+- /xsub pardon also propagates the unban across the network. The
   pre-Sheets-migration version only flipped the override flag, which
   left users still banned on every other sub. Mods reasonably expect
   pardon to mean "undo + prevent re-ban".

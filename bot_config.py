@@ -147,6 +147,30 @@ class Database:
             print(f"[DB_ERROR] apply_pardon({username}, {source_sub}): {e}")
             return False
 
+    def get_exempt_subs(self, username):
+        """
+        Union of exempt subs across all of this user's rows, normalized
+        to bare lowercase sub names (no r/ prefix). Used at propagation
+        time — a user exempted in r/X via /xsub exempt must never be
+        banned in r/X by the pact, regardless of which sub the ban
+        originated from.
+        """
+        subs = set()
+        try:
+            with closing(self._get_conn()) as con:
+                rows = con.execute(
+                    "SELECT exempt_subs FROM bans WHERE lower(username) = ?",
+                    (username.lower(),),
+                ).fetchall()
+            for (field,) in rows:
+                for part in (field or "").lower().split(","):
+                    part = part.strip().lstrip("r/").strip("/")
+                    if part:
+                        subs.add(part)
+        except Exception as e:
+            print(f"[DB_ERROR] get_exempt_subs({username}): {e}")
+        return subs
+
     def add_exemption(self, row_id, exempt_sub):
         """
         Append a sub to the exempt_subs CSV on a single row, deduped and
@@ -186,7 +210,7 @@ def setup_reddit():
         client_secret=os.environ['REDDIT_CLIENT_SECRET'],
         username=os.environ['REDDIT_USERNAME'],
         password=os.environ['REDDIT_PASSWORD'],
-        user_agent='CrossSubBanBot/2.0 (by u/your_username)'
+        user_agent='CrossSubBanBot/2.0 (by u/re-verse)'
     )
 
 # --- Instantiate APIs ---

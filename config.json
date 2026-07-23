@@ -3,7 +3,8 @@
   "EXEMPT_USERS": ["AutoModerator", "xsub-pact-bot"],
   "DAILY_BAN_LIMIT": 30,
   "MAX_LOG_AGE_MINUTES": 60,
-  "ROW_RETENTION_DAYS": 10,
+  "_comment_retention": "Ban rows are the only link between Reddit-side bans and the pact. Deleting them breaks late unbans/pardons, forgiveness memory, exemptions, and /xsub history. 3650 days = effectively permanent.",
+  "ROW_RETENTION_DAYS": 3650,
   "_comment_sqlite": "Set USE_SQLITE to true to enable high-performance SQLite backend",
   "USE_SQLITE": true,
   "SQLITE_DB_PATH": "bans.db"

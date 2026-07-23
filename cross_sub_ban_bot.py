@@ -71,8 +71,15 @@ def apply_ban_across_network(username, source_sub, actor="Bot", note=None):
             f"To appeal, message mods of {source_sub}."
         )
     src_lc = source_sub.lower().lstrip('r/').strip('/')
+    # Per-sub exemptions granted via /xsub exempt. Checked here — at
+    # propagation time — so an exemption holds no matter which sub the
+    # ban originated from.
+    exempt_in = database.get_exempt_subs(username)
     for sub in TRUSTED_SUBS:
         if sub.lower() == src_lc:
+            continue
+        if sub.lower() in exempt_in:
+            print(f"[SKIP-EXEMPT] u/{username} is exempt in r/{sub}, not banning there.")
             continue
         if DRY_RUN:
             print(f"[DRY-RUN][PROPAGATE-BAN] would ban u/{username} in r/{sub} (from {source_sub}, actor={actor})")
@@ -136,15 +143,18 @@ def sync_bans_from_sub(sub):
 
             user_lc = user.lower()
             source = f"r/{log.subreddit}".lower()
+            # log.mod can be None if the acting moderator's account was
+            # deleted; don't let that crash the whole sub's sync pass.
+            mod_name = getattr(log.mod, 'name', None) or '[deleted]'
 
             if log.action == "banuser":
                 # Only act on bans whose reason matches the pact reason
                 desc = (getattr(log, 'description', '') or '').lower()
                 if CROSS_SUB_BAN_REASON.lower() not in desc:
                     continue
-                handle_ban_action(user, user_lc, source, log.mod.name, sub, log.created_utc, log.id)
+                handle_ban_action(user, user_lc, source, mod_name, sub, log.created_utc, log.id)
             elif log.action == "unbanuser":
-                handle_unban_action(user, user_lc, source, log.mod.name, sub, log.created_utc)
+                handle_unban_action(user, user_lc, source, mod_name, sub, log.created_utc)
 
         # Modlog walked successfully — record the sub as healthy
         if HEALTH_STATE is not None:
