@@ -100,8 +100,14 @@ def _write_markdown(recent, total):
 
             f.write("| Timestamp (UTC) | Action | User | Subreddit | Source | Actor |\n")
             f.write("|---|---|---|---|---|---|\n")
+            _SYMBOLS = {
+                'BANNED': '❌ BANNED',
+                'UNBANNED': '✅ UNBANNED',
+                'FORGIVEN': '🕊️ FORGIVEN',
+            }
             for e in recent:
-                symbol = '✅ UNBANNED' if e.get('action') == 'UNBANNED' else '❌ BANNED'
+                action = e.get('action', '')
+                symbol = _SYMBOLS.get(action, action or '—')
                 f.write(
                     f"| {e.get('timestamp', '')} "
                     f"| {symbol} "

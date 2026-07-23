@@ -16,9 +16,9 @@ we check the bot has at minimum 'access' (modlog + modmail) and
 recorded but flagged in the DM so the owner can chase the requesting
 mod team to grant the missing scopes.
 
-Removal isn't handled here — that's owner-initiated via /xsub remove,
-or automatic when health_utils sees a sub fail 72 consecutive runs
-(handled in cross_sub_ban_bot's PHASE 5 alerting).
+Removal isn't handled here — it's owner-initiated via /xsub remove.
+(There is no automatic removal; persistently failing subs surface via
+health_utils escalation alerts and the owner decides.)
 """
 import json
 import os

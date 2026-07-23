@@ -5,9 +5,21 @@ on:
     - cron: '*/20 * * * *'  # Runs every 20 minutes
   workflow_dispatch:        # Allows you to run it manually
 
+# Never let two bot runs overlap. bans.db is binary — concurrent runs
+# create rebase conflicts the push-retry loop cannot resolve. Queue
+# instead of cancel so a manual dispatch still runs after a scheduled
+# run finishes.
+concurrency:
+  group: run-bot
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
 jobs:
   run-bot:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - name: Checkout repository
         uses: actions/checkout@v5
