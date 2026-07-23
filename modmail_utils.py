@@ -309,16 +309,16 @@ def _handle_history(convo, user, dry_run, sub, sender):
     for r in reversed(rows):
         ts = r.get("timestamp") or "?"
         src = r.get("source_sub") or "?"
-        actor = r.get("moderator_name") or "?"
+        actor = (r.get("moderator_name") or "").strip()
+        by = f" by u/{actor}" if actor else ""
         events.append(
-            f"- `{ts}`  **BANNED** in {src} by u/{actor}"
+            f"- `{ts}`  **BANNED** in {src}{by}"
         )
         if (r.get("manual_override") or "").lower() == "yes":
             f_ts = r.get("forgive_timestamp") or "?"
-            f_by = r.get("moderator_name") or "?"
             f_sub = r.get("mod_sub") or "?"
             events.append(
-                f"- `{f_ts}`  **FORGIVEN** by u/{f_by} (in {f_sub})"
+                f"- `{f_ts}`  **FORGIVEN** (via {f_sub})"
             )
         ex = (r.get("exempt_subs") or "").strip()
         if ex:
@@ -370,7 +370,7 @@ def _handle_pardon(convo, user, sub, sender, dry_run, propagate_unban):
     if dry_run:
         print(
             f"[DRY-RUN][MODMAIL-PARDON] would pardon u/{user} (source {source_sub}) "
-            f"by u/{sender} from r/{sub} and propagate unban"
+            f"via r/{sub} modmail and propagate unban"
         )
         return
 
@@ -383,12 +383,12 @@ def _handle_pardon(convo, user, sub, sender, dry_run, propagate_unban):
         return
 
     print(
-        f"[MODMAIL-PARDON] u/{user} pardoned by u/{sender} from r/{sub} "
+        f"[MODMAIL-PARDON] u/{user} pardoned via r/{sub} modmail "
         f"(source: {source_sub})"
     )
     log_public_action(
         "FORGIVEN", user, sub, source_sub=source_sub,
-        actor=f"{sender} (modmail-pardon)",
+        actor="origin-sub mods (pardon)",
     )
 
     if propagate_unban is not None:
@@ -411,7 +411,7 @@ def _handle_exempt(convo, user, sub, sender, dry_run):
     if dry_run:
         print(
             f"[DRY-RUN][MODMAIL-EXEMPT] would exempt u/{user} in r/{sub} "
-            f"(requested by u/{sender})"
+            f"(requested via r/{sub} modmail)"
         )
         return
 
@@ -434,7 +434,7 @@ def _handle_exempt(convo, user, sub, sender, dry_run):
 
     if updated:
         print(
-            f"[MODMAIL-EXEMPT] u/{user} exempted in r/{sub} by u/{sender} "
+            f"[MODMAIL-EXEMPT] u/{user} exempted in r/{sub} "
             f"({updated} row(s) updated)"
         )
         _reply(
@@ -453,13 +453,13 @@ def _handle_exempt(convo, user, sub, sender, dry_run):
 def _reply(convo, body, dry_run, sub, sender, cmd):
     """Reply to a modmail convo, gated by dry_run. Always logs the intent."""
     if dry_run:
-        print(f"[DRY-RUN][MODMAIL-REPLY] r/{sub} u/{sender} cmd={cmd}: would reply")
+        print(f"[DRY-RUN][MODMAIL-REPLY] r/{sub} cmd={cmd}: would reply")
         return
     try:
         convo.reply(body=body)
-        print(f"[MODMAIL-REPLY] r/{sub} u/{sender} cmd={cmd}: replied")
+        print(f"[MODMAIL-REPLY] r/{sub} cmd={cmd}: replied")
     except Exception as e:
-        print(f"[MODMAIL-ERROR] r/{sub} u/{sender} cmd={cmd}: reply failed: {e}")
+        print(f"[MODMAIL-ERROR] r/{sub} cmd={cmd}: reply failed: {e}")
 
 
 def _handle_super(convo, parts, sub, sender, dry_run, propagate_ban):
@@ -542,7 +542,7 @@ def _handle_super_ban(convo, user, reason, sub, sender, dry_run, propagate_ban):
     when = datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
     log_id = f"supermodmail_{when.replace(' ', 'T')}_{user}"
     note = (
-        f"Manual cross-sub ban applied by u/{OWNER_USERNAME} via modmail. "
+        "Manual cross-sub ban applied by the pact operators via modmail. "
         f"Reason: {reason}. NHL subs share a pact to fight trolling. "
         f"To appeal, message mods of any participating sub."
     )
@@ -550,12 +550,12 @@ def _handle_super_ban(convo, user, reason, sub, sender, dry_run, propagate_ban):
     if dry_run:
         print(
             f"[DRY-RUN][MODMAIL-SUPER-BAN] would super-ban u/{user} across all "
-            f"{len(TRUSTED_SUBS)} trusted subs (reason: {reason}, by u/{sender})"
+            f"{len(TRUSTED_SUBS)} trusted subs (reason: {reason})"
         )
         # Still call propagate_ban so the dry-run log shows the per-sub intent
         propagate_ban(
             user, "manual",
-            actor=f"{sender} (modmail-super-ban)",
+            actor="pact-owner (super-ban)",
             note=note,
         )
         return
@@ -581,18 +581,18 @@ def _handle_super_ban(convo, user, reason, sub, sender, dry_run, propagate_ban):
     # shows the SUPER-BAN action was initiated, not just the propagation.
     log_public_action(
         "BANNED", user, "manual", source_sub="manual",
-        actor=f"{sender} (modmail-super-ban)",
+        actor="pact-owner (super-ban)",
         note=reason,
     )
 
     print(
-        f"[MODMAIL-SUPER-BAN] u/{user} super-banned by u/{sender} (reason: {reason})"
+        f"[MODMAIL-SUPER-BAN] u/{user} super-banned by owner (reason: {reason})"
     )
 
     try:
         propagate_ban(
             user, "manual",
-            actor=f"{sender} (modmail-super-ban)",
+            actor="pact-owner (super-ban)",
             note=note,
         )
     except Exception as e:
@@ -640,7 +640,7 @@ def _handle_management(convo, cmd, parts, sub, sender, dry_run):
     if dry_run:
         print(
             f"[DRY-RUN][MODMAIL-MGMT] would `/xsub {cmd} {target}` "
-            f"(by u/{sender} from r/{sub})"
+            f"(via r/{sub})"
         )
         return
 

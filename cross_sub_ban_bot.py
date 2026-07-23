@@ -24,6 +24,7 @@ from health_utils import (
     record_failure,
     summary as health_summary,
     dispatch_alerts,
+    maybe_alert_cron_gap,
 )
 from modmail_utils import check_modmail
 from inbox_utils import check_dm_inbox
@@ -56,7 +57,7 @@ def apply_ban_across_network(username, source_sub, actor="Bot", note=None):
 
     actor: who to attribute the public-log entries to. Defaults to 'Bot'
         for normal modlog-driven propagation. Pass a string like
-        'u/re-verse (modmail-super-ban)' for manually-initiated bans.
+        'pact-owner (super-ban)' for manually-initiated bans.
     note: ban note shown in modmail to the banned user. Defaults to the
         standard 'NHL subs share a pact' note. Pass a custom string for
         super-bans or other special cases.
@@ -185,7 +186,7 @@ def handle_unban_action(user, user_lc, source, mod, sub, timestamp):
     if not matching:
         return
 
-    print(f"[UNBAN] Detected unban for u/{user} in {source} by {mod}.")
+    print(f"[UNBAN] Detected unban for u/{user} in {source}.")
     forgiven_time = datetime.utcfromtimestamp(timestamp).strftime('%Y-%m-%d %H:%M:%S')
     if database.update_forgiveness(user, source, mod, sub, forgiven_time):
         print(f"[FORGIVE] Marked u/{user} as forgiven in the database.")
@@ -238,6 +239,14 @@ def main():
     print("="*60)
 
     HEALTH_STATE = load_health()
+
+    # Detect scheduler degradation: compares now to the PREVIOUS run's
+    # last_run stamp (bumped only at end-of-run), DMs owner if the gap
+    # exceeded the threshold. Throttled inside.
+    try:
+        maybe_alert_cron_gap(HEALTH_STATE, notify_owner, dry_run=DRY_RUN)
+    except Exception as e:
+        print(f"[ERROR] maybe_alert_cron_gap raised: {e}")
 
     try:
         print("\n[PHASE 1] Loading Data")

@@ -1,0 +1,51 @@
+# Best-effort self-healing for GHA's unreliable free-tier cron.
+#
+# Every 30 minutes, checks how long ago the last run_bot workflow run
+# STARTED. If it's older than 45 minutes, re-dispatches run_bot via
+# workflow_dispatch (the API-dispatch path is immediate, unlike the
+# deprioritized schedule path).
+#
+# HONEST LIMITATION: this watchdog rides the same flaky scheduler it
+# is compensating for. If GHA stops dispatching schedules entirely,
+# the watchdog stops too (correlated failure). It converts "cron
+# slipped by hours" into "cron slipped by ~45-75 min", which is a
+# real improvement but NOT a dead-man's switch. The true fix remains
+# an external monitor (healthchecks.io — see run_bot.yml) or moving
+# to a server-side systemd timer.
+name: Watchdog
+
+on:
+  schedule:
+    - cron: '7,37 * * * *'  # offset from run_bot's */20 to avoid same-instant contention
+  workflow_dispatch:
+
+permissions:
+  actions: write
+
+jobs:
+  watchdog:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Re-dispatch run_bot if stale
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          LAST=$(gh api "/repos/${{ github.repository }}/actions/workflows/run_bot.yml/runs?per_page=1&exclude_pull_requests=true" \
+            --jq '.workflow_runs[0].run_started_at // empty')
+          if [ -z "$LAST" ]; then
+            echo "No prior run_bot runs found; dispatching one."
+            gh api -X POST "/repos/${{ github.repository }}/actions/workflows/run_bot.yml/dispatches" -f ref=main
+            exit 0
+          fi
+          LAST_EPOCH=$(date -d "$LAST" +%s)
+          NOW_EPOCH=$(date +%s)
+          AGE_MIN=$(( (NOW_EPOCH - LAST_EPOCH) / 60 ))
+          echo "Last run_bot started ${AGE_MIN} minutes ago (${LAST})."
+          if [ "$AGE_MIN" -gt 45 ]; then
+            echo "Stale (>45 min) — re-dispatching run_bot."
+            gh api -X POST "/repos/${{ github.repository }}/actions/workflows/run_bot.yml/dispatches" -f ref=main
+          else
+            echo "Fresh enough; nothing to do."
+          fi
