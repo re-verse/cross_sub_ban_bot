@@ -2,7 +2,9 @@
 Modmail command handler for the Cross-Sub Ban Pact bot.
 
 Listens for these commands as the latest mod-authored message in a
-modmail thread (state="new") on each trusted sub:
+modmail thread on each trusted sub — scanning both incoming
+conversations (state="new") and Mod Discussions (state="mod", where a
+mod messaging their own sub lands):
 
   /xsub help                  -> static reference card
   /xsub status u/<username>   -> facts from the bans DB (any trusted-sub mod)
@@ -109,20 +111,38 @@ def check_modmail(health_state=None, dry_run=False, propagate_unban=None, propag
     print("[MODMAIL] Checking for /xsub commands...")
     bot_name = _bot_username()
 
+    # Two folders matter:
+    #   state="new" — incoming conversations from users (a mod of sub A
+    #                 messaging sub B lands here, as a regular user of B)
+    #   state="mod" — Mod Discussions (a mod messaging THEIR OWN sub
+    #                 lands here — which is the primary designed usage)
+    # Scanning only "new" left the main use case dark: commands from a
+    # sub's own mods were never seen. Verified live 2026-07-23.
+    _SCAN_STATES = ("new", "mod")
+
     for sub in TRUSTED_SUBS:
         try:
             sr = reddit.subreddit(sub)
             seen = 0
-            for convo in sr.modmail.conversations(state="new"):
-                seen += 1
+            seen_convo_ids = set()
+            for state in _SCAN_STATES:
                 if seen > _MAX_CONVOS_PER_SUB:
                     break
-                _handle_convo(
-                    convo, sr, sub, bot_name,
-                    dry_run=dry_run,
-                    propagate_unban=propagate_unban,
-                    propagate_ban=propagate_ban,
-                )
+                for convo in sr.modmail.conversations(state=state):
+                    cid = getattr(convo, "id", None)
+                    if cid is not None and cid in seen_convo_ids:
+                        continue
+                    if cid is not None:
+                        seen_convo_ids.add(cid)
+                    seen += 1
+                    if seen > _MAX_CONVOS_PER_SUB:
+                        break
+                    _handle_convo(
+                        convo, sr, sub, bot_name,
+                        dry_run=dry_run,
+                        propagate_unban=propagate_unban,
+                        propagate_ban=propagate_ban,
+                    )
         except prawcore.exceptions.Forbidden as e:
             print(f"[MODMAIL-WARN] Forbidden on r/{sub}: {e}")
             if health_state is not None:
