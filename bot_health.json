@@ -16,65 +16,65 @@
     "scheduler::cron_gap": "2026-07-24T04:27:27+00:00",
     "winnipegjets::first_failure": "2026-05-18T18:10:53+00:00"
   },
-  "last_run": "2026-07-24T14:41:50+00:00",
+  "last_run": "2026-07-24T15:43:51+00:00",
   "subs": {
     "anaheimducks": {
       "consecutive_failures": 0,
       "last_failure": "2026-05-18T18:10:26+00:00",
-      "last_ok": "2026-07-24T14:39:51+00:00"
+      "last_ok": "2026-07-24T15:42:56+00:00"
     },
     "caps": {
-      "consecutive_failures": 876,
+      "consecutive_failures": 877,
       "last_error": "NotFound: received 404 HTTP response",
-      "last_failure": "2026-07-24T14:39:50+00:00"
+      "last_failure": "2026-07-24T15:42:55+00:00"
     },
     "caps:modmail": {
-      "consecutive_failures": 876,
+      "consecutive_failures": 877,
       "last_error": "received 403 HTTP response",
-      "last_failure": "2026-07-24T14:40:44+00:00"
+      "last_failure": "2026-07-24T15:43:26+00:00"
     },
     "floridapanthers": {
-      "consecutive_failures": 876,
+      "consecutive_failures": 877,
       "last_error": "NotFound: received 404 HTTP response",
-      "last_failure": "2026-07-24T14:39:49+00:00"
+      "last_failure": "2026-07-24T15:42:55+00:00"
     },
     "floridapanthers:modmail": {
-      "consecutive_failures": 876,
+      "consecutive_failures": 877,
       "last_error": "received 403 HTTP response",
-      "last_failure": "2026-07-24T14:40:27+00:00"
+      "last_failure": "2026-07-24T15:43:18+00:00"
     },
     "goldenknights": {
       "consecutive_failures": 0,
       "last_failure": "2026-05-18T18:10:21+00:00",
-      "last_ok": "2026-07-24T14:39:50+00:00"
+      "last_ok": "2026-07-24T15:42:55+00:00"
     },
     "habs": {
       "consecutive_failures": 0,
       "last_failure": "2026-05-18T18:10:02+00:00",
-      "last_ok": "2026-07-24T14:39:49+00:00"
+      "last_ok": "2026-07-24T15:42:54+00:00"
     },
     "leafs": {
       "consecutive_failures": 0,
       "last_failure": "2026-05-18T18:10:06+00:00",
-      "last_ok": "2026-07-24T14:39:49+00:00"
+      "last_ok": "2026-07-24T15:42:54+00:00"
     },
     "ottawasenators": {
       "consecutive_failures": 0,
       "last_failure": "2026-05-18T18:10:31+00:00",
-      "last_ok": "2026-07-24T14:39:51+00:00"
+      "last_ok": "2026-07-24T15:42:56+00:00"
     },
     "winnipegjets": {
       "consecutive_failures": 0,
       "last_failure": "2026-05-18T18:10:16+00:00",
-      "last_ok": "2026-07-24T14:39:50+00:00"
+      "last_ok": "2026-07-24T15:42:55+00:00"
     },
     "xsubpacttest1": {
       "consecutive_failures": 0,
-      "last_ok": "2026-07-24T14:39:51+00:00"
+      "last_ok": "2026-07-24T15:42:57+00:00"
     },
     "xsubpacttest2": {
       "consecutive_failures": 0,
-      "last_ok": "2026-07-24T14:39:51+00:00"
+      "last_ok": "2026-07-24T15:42:57+00:00"
     }
   }
 }
