@@ -34,9 +34,10 @@ _ESCALATION_RUNS = {3, 12, 72}
 THROTTLE_HOURS = 24
 
 # DM the owner when the gap since the previous run exceeds this.
-# Cron is */20; GHA free-tier routinely slips 1-2h. 90 min = clearly
-# degraded without alerting on ordinary slippage.
-CRON_GAP_ALERT_MINUTES = 90
+# Cron is */20. Observed GHA free-tier behaviour: ordinary slippage is
+# 30-80 min, and genuine runner-starvation incidents produce gaps of
+# ~80+ min. 75 min catches the latter while tolerating the former.
+CRON_GAP_ALERT_MINUTES = 75
 
 
 def _now():

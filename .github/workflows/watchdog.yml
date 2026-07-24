@@ -32,17 +32,21 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -euo pipefail
-          LAST=$(gh api "/repos/${{ github.repository }}/actions/workflows/run_bot.yml/runs?per_page=1&exclude_pull_requests=true" \
-            --jq '.workflow_runs[0].run_started_at // empty')
+          # Look at the most recent COMPLETED-SUCCESSFULLY run, not just
+          # the most recent run of any kind. A run that was cancelled or
+          # failed (e.g. GHA never assigned a runner) would otherwise
+          # count as "fresh" and suppress recovery for another 45 min.
+          LAST=$(gh api "/repos/${{ github.repository }}/actions/workflows/run_bot.yml/runs?per_page=20&exclude_pull_requests=true" \
+            --jq '[.workflow_runs[] | select(.conclusion == "success")] | .[0].run_started_at // empty')
           if [ -z "$LAST" ]; then
-            echo "No prior run_bot runs found; dispatching one."
+            echo "No successful run_bot runs found; dispatching one."
             gh api -X POST "/repos/${{ github.repository }}/actions/workflows/run_bot.yml/dispatches" -f ref=main
             exit 0
           fi
           LAST_EPOCH=$(date -d "$LAST" +%s)
           NOW_EPOCH=$(date +%s)
           AGE_MIN=$(( (NOW_EPOCH - LAST_EPOCH) / 60 ))
-          echo "Last run_bot started ${AGE_MIN} minutes ago (${LAST})."
+          echo "Last SUCCESSFUL run_bot started ${AGE_MIN} minutes ago (${LAST})."
           if [ "$AGE_MIN" -gt 45 ]; then
             echo "Stale (>45 min) — re-dispatching run_bot."
             gh api -X POST "/repos/${{ github.repository }}/actions/workflows/run_bot.yml/dispatches" -f ref=main

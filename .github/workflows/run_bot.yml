@@ -19,7 +19,12 @@ permissions:
 jobs:
   run-bot:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    # The bot's actual work takes ~40s; 8 min is generous headroom for a
+    # genuine hang while keeping the failure signal fast. Note GHA counts
+    # runner-acquisition time against this, so a job that never gets a
+    # runner will still be cancelled here — that's a GHA capacity issue,
+    # not a bot hang. The watchdog re-dispatches those.
+    timeout-minutes: 8
     steps:
       - name: Checkout repository
         uses: actions/checkout@v5
