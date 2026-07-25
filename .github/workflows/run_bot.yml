@@ -29,17 +29,44 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v5
 
+      # --- Server-primary failover guard ---
+      # The bot now runs primarily on shkn.ws via a systemd timer, which
+      # commits state to main authored by 'csbb-bot (shkn)'. GitHub Actions
+      # is the AUTOMATIC BACKUP: it does real work only when the server has
+      # gone silent. This checks how long ago the last server commit landed;
+      # if recent (< 40 min), the downstream steps skip. A manual
+      # workflow_dispatch always proceeds (break-glass).
+      - name: Check server heartbeat
+        if: github.event_name == 'schedule'
+        id: failover
+        run: |
+          LAST_SERVER=$(git log -1 --format=%ct \
+            --author='csbb-bot (shkn)' origin/main 2>/dev/null || echo 0)
+          NOW=$(date +%s)
+          AGE=$(( (NOW - LAST_SERVER) / 60 ))
+          echo "Last server commit was ${AGE} min ago."
+          if [ "$LAST_SERVER" -ne 0 ] && [ "$AGE" -lt 40 ]; then
+            echo "Server healthy (committed ${AGE} min ago) — GitHub standing down."
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "Server silent ${AGE} min (or never) — GitHub taking over."
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Set up Python 3.9
+        if: steps.failover.outputs.skip != 'true'
         uses: actions/setup-python@v6
         with:
           python-version: '3.9'
 
       - name: Install dependencies
+        if: steps.failover.outputs.skip != 'true'
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
       - name: Run bot
+        if: steps.failover.outputs.skip != 'true'
         env:
           REDDIT_CLIENT_ID: ${{ secrets.REDDIT_CLIENT_ID }}
           REDDIT_CLIENT_SECRET: ${{ secrets.REDDIT_CLIENT_SECRET }}
@@ -48,6 +75,7 @@ jobs:
         run: python3 cross_sub_ban_bot.py
 
       - name: Commit and push state
+        if: steps.failover.outputs.skip != 'true'
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
@@ -105,7 +133,12 @@ jobs:
       # 3. Add it as a repo secret named HEALTHCHECK_URL.
       # Once the secret is set, this step starts pinging automatically.
       - name: Ping healthcheck (dead-man's switch)
-        if: success()
+        # Only ping when GitHub actually did the work. If the failover
+        # guard skipped (server primary and healthy), the SERVER pings the
+        # same check instead — so the dead-man's switch reflects whichever
+        # executor is servicing the pact, not GitHub rubber-stamping every
+        # skipped cycle.
+        if: success() && steps.failover.outputs.skip != 'true'
         env:
           HEALTHCHECK_URL: ${{ secrets.HEALTHCHECK_URL }}
         run: |
