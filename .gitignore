@@ -1,0 +1,15 @@
+# Server-side runtime artifacts — must never be committed back to main.
+# The bot runs from a git checkout on shkn.ws and commits its state
+# (bans.db, logs, health) back to the repo; these lines keep the
+# execution environment out of that.
+.venv/
+venv/
+__pycache__/
+*.pyc
+*.pyo
+
+# Local env files (real secrets live in /etc/csbb/csbb.env on the server
+# and in GitHub Actions secrets — never in the repo).
+.env
+*.env
+!.env.example
