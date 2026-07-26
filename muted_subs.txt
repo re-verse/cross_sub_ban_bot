@@ -1,10 +1,13 @@
-# Subs listed here still get health-checked and appear on the internal
-# dashboard as disconnected, but do NOT generate alert DMs.
-# One sub per line, no r/ prefix. Lines starting with # are ignored.
-caps
-floridapanthers
-
-# Tampa granted 'access' (ban power) but not 'mail', so their modmail
-# 403s every run. Ban propagation works fine — this mutes only the
-# modmail noise, NOT Tampa's real health signals.
-tampabaylightning:modmail
+# Subs whose failures are tracked and shown on the dashboard but do NOT
+# generate alert DMs.
+#
+# Entries may be either:
+#   a whole sub          e.g.  somesub
+#   a single event stream e.g. somesub:modmail
+#
+# The second form lets you silence one noisy signal while still being
+# alerted about that sub's other failures.
+#
+# NOTE: a sub that removes the bot is auto-pruned from trusted_subs.txt,
+# so it stops being polled entirely — no mute needed. Don't leave
+# departed subs listed here, or they'd be silently muted if they rejoin.

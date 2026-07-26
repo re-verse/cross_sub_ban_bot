@@ -144,10 +144,21 @@ def check_modmail(health_state=None, dry_run=False, propagate_unban=None, propag
                         propagate_ban=propagate_ban,
                     )
         except prawcore.exceptions.Forbidden as e:
-            print(f"[MODMAIL-WARN] Forbidden on r/{sub}: {e}")
-            if health_state is not None:
-                from health_utils import record_failure
-                record_failure(health_state, f"{sub}:modmail", e)
+            # 403 here means the sub granted the bot 'access' (ban power,
+            # which is all the pact REQUIRES) but not 'mail'. That is a
+            # deliberate configuration choice, not a fault: ban
+            # propagation works perfectly without it. The only thing lost
+            # is that this sub's mods can't drive /xsub commands from
+            # their own modmail.
+            #
+            # So this is NOT recorded as a health failure — recording it
+            # would show the sub red on the dashboard and fire recurring
+            # alerts about something that isn't broken. If they later
+            # grant 'mail', polling simply starts working again on the
+            # next run with no state to clear.
+            print(f"[MODMAIL-SKIP] r/{sub} has not granted 'mail' "
+                  f"permission - skipping modmail (ban propagation "
+                  f"unaffected)")
         except prawcore.exceptions.NotFound as e:
             print(f"[MODMAIL-WARN] NotFound on r/{sub}: {e}")
             if health_state is not None:
