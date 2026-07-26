@@ -190,6 +190,62 @@ def _bot_permissions(subreddit, bot_name):
     return perms, has_required
 
 
+PERMS_SUBJECT = "Cross-Sub Ban Pact \u2014 one more permission needed"
+
+PERMS_BODY = """\
+Hey mods \u2014 thanks for adding u/{bot} to your team!
+
+One thing though: the bot was granted **{granted}** but it also needs \
+**Manage Users** to actually work. Right now it can *see* pact bans but \
+can't apply them in your sub, so you're not getting any protection yet.
+
+**To fix:** Mod Tools \u2192 Moderators \u2192 u/{bot} \u2192 edit permissions \u2192 \
+tick **Manage Users** (alongside **Manage Settings/Access**).
+
+That's the minimum the pact needs \u2014 permission to read the modlog and \
+to ban/unban. It never touches posts, comments, settings, flair, or the \
+wiki, and you can remove it at any time.
+
+Once that's set you're fully in, and I'll send over the quick how-to \
+guide. Any questions, just reply here or message u/re-verse. \U0001F3D2
+"""
+
+
+def request_missing_perms(reddit, sub_name, bot_username, granted, dry_run=False):
+    """
+    Modmail a sub that added the bot with insufficient permissions,
+    asking them to grant Manage Users. Best-effort; never raises.
+    """
+    granted_str = ", ".join(sorted(granted)) if granted else "no permissions"
+    body = PERMS_BODY.format(bot=bot_username, granted=granted_str)
+    if dry_run:
+        print(f"[DRY-RUN][PERMS] would ask r/{sub_name} for Manage Users "
+              f"(currently has: {granted_str})")
+        return True
+    try:
+        reddit.subreddit(sub_name).message(
+            subject=PERMS_SUBJECT, message=body,
+        )
+        print(f"[PERMS-REQUEST] asked r/{sub_name} to add Manage Users "
+              f"(currently has: {granted_str})")
+        return True
+    except Exception as e:
+        print(f"[PERMS-ERROR] could not modmail r/{sub_name}: {e}")
+        return False
+
+
+def bot_username_for(reddit):
+    """Best-effort bot username (for perm lookups)."""
+    import os
+    n = (os.environ.get("REDDIT_USERNAME", "") or "").strip()
+    if n:
+        return n.lower()
+    try:
+        return reddit.user.me().name.lower()
+    except Exception:
+        return ""
+
+
 def accept_pending_invites(reddit, allowlist, notify_func=None, dry_run=False):
     """
     Scan the bot's inbox for pending moderator invites and auto-accept
@@ -245,6 +301,22 @@ def accept_pending_invites(reddit, allowlist, notify_func=None, dry_run=False):
             print(f"[INVITE-ACCEPT] accepted mod invite from r/{name} "
                   f"(on NHL allowlist)")
             results.append((name, True, "accepted"))
+            # The inviting mods choose which perms to grant, and the bot
+            # cannot elevate itself. If they granted less than the pact
+            # needs (access + users), the bot is in the sub but unable to
+            # propagate bans — so tell THEM immediately rather than
+            # sitting there silently crippled.
+            try:
+                perms, has_required = _bot_permissions(
+                    reddit.subreddit(name), bot_username_for(reddit))
+                if not has_required:
+                    print(f"[INVITE-PERMS] r/{name} granted {sorted(perms)} "
+                          f"- missing required perms, requesting upgrade")
+                    request_missing_perms(reddit, name,
+                                          bot_username_for(reddit), perms,
+                                          dry_run=dry_run)
+            except Exception as e:
+                print(f"[INVITE-PERMS-ERROR] perm check for r/{name}: {e}")
         except Exception as e:
             print(f"[INVITE-ERROR] failed to accept r/{name}: {e}")
             results.append((name, False, f"error: {e}"))
@@ -310,6 +382,15 @@ def discover(reddit, bot_username, trusted, allowlist, pending_state,
         if name in allowlist:
             if not has_required:
                 perm_issues.append((name, sorted(perms)))
+                # Tell the SUB (not just the owner) that they need to
+                # grant Manage Users, once. Without this the bot sits in
+                # their sub unable to propagate and nobody there knows.
+                asked = pending_state.setdefault("perms_asked", [])
+                if name not in asked:
+                    if request_missing_perms(reddit, name, bot_username,
+                                             perms, dry_run=dry_run):
+                        if not dry_run:
+                            asked.append(name)
                 # Still add — they're on the allowlist, but flag for owner
             if not dry_run:
                 trusted.append(name)
