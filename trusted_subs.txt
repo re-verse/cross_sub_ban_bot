@@ -1,10 +1,11 @@
-Habs
+habs
 leafs
-FloridaPanthers
+floridapanthers
 winnipegjets
 caps
 goldenknights
-AnaheimDucks
-OttawaSenators
+anaheimducks
+ottawasenators
 xsubpacttest1
 xsubpacttest2
+tampabaylightning
