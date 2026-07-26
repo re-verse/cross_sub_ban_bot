@@ -20,6 +20,7 @@ Strictly read-only for everyone except the bot owner:
 - Non-mods get no reply at all (no engagement signal to drive-bys).
 """
 import os
+import re
 import prawcore
 from bot_config import reddit, TRUSTED_SUBS, OWNER_USERNAME
 from core_utils import is_mod
@@ -96,6 +97,59 @@ def _mark_read(item, dry_run):
         pass
 
 
+def _try_accept_mod_invite(item, dry_run):
+    """
+    Auto-accept a moderator invite, but ONLY for subs on the NHL
+    allowlist. Returns True if the item was an invite (handled), so the
+    caller can skip further processing of it.
+
+    Safety: an invite from a sub NOT on the allowlist is deliberately
+    left alone (not accepted, not marked read) so a human can review it.
+    We never want the bot silently gaining mod powers somewhere
+    unexpected just because someone invited it.
+    """
+    subject = (getattr(item, "subject", "") or "").lower()
+    # Reddit's invite subject is "invitation to moderate /r/<sub>"
+    if "invitation to moderate" not in subject:
+        return False
+
+    sub_obj = getattr(item, "subreddit", None)
+    sub_name = getattr(sub_obj, "display_name", None) or ""
+    if not sub_name:
+        m = re.search(r"/r/([A-Za-z0-9_]+)", getattr(item, "subject", "") or "")
+        sub_name = m.group(1) if m else ""
+    if not sub_name:
+        print("[INVITE] Could not determine subreddit from invite; leaving unread.")
+        return True
+
+    try:
+        import subreddit_discovery
+        allowlist = {a.lower() for a in subreddit_discovery.load_allowlist()}
+    except Exception as e:
+        print(f"[INVITE-ERROR] Could not load allowlist: {e}; leaving invite unread.")
+        return True
+
+    if sub_name.lower() not in allowlist:
+        print(f"[INVITE] r/{sub_name} is NOT on the NHL allowlist — "
+              f"leaving invite for manual review (not accepting).")
+        return True
+
+    if dry_run:
+        print(f"[DRY-RUN][INVITE] would accept mod invite for r/{sub_name} "
+              f"(on allowlist)")
+        return True
+
+    try:
+        reddit.subreddit(sub_name).mod.accept_invite()
+        print(f"[INVITE] Accepted moderator invite for r/{sub_name} "
+              f"(on NHL allowlist). Discovery will onboard it and send "
+              f"the welcome guide.")
+        _mark_read(item, dry_run)
+    except Exception as e:
+        print(f"[INVITE-ERROR] Failed to accept invite for r/{sub_name}: {e}")
+    return True
+
+
 def check_dm_inbox(dry_run=False):
     """
     Read unread DMs to the bot and respond to /xsub help from trusted mods.
@@ -129,6 +183,11 @@ def check_dm_inbox(dry_run=False):
                 continue
         except Exception:
             pass
+
+        # Moderator invites come from Reddit itself (no author). Handle
+        # them BEFORE the author check, or they'd be silently discarded.
+        if _try_accept_mod_invite(item, dry_run):
+            continue
 
         author_obj = getattr(item, "author", None)
         if author_obj is None:
