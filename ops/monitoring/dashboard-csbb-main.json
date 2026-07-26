@@ -912,18 +912,13 @@
               "type": "string"
             },
             {
-              "selector": "moderator",
-              "text": "Mod",
+              "selector": "source",
+              "text": "Source",
               "type": "string"
             },
             {
               "selector": "user",
               "text": "User",
-              "type": "string"
-            },
-            {
-              "selector": "source",
-              "text": "Source",
               "type": "string"
             }
           ]
@@ -1003,18 +998,13 @@
               "type": "string"
             },
             {
-              "selector": "moderator",
-              "text": "Mod",
+              "selector": "source",
+              "text": "Source",
               "type": "string"
             },
             {
               "selector": "user",
               "text": "User",
-              "type": "string"
-            },
-            {
-              "selector": "source",
-              "text": "Source",
               "type": "string"
             }
           ]

@@ -1,0 +1,205 @@
+{
+  "uid": "csbb-internal",
+  "title": "Cross-Sub Ban Pact \u2014 Internal (mods visible)",
+  "tags": [
+    "csbb",
+    "internal"
+  ],
+  "timezone": "browser",
+  "schemaVersion": 39,
+  "refresh": "1m",
+  "time": {
+    "from": "now-90d",
+    "to": "now"
+  },
+  "panels": [
+    {
+      "datasource": {
+        "type": "yesoreyeram-infinity-datasource",
+        "uid": "PE48FA93E46C6C543"
+      },
+      "gridPos": {
+        "h": 12,
+        "w": 12,
+        "x": 0,
+        "y": 0
+      },
+      "id": 28,
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm",
+        "footer": {
+          "show": false,
+          "countRows": false,
+          "reducer": [
+            "sum"
+          ]
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "PE48FA93E46C6C543"
+          },
+          "refId": "A",
+          "type": "json",
+          "source": "url",
+          "parser": "backend",
+          "format": "table",
+          "url": "http://127.0.0.1:8091/ban_events.json",
+          "url_options": {
+            "method": "GET",
+            "data": ""
+          },
+          "root_selector": "",
+          "filterExpression": "action == \"BANNED\"",
+          "columns": [
+            {
+              "selector": "timestamp",
+              "text": "Timestamp (UTC)",
+              "type": "string"
+            },
+            {
+              "selector": "moderator",
+              "text": "Mod",
+              "type": "string"
+            },
+            {
+              "selector": "user",
+              "text": "User",
+              "type": "string"
+            },
+            {
+              "selector": "source",
+              "text": "Source",
+              "type": "string"
+            }
+          ]
+        }
+      ],
+      "title": "Most Recent Bans (all-time, from audit log)",
+      "type": "table",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "left",
+            "filterable": true
+          }
+        },
+        "overrides": []
+      },
+      "transformations": [
+        {
+          "id": "sortBy",
+          "options": {
+            "fields": {},
+            "sort": [
+              {
+                "field": "Timestamp (UTC)",
+                "desc": true
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "datasource": {
+        "type": "yesoreyeram-infinity-datasource",
+        "uid": "PE48FA93E46C6C543"
+      },
+      "gridPos": {
+        "h": 12,
+        "w": 12,
+        "x": 12,
+        "y": 0
+      },
+      "id": 29,
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm",
+        "footer": {
+          "show": false,
+          "countRows": false,
+          "reducer": [
+            "sum"
+          ]
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "PE48FA93E46C6C543"
+          },
+          "refId": "A",
+          "type": "json",
+          "source": "url",
+          "parser": "backend",
+          "format": "table",
+          "url": "http://127.0.0.1:8091/ban_events.json",
+          "url_options": {
+            "method": "GET",
+            "data": ""
+          },
+          "root_selector": "",
+          "filterExpression": "action == \"UNBANNED\" || action == \"FORGIVEN\"",
+          "columns": [
+            {
+              "selector": "timestamp",
+              "text": "Timestamp (UTC)",
+              "type": "string"
+            },
+            {
+              "selector": "moderator",
+              "text": "Mod",
+              "type": "string"
+            },
+            {
+              "selector": "user",
+              "text": "User",
+              "type": "string"
+            },
+            {
+              "selector": "source",
+              "text": "Source",
+              "type": "string"
+            }
+          ]
+        }
+      ],
+      "title": "Most Recent Forgives / Unbans (all-time)",
+      "type": "table",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "left",
+            "filterable": true
+          }
+        },
+        "overrides": []
+      },
+      "transformations": [
+        {
+          "id": "sortBy",
+          "options": {
+            "fields": {},
+            "sort": [
+              {
+                "field": "Timestamp (UTC)",
+                "desc": true
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "annotations": {
+    "list": []
+  },
+  "templating": {
+    "list": []
+  }
+}
