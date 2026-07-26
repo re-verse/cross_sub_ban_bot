@@ -172,7 +172,14 @@ def record_failure(state, sub, error):
 
 def _queue_event(state, sub, event_type, n_failures, last_error):
     """Append an alertable event to the per-run queue."""
-    if sub.split(":")[0].lower() in _muted_subs():
+    # muted_subs.txt entries may be either a whole sub ("caps") or a
+    # specific event stream ("tampabaylightning:modmail"). The latter lets
+    # you silence one noisy signal — e.g. a sub that never granted the
+    # 'mail' permission, so its modmail 403s forever — while STILL being
+    # alerted if that sub's ban propagation or modlog access breaks.
+    muted = _muted_subs()
+    key = sub.lower()
+    if key in muted or key.split(":")[0] in muted:
         print(f"[HEALTH-MUTED] r/{sub} failing but muted; no alert sent.")
         return
     state.setdefault("pending_events", []).append({
