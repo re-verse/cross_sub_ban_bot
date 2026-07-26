@@ -106,19 +106,32 @@ def save_health(state):
     # (served loopback-only from /opt/csbb-private; never pushed to git).
     try:
         muted = _muted_subs()
-        rows = []
-        for sub, s in sorted(to_save["subs"].items()):
+        # Collapse per-check entries (e.g. "caps" + "caps:modmail") into ONE
+        # row per sub: worst state wins. One broken check is enough to care.
+        grouped = {}
+        for sub, s in to_save["subs"].items():
+            base = sub.split(":")[0]
+            g = grouped.setdefault(base, {"fails": 0, "last_error": "", "last_ok": ""})
             fails = s.get("consecutive_failures", 0)
-            is_muted = sub.split(":")[0].lower() in muted
-            status = ("ok" if fails == 0
+            if fails > g["fails"]:
+                g["fails"] = fails
+                g["last_error"] = s.get("last_error", "")
+            ok = s.get("last_ok", "")
+            # oldest fully-ok moment: only meaningful if every check reported ok
+            if not g["last_ok"] or (ok and ok < g["last_ok"]):
+                g["last_ok"] = ok
+        rows = []
+        for base, g in sorted(grouped.items()):
+            is_muted = base.lower() in muted
+            status = ("ok" if g["fails"] == 0
                       else "disconnected (muted)" if is_muted
                       else "FAILING")
             rows.append({
-                "sub": sub,
+                "sub": base,
                 "status": status,
-                "consecutive_failures": fails,
-                "last_ok": s.get("last_ok", ""),
-                "last_error": s.get("last_error", ""),
+                "consecutive_failures": g["fails"],
+                "last_ok": g["last_ok"],
+                "last_error": g["last_error"],
             })
         with open("/opt/csbb-private/sub_health.json", "w") as f:
             json.dump(rows, f, indent=2)
