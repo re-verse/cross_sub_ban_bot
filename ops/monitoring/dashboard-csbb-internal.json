@@ -194,6 +194,87 @@
           }
         }
       ]
+    },
+    {
+      "id": 40,
+      "type": "table",
+      "title": "Pact Sub Health (muted subs show as disconnected, no DMs)",
+      "gridPos": {
+        "h": 10,
+        "w": 24,
+        "x": 0,
+        "y": 12
+      },
+      "datasource": {
+        "type": "yesoreyeram-infinity-datasource",
+        "uid": "PE48FA93E46C6C543"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "PE48FA93E46C6C543"
+          },
+          "refId": "A",
+          "type": "json",
+          "source": "url",
+          "parser": "backend",
+          "format": "table",
+          "url": "http://127.0.0.1:8091/sub_health.json",
+          "url_options": {
+            "method": "GET",
+            "data": ""
+          },
+          "root_selector": "",
+          "columns": [
+            {
+              "selector": "sub",
+              "text": "Sub",
+              "type": "string"
+            },
+            {
+              "selector": "status",
+              "text": "Status",
+              "type": "string"
+            },
+            {
+              "selector": "consecutive_failures",
+              "text": "Consecutive Fails",
+              "type": "number"
+            },
+            {
+              "selector": "last_ok",
+              "text": "Last OK",
+              "type": "string"
+            },
+            {
+              "selector": "last_error",
+              "text": "Last Error",
+              "type": "string"
+            }
+          ]
+        }
+      ],
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm",
+        "footer": {
+          "show": false,
+          "countRows": false,
+          "reducer": [
+            "sum"
+          ]
+        }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "left",
+            "filterable": true
+          }
+        },
+        "overrides": []
+      }
     }
   ],
   "annotations": {

@@ -38,6 +38,18 @@ THROTTLE_HOURS = 24
 # 30-80 min, and genuine runner-starvation incidents produce gaps of
 # ~80+ min. 75 min catches the latter while tolerating the former.
 CRON_GAP_ALERT_MINUTES = 75
+MUTED_SUBS_FILE = "muted_subs.txt"
+
+
+def _muted_subs():
+    """Subs whose failures should not DM the owner (still tracked/shown)."""
+    try:
+        with open(MUTED_SUBS_FILE) as f:
+            return {ln.strip().lower() for ln in f
+                    if ln.strip() and not ln.strip().startswith("#")}
+    except OSError:
+        return set()
+
 
 
 def _now():
@@ -90,6 +102,29 @@ def save_health(state):
     except OSError as e:
         print(f"[HEALTH-ERROR] Could not write {HEALTH_FILE}: {e}")
 
+    # Private per-sub status export for the internal Grafana dashboard
+    # (served loopback-only from /opt/csbb-private; never pushed to git).
+    try:
+        muted = _muted_subs()
+        rows = []
+        for sub, s in sorted(to_save["subs"].items()):
+            fails = s.get("consecutive_failures", 0)
+            is_muted = sub.split(":")[0].lower() in muted
+            status = ("ok" if fails == 0
+                      else "disconnected (muted)" if is_muted
+                      else "FAILING")
+            rows.append({
+                "sub": sub,
+                "status": status,
+                "consecutive_failures": fails,
+                "last_ok": s.get("last_ok", ""),
+                "last_error": s.get("last_error", ""),
+            })
+        with open("/opt/csbb-private/sub_health.json", "w") as f:
+            json.dump(rows, f, indent=2)
+    except OSError as e:
+        print(f"[HEALTH-WARN] Could not write private health export: {e}")
+
 
 def record_success(state, sub):
     """Mark a sub as successfully accessed this run."""
@@ -124,6 +159,9 @@ def record_failure(state, sub, error):
 
 def _queue_event(state, sub, event_type, n_failures, last_error):
     """Append an alertable event to the per-run queue."""
+    if sub.split(":")[0].lower() in _muted_subs():
+        print(f"[HEALTH-MUTED] r/{sub} failing but muted; no alert sent.")
+        return
     state.setdefault("pending_events", []).append({
         "sub": sub,
         "event_type": event_type,

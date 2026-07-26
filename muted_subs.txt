@@ -1,0 +1,5 @@
+# Subs listed here still get health-checked and appear on the internal
+# dashboard as disconnected, but do NOT generate alert DMs.
+# One sub per line, no r/ prefix. Lines starting with # are ignored.
+caps
+floridapanthers

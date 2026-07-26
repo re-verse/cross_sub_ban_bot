@@ -99,9 +99,10 @@ def apply_ban_across_network(username, source_sub, actor="Bot", note=None, moder
     log_ban_event("BANNED", moderator, username, source_sub, banned_count, len(TRUSTED_SUBS) - 1)
     return banned_count
 
-def apply_unban_across_network(username, source_sub):
+def apply_unban_across_network(username, source_sub, moderator=None):
     """Remove a ban from every trusted sub except the originating one."""
     src_lc = source_sub.lower().lstrip('r/').strip('/')
+    unbanned_count = 0
     for sub in TRUSTED_SUBS:
         if sub.lower() == src_lc:
             continue
@@ -113,12 +114,15 @@ def apply_unban_across_network(username, source_sub):
             sr.banned.remove(username)
             print(f"[PROPAGATE-UNBAN] u/{username} -> r/{sub} (from {source_sub})")
             log_public_action("UNBANNED", username, sub, source_sub=source_sub, actor="Bot")
+            unbanned_count += 1
         except prawcore.exceptions.NotFound:
             pass  # not banned in target sub, fine
         except prawcore.exceptions.Forbidden:
             print(f"[WARN] No ban permission in r/{sub}, skipping.")
         except Exception as e:
             print(f"[ERROR] Failed to unban u/{username} in r/{sub}: {e}")
+    log_ban_event("UNBANNED", moderator, username, source_sub, unbanned_count, len(TRUSTED_SUBS) - 1)
+    return unbanned_count
 
 # --- Core Bot Logic ---
 def load_ban_cache():
@@ -210,7 +214,7 @@ def handle_unban_action(user, user_lc, source, mod, sub, timestamp):
                 record['manual_override'] = 'yes'
                 break
         # Propagate the unban across the network
-        apply_unban_across_network(user, source)
+        apply_unban_across_network(user, source, moderator=mod)
 
 def handle_ban_action(user, user_lc, source, mod, sub, timestamp, log_id):
     """Process a ban action: log it, propagate it."""
