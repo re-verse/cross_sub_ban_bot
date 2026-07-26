@@ -267,6 +267,14 @@ def accept_pending_invites(reddit, allowlist, notify_func=None, dry_run=False):
     """
     allow_lc = {a.strip().lower() for a in allowlist}
     results = []
+    # Reddit leaves the "Invitation to moderate" message in the inbox even
+    # after it's been accepted, so a naive rescan retries it forever and
+    # logs NO_INVITE_FOUND every single run. Skip subs we already moderate.
+    try:
+        already_modded = {sr.display_name.lower()
+                          for sr in reddit.user.moderator_subreddits(limit=None)}
+    except Exception:
+        already_modded = set()
     try:
         inbox_items = list(reddit.inbox.all(limit=25))
     except Exception as e:
@@ -281,6 +289,9 @@ def accept_pending_invites(reddit, allowlist, notify_func=None, dry_run=False):
         if sub is None:
             continue
         name = sub.display_name
+        if name.lower() in already_modded:
+            # Stale invite message for a sub we've already joined.
+            continue
         if name.lower() not in allow_lc:
             # Not an NHL sub on our allowlist — do NOT accept. Flag it.
             print(f"[INVITE-SKIP] r/{name} invited the bot but is NOT on "

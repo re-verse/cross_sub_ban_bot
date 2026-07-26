@@ -34,7 +34,7 @@ jobs:
       # commits state to main authored by 'csbb-bot (shkn)'. GitHub Actions
       # is the AUTOMATIC BACKUP: it does real work only when the server has
       # gone silent. This checks how long ago the last server commit landed;
-      # if recent (< 40 min), the downstream steps skip. A manual
+      # if recent (< 15 min), the downstream steps skip. A manual
       # workflow_dispatch always proceeds (break-glass).
       - name: Check server heartbeat
         if: github.event_name == 'schedule'
@@ -45,7 +45,7 @@ jobs:
           NOW=$(date +%s)
           AGE=$(( (NOW - LAST_SERVER) / 60 ))
           echo "Last server commit was ${AGE} min ago."
-          if [ "$LAST_SERVER" -ne 0 ] && [ "$AGE" -lt 40 ]; then
+          if [ "$LAST_SERVER" -ne 0 ] && [ "$AGE" -lt 15 ]; then
             echo "Server healthy (committed ${AGE} min ago) — GitHub standing down."
             echo "skip=true" >> "$GITHUB_OUTPUT"
           else
@@ -128,7 +128,7 @@ jobs:
       # wrong (like wondering why a DM hasn't arrived).
       #
       # Setup (one-time):
-      # 1. Create a check at healthchecks.io with 20-min schedule + 40-min grace.
+      # 1. Create a check at healthchecks.io with 5-min schedule + 15-min grace.
       # 2. Copy the ping URL.
       # 3. Add it as a repo secret named HEALTHCHECK_URL.
       # Once the secret is set, this step starts pinging automatically.
