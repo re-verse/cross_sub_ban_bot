@@ -73,12 +73,22 @@ class Database:
                 # very users it records. The origin sub's own private
                 # modlog remains the authoritative record of which mod
                 # acted; the pact only needs to know the source sub.
-                con.execute(
+                cur = con.execute(
                     "INSERT OR IGNORE INTO bans (username, source_sub, reason, timestamp, log_id, moderator_name) VALUES (?, ?, ?, ?, ?, ?)",
                     (row_data[0], row_data[1], row_data[2], row_data[3], row_data[5], '')
                 )
                 con.commit()
-            return True
+                # Return True ONLY if a row was actually inserted. On a
+                # duplicate (UNIQUE(username, source_sub) already present)
+                # INSERT OR IGNORE is a no-op and rowcount is 0 — in that
+                # case the ban was already processed and must NOT be
+                # re-propagated. Returning True unconditionally here was
+                # the latent cause of the May 2025 re-propagation storm:
+                # if BAN_CACHE was empty/stale, the caller re-fired
+                # apply_ban_across_network on every run even though the
+                # row already existed. rowcount makes the DB the source
+                # of truth for "is this ban new", independent of cache.
+            return cur.rowcount > 0
         except Exception as e:
             print(f"[DB_ERROR] Failed to append row: {e}")
             return False
