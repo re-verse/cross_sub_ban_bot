@@ -28,7 +28,15 @@ TRUSTED_SUBS_FILE = "trusted_subs.txt"
 ALLOWLIST_FILE = "nhl_allowlist.txt"
 PENDING_FILE = "pending_subs.json"
 
-REQUIRED_PERMS = {"access", "users"}
+# Reddit mod permission strings: all, access, config, flair, mail, posts,
+# wiki (plus chat/channel variants). "Manage Users" — the ban/unban power
+# the pact actually needs — is 'access'. There is NO 'users' permission;
+# requiring one made has_required False for every sub that didn't grant
+# 'all', including working members like r/winnipegjets (['access','mail']).
+REQUIRED_PERMS = {"access"}
+# 'mail' is not required to propagate bans, but without it the bot can't
+# receive /xsub modmail commands from that sub. Tracked as advisory only.
+RECOMMENDED_PERMS = {"mail"}
 ALL_PERMS = {"all"}
 RENOTIFY_AFTER_DAYS = 7
 
@@ -353,6 +361,38 @@ def discover(reddit, bot_username, trusted, allowlist, pending_state,
     new_auto_added = []
     new_pending = []
     perm_issues = []
+
+    # Auto-remove: any trusted sub the bot no longer moderates. The pact
+    # roster should be self-maintaining in both directions — a mod team
+    # that removes the bot has left, and the bot should stop trying to
+    # read their modlog (which 404s every run) and stop counting them as
+    # a participant.
+    modded_lc = {sr.display_name.lower() for sr in modded_subs}
+    # Safety: never prune off an empty/suspicious mod list. A transient
+    # API hiccup that returns zero subs must not wipe the entire pact
+    # roster — require that we actually saw some modded subs first.
+    departed = ([t for t in list(trusted) if t.lower() not in modded_lc]
+                if modded_lc else [])
+    if not modded_lc:
+        print("[DISCOVERY-WARN] moderator_subreddits returned nothing - "
+              "skipping trusted-sub pruning this run (safety guard)")
+    for name in departed:
+        print(f"[DISCOVERY] r/{name}: bot is no longer a moderator "
+              f"- removing from trusted (sub left the pact)")
+        trusted[:] = [t for t in trusted if t.lower() != name.lower()]
+        # allow a clean re-welcome if they ever come back
+        for key in ("welcomed", "perms_asked"):
+            lst = pending_state.setdefault(key, [])
+            if name in lst:
+                lst.remove(name)
+    if departed and notify_func:
+        try:
+            notify_func(
+                "\U0001F44B Removed from the pact (bot was de-modded): "
+                + ", ".join(f"r/{d}" for d in departed)
+            )
+        except Exception:
+            pass
 
     # Cleanup pass: prune the pending queue of entries that no longer
     # belong there. Two cases:
