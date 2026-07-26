@@ -26,26 +26,6 @@
       "last_failure": "2026-05-18T18:10:26+00:00",
       "last_ok": "2026-07-26T23:15:37+00:00"
     },
-    "caps": {
-      "consecutive_failures": 982,
-      "last_error": "NotFound: received 404 HTTP response",
-      "last_failure": "2026-07-26T21:28:01+00:00"
-    },
-    "caps:modmail": {
-      "consecutive_failures": 982,
-      "last_error": "received 403 HTTP response",
-      "last_failure": "2026-07-26T21:28:24+00:00"
-    },
-    "floridapanthers": {
-      "consecutive_failures": 982,
-      "last_error": "NotFound: received 404 HTTP response",
-      "last_failure": "2026-07-26T21:28:00+00:00"
-    },
-    "floridapanthers:modmail": {
-      "consecutive_failures": 982,
-      "last_error": "received 403 HTTP response",
-      "last_failure": "2026-07-26T21:28:18+00:00"
-    },
     "goldenknights": {
       "consecutive_failures": 0,
       "last_failure": "2026-05-18T18:10:21+00:00",
@@ -70,11 +50,6 @@
       "consecutive_failures": 0,
       "last_ok": "2026-07-26T23:15:38+00:00"
     },
-    "tampabaylightning:modmail": {
-      "consecutive_failures": 20,
-      "last_error": "received 403 HTTP response",
-      "last_failure": "2026-07-26T23:12:13+00:00"
-    },
     "winnipegjets": {
       "consecutive_failures": 0,
       "last_failure": "2026-05-18T18:10:16+00:00",
@@ -88,5 +63,6 @@
       "consecutive_failures": 0,
       "last_ok": "2026-07-26T23:15:37+00:00"
     }
-  }
+  },
+  "pending_events": []
 }
