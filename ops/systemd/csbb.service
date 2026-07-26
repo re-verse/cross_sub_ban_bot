@@ -1,0 +1,31 @@
+[Unit]
+Description=Cross-Sub Ban Bot (one-shot run)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=re-verse
+Group=re-verse
+WorkingDirectory=/opt/cross_sub_ban_bot
+
+# Secrets (Reddit creds + healthcheck URL), root-owned 640, group re-verse
+EnvironmentFile=/etc/csbb/csbb.env
+
+# Single version guard: refuse to run on anything but the interpreter we
+# built the venv against. If the venv is ever rebuilt on the wrong Python,
+# this fails loudly instead of running on a mismatched runtime.
+ExecStartPre=/opt/cross_sub_ban_bot/.venv/bin/python -c 'import sys; sys.exit(0 if sys.version_info[:2]==(3,12) else 1)'
+
+ExecStart=/opt/csbb-ops/run-and-push.sh
+
+# Don't let a hung run pile up behind the timer; real work is ~40s.
+TimeoutStartSec=480
+
+# Modest hardening (matches the spirit of the Daymark units)
+NoNewPrivileges=true
+ProtectSystem=full
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target
