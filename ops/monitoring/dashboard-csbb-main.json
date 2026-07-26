@@ -1,5 +1,5 @@
 {
-  "id": 527816267296768,
+  "id": null,
   "panels": [
     {
       "collapsed": false,
@@ -866,8 +866,8 @@
     },
     {
       "datasource": {
-        "type": "loki",
-        "uid": "P8E80F9AEF21F6940"
+        "type": "yesoreyeram-infinity-datasource",
+        "uid": "PE48FA93E46C6C543"
       },
       "gridPos": {
         "h": 10,
@@ -877,29 +877,83 @@
       },
       "id": 28,
       "options": {
-        "dedupStrategy": "none",
-        "enableLogDetails": true,
-        "showTime": true,
-        "sortOrder": "Descending",
-        "wrapLogMessage": true
+        "showHeader": true,
+        "cellHeight": "sm",
+        "footer": {
+          "show": false,
+          "countRows": false,
+          "reducer": [
+            "sum"
+          ]
+        }
       },
       "targets": [
         {
           "datasource": {
-            "type": "loki",
-            "uid": "P8E80F9AEF21F6940"
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "PE48FA93E46C6C543"
           },
-          "expr": "{unit=\"csbb.service\"} |= \"[BAN]\"",
-          "refId": "A"
+          "refId": "A",
+          "type": "json",
+          "source": "url",
+          "parser": "backend",
+          "format": "table",
+          "url": "https://raw.githubusercontent.com/re-verse/cross_sub_ban_bot/main/public_ban_log.json",
+          "url_options": {
+            "method": "GET",
+            "data": ""
+          },
+          "root_selector": "",
+          "filterExpression": "action == \"BANNED\"",
+          "columns": [
+            {
+              "selector": "timestamp",
+              "text": "Timestamp (UTC)",
+              "type": "string"
+            },
+            {
+              "selector": "source_sub",
+              "text": "Source",
+              "type": "string"
+            },
+            {
+              "selector": "username",
+              "text": "User",
+              "type": "string"
+            }
+          ]
         }
       ],
-      "title": "Most Recent Bans",
-      "type": "logs"
+      "title": "Most Recent Bans (all-time, from audit log)",
+      "type": "table",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "left",
+            "filterable": true
+          }
+        },
+        "overrides": []
+      },
+      "transformations": [
+        {
+          "id": "sortBy",
+          "options": {
+            "fields": {},
+            "sort": [
+              {
+                "field": "Timestamp (UTC)",
+                "desc": true
+              }
+            ]
+          }
+        }
+      ]
     },
     {
       "datasource": {
-        "type": "loki",
-        "uid": "P8E80F9AEF21F6940"
+        "type": "yesoreyeram-infinity-datasource",
+        "uid": "PE48FA93E46C6C543"
       },
       "gridPos": {
         "h": 10,
@@ -909,24 +963,78 @@
       },
       "id": 29,
       "options": {
-        "dedupStrategy": "none",
-        "enableLogDetails": true,
-        "showTime": true,
-        "sortOrder": "Descending",
-        "wrapLogMessage": true
+        "showHeader": true,
+        "cellHeight": "sm",
+        "footer": {
+          "show": false,
+          "countRows": false,
+          "reducer": [
+            "sum"
+          ]
+        }
       },
       "targets": [
         {
           "datasource": {
-            "type": "loki",
-            "uid": "P8E80F9AEF21F6940"
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "PE48FA93E46C6C543"
           },
-          "expr": "{unit=\"csbb.service\"} |~ \"\\\\[(FORGIVE|UNBAN)\\\\]\"",
-          "refId": "A"
+          "refId": "A",
+          "type": "json",
+          "source": "url",
+          "parser": "backend",
+          "format": "table",
+          "url": "https://raw.githubusercontent.com/re-verse/cross_sub_ban_bot/main/public_ban_log.json",
+          "url_options": {
+            "method": "GET",
+            "data": ""
+          },
+          "root_selector": "",
+          "filterExpression": "action == \"UNBANNED\" || action == \"FORGIVEN\"",
+          "columns": [
+            {
+              "selector": "timestamp",
+              "text": "Timestamp (UTC)",
+              "type": "string"
+            },
+            {
+              "selector": "source_sub",
+              "text": "Source",
+              "type": "string"
+            },
+            {
+              "selector": "username",
+              "text": "User",
+              "type": "string"
+            }
+          ]
         }
       ],
-      "title": "Most Recent Forgives / Unbans",
-      "type": "logs"
+      "title": "Most Recent Forgives / Unbans (all-time)",
+      "type": "table",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "left",
+            "filterable": true
+          }
+        },
+        "overrides": []
+      },
+      "transformations": [
+        {
+          "id": "sortBy",
+          "options": {
+            "fields": {},
+            "sort": [
+              {
+                "field": "Timestamp (UTC)",
+                "desc": true
+              }
+            ]
+          }
+        }
+      ]
     }
   ],
   "refresh": "1m",
