@@ -152,6 +152,17 @@ def sync_bans_from_sub(sub):
             # deleted; don't let that crash the whole sub's sync pass.
             mod_name = getattr(log.mod, 'name', None) or '[deleted]'
 
+            # ECHO GUARD: propagated bans performed by the bot itself land
+            # in each target sub's modlog with the pact reason, and were
+            # being re-ingested as NEW bans "from" that sub -- one real ban
+            # ricocheted into 7-8 fake source entries. The bot's own
+            # actions are propagation, never an origin: skip them.
+            try:
+                if mod_name.lower() == reddit.user.me().name.lower():
+                    continue
+            except Exception:
+                pass
+
             if log.action == "banuser":
                 # Only act on bans whose reason matches the pact reason
                 desc = (getattr(log, 'description', '') or '').lower()

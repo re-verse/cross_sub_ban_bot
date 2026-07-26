@@ -16,7 +16,9 @@ from datetime import datetime, timedelta
 from html import escape
 
 PUBLIC_LOG_JSON = "public_ban_log.json"
-PUBLIC_EVENTS_JSON = "public_ban_events.json"
+# Event log carries MODERATOR names -> lives OUTSIDE the public repo
+# (bans.db deliberately omits mods for privacy; same rule applies here).
+PUBLIC_EVENTS_JSON = "/opt/csbb-private/ban_events.json"
 PUBLIC_LOG_MD = "public_ban_log.md"
 PUBLIC_LOG_HTML = "public_ban_log.html"
 

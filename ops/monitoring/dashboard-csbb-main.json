@@ -898,7 +898,7 @@
           "source": "url",
           "parser": "backend",
           "format": "table",
-          "url": "https://raw.githubusercontent.com/re-verse/cross_sub_ban_bot/main/public_ban_events.json",
+          "url": "http://127.0.0.1:8091/ban_events.json",
           "url_options": {
             "method": "GET",
             "data": ""
@@ -989,7 +989,7 @@
           "source": "url",
           "parser": "backend",
           "format": "table",
-          "url": "https://raw.githubusercontent.com/re-verse/cross_sub_ban_bot/main/public_ban_events.json",
+          "url": "http://127.0.0.1:8091/ban_events.json",
           "url_options": {
             "method": "GET",
             "data": ""
