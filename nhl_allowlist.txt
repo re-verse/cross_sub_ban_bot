@@ -20,7 +20,7 @@ leafs
 
 # Metropolitan Division
 canes
-ColumbusBlueJackets
+BlueJackets
 Devils
 NewYorkIslanders
 rangers
@@ -32,7 +32,6 @@ caps
 hawks
 coloradoavalanche
 DallasStars
-# r/wildhockey is the Minnesota Wild sub but is reportedly quarantined.
 # The bot may have restricted API access there until that's resolved
 # by Reddit admins.
 wildhockey
