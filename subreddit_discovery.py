@@ -190,6 +190,68 @@ def _bot_permissions(subreddit, bot_name):
     return perms, has_required
 
 
+def accept_pending_invites(reddit, allowlist, notify_func=None, dry_run=False):
+    """
+    Scan the bot's inbox for pending moderator invites and auto-accept
+    ONLY those from subreddits on the NHL allowlist. Non-allowlisted
+    invites are left pending and reported to the owner (never silently
+    accepted) — a mod invite from an unknown sub is a potential abuse
+    vector, since a pact mod can originate network-wide bans.
+
+    Returns a list of (sub_name, accepted_bool, reason) for logging.
+    Best-effort: never raises.
+    """
+    allow_lc = {a.strip().lower() for a in allowlist}
+    results = []
+    try:
+        inbox_items = list(reddit.inbox.all(limit=25))
+    except Exception as e:
+        print(f"[INVITE-ERROR] could not read inbox: {e}")
+        return results
+
+    for msg in inbox_items:
+        subj = (getattr(msg, "subject", "") or "")
+        if not subj.startswith("Invitation to moderate"):
+            continue
+        sub = getattr(msg, "subreddit", None)
+        if sub is None:
+            continue
+        name = sub.display_name
+        if name.lower() not in allow_lc:
+            # Not an NHL sub on our allowlist — do NOT accept. Flag it.
+            print(f"[INVITE-SKIP] r/{name} invited the bot but is NOT on "
+                  f"the NHL allowlist — leaving pending, notifying owner.")
+            if notify_func:
+                try:
+                    notify_func(
+                        f"\u26a0\ufe0f Mod invite from r/{name}, which is NOT on the "
+                        f"NHL allowlist. Left it PENDING (not auto-accepted). "
+                        f"If this is a legit new NHL sub, add it to "
+                        f"nhl_allowlist.txt and it'll be accepted next run; "
+                        f"otherwise ignore/decline it."
+                    )
+                except Exception:
+                    pass
+            results.append((name, False, "not_on_allowlist"))
+            continue
+
+        # On the allowlist — accept.
+        if dry_run:
+            print(f"[DRY-RUN][INVITE] would accept mod invite from r/{name}")
+            results.append((name, True, "dry_run"))
+            continue
+        try:
+            reddit.subreddit(name).mod.accept_invite()
+            print(f"[INVITE-ACCEPT] accepted mod invite from r/{name} "
+                  f"(on NHL allowlist)")
+            results.append((name, True, "accepted"))
+        except Exception as e:
+            print(f"[INVITE-ERROR] failed to accept r/{name}: {e}")
+            results.append((name, False, f"error: {e}"))
+
+    return results
+
+
 def discover(reddit, bot_username, trusted, allowlist, pending_state,
              notify_func, dry_run=False):
     """
