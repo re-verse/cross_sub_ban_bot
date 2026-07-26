@@ -375,6 +375,31 @@ def discover(reddit, bot_username, trusted, allowlist, pending_state,
             continue
         seen.add(name)
         if name in trusted_set:
+            # Already participating — but STILL verify permissions. A sub
+            # can join with insufficient perms (an invite that granted
+            # only 'access'), or silently downgrade the bot later. Without
+            # this check the bot sits in the pact unable to propagate and
+            # nobody notices. Ask the sub once, tracked in perms_asked.
+            try:
+                t_perms, t_ok = _bot_permissions(sr, bot_username)
+                if not t_ok:
+                    perm_issues.append((name, sorted(t_perms)))
+                    asked = pending_state.setdefault("perms_asked", [])
+                    if name not in asked:
+                        print(f"[PERMS] r/{name} is trusted but only has "
+                              f"{sorted(t_perms)} — requesting Manage Users")
+                        if request_missing_perms(reddit, name, bot_username,
+                                                 t_perms, dry_run=dry_run):
+                            if not dry_run:
+                                asked.append(name)
+                else:
+                    # Perms are good again — clear any prior ask so a
+                    # future downgrade re-notifies.
+                    asked = pending_state.setdefault("perms_asked", [])
+                    if name in asked and not dry_run:
+                        asked.remove(name)
+            except Exception as e:
+                print(f"[PERMS-CHECK-ERROR] r/{name}: {e}")
             continue  # already participating
 
         perms, has_required = _bot_permissions(sr, bot_username)
