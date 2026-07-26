@@ -2,9 +2,11 @@
 Description=Run Cross-Sub Ban Bot every 20 minutes
 
 [Timer]
-# Every 20 min, offset by 3 min so it doesn't collide on the hour with
-# other cron-like jobs. Persistent=true runs a missed cycle after downtime.
-OnCalendar=*:03/20
+# Every 5 min. The GitHub Actions constraint is gone (the server has no
+# scheduling queue), and Reddit's rate limit is nowhere near binding: a
+# quiet run is ~35 API calls against a ~1000-per-10-min budget.
+# Persistent=true runs a missed cycle after downtime.
+OnCalendar=*:0/5
 Persistent=true
 # Small random spread so we're not hammering Reddit exactly on the tick
 RandomizedDelaySec=30

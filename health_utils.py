@@ -37,7 +37,7 @@ THROTTLE_HOURS = 24
 # Cron is */20. Observed GHA free-tier behaviour: ordinary slippage is
 # 30-80 min, and genuine runner-starvation incidents produce gaps of
 # ~80+ min. 75 min catches the latter while tolerating the former.
-CRON_GAP_ALERT_MINUTES = 75
+CRON_GAP_ALERT_MINUTES = 20
 MUTED_SUBS_FILE = "muted_subs.txt"
 
 
@@ -318,7 +318,7 @@ def maybe_alert_cron_gap(state, notify_func, dry_run=False):
     subject = f"[xsub-pact-bot] cron gap: {gap_min} min since previous run"
     body = (
         f"The bot just ran after a {gap_min}-minute gap (schedule is every "
-        f"20 min; alert threshold {CRON_GAP_ALERT_MINUTES} min).\n\n"
+        f"5 min; alert threshold {CRON_GAP_ALERT_MINUTES} min).\n\n"
         "This usually means GitHub Actions deprioritized the scheduled "
         "job. The watchdog workflow re-dispatches stale runs, but if "
         "these DMs become frequent, the long-term fixes are enrolling "
