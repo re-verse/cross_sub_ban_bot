@@ -31,7 +31,7 @@ from modmail_utils import check_modmail
 from inbox_utils import check_dm_inbox
 from subreddit_discovery import (
     discover, load_allowlist, load_trusted, save_trusted,
-    load_pending, save_pending,
+    load_pending, save_pending, accept_pending_invites,
 )
 
 # --- Global Cache ---
@@ -293,6 +293,14 @@ def main():
             check_dm_inbox(dry_run=DRY_RUN)
         except Exception as e:
             print(f"[ERROR] DM inbox check raised: {e}")
+            traceback.print_exc()
+
+        print("\n[PHASE 2.65] Auto-accepting mod invites (allowlist-gated)")
+        try:
+            _allow = load_allowlist()
+            accept_pending_invites(reddit, _allow, notify_func=notify_owner, dry_run=DRY_RUN)
+        except Exception as e:
+            print(f"[ERROR] invite auto-accept raised: {e}")
             traceback.print_exc()
 
         print("\n[PHASE 2.7] Subreddit discovery + auto-onboarding")
