@@ -1,0 +1,13 @@
+[Unit]
+Description=Run Cross-Sub Ban Bot every 20 minutes
+
+[Timer]
+# Every 20 min, offset by 3 min so it doesn't collide on the hour with
+# other cron-like jobs. Persistent=true runs a missed cycle after downtime.
+OnCalendar=*:03/20
+Persistent=true
+# Small random spread so we're not hammering Reddit exactly on the tick
+RandomizedDelaySec=30
+
+[Install]
+WantedBy=timers.target
