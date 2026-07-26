@@ -16,7 +16,7 @@ from bot_config import (
     reddit,
     notify_owner,
 )
-from log_utils import log_public_action, flush_views
+from log_utils import log_public_action, flush_views, log_ban_event
 from health_utils import (
     load_health,
     save_health,
@@ -51,7 +51,7 @@ def is_forgiven(username, cache):
                 return True
     return False
 
-def apply_ban_across_network(username, source_sub, actor="Bot", note=None):
+def apply_ban_across_network(username, source_sub, actor="Bot", note=None, moderator=None):
     """
     Apply a ban to every trusted sub except the originating one.
 
@@ -76,6 +76,7 @@ def apply_ban_across_network(username, source_sub, actor="Bot", note=None):
     # propagation time — so an exemption holds no matter which sub the
     # ban originated from.
     exempt_in = database.get_exempt_subs(username)
+    banned_count = 0
     for sub in TRUSTED_SUBS:
         if sub.lower() == src_lc:
             continue
@@ -90,10 +91,13 @@ def apply_ban_across_network(username, source_sub, actor="Bot", note=None):
             sr.banned.add(username, ban_reason=CROSS_SUB_BAN_REASON, note=note)
             print(f"[PROPAGATE-BAN] u/{username} -> r/{sub} (from {source_sub}, actor={actor})")
             log_public_action("BANNED", username, sub, source_sub=source_sub, actor=actor)
+            banned_count += 1
         except prawcore.exceptions.Forbidden:
             print(f"[WARN] No ban permission in r/{sub}, skipping.")
         except Exception as e:
             print(f"[ERROR] Failed to ban u/{username} in r/{sub}: {e}")
+    log_ban_event("BANNED", moderator, username, source_sub, banned_count, len(TRUSTED_SUBS) - 1)
+    return banned_count
 
 def apply_unban_across_network(username, source_sub):
     """Remove a ban from every trusted sub except the originating one."""
@@ -228,7 +232,7 @@ def handle_ban_action(user, user_lc, source, mod, sub, timestamp, log_id):
     if database.append_row(row_data):
         BAN_CACHE.append({'username': user, 'source_sub': source, 'manual_override': 'no'})
         # Propagate the ban across the network
-        apply_ban_across_network(user, source)
+        apply_ban_across_network(user, source, moderator=mod)
 
 def main():
     """Main bot execution function."""

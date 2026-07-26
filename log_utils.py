@@ -16,6 +16,7 @@ from datetime import datetime, timedelta
 from html import escape
 
 PUBLIC_LOG_JSON = "public_ban_log.json"
+PUBLIC_EVENTS_JSON = "public_ban_events.json"
 PUBLIC_LOG_MD = "public_ban_log.md"
 PUBLIC_LOG_HTML = "public_ban_log.html"
 
@@ -58,6 +59,43 @@ def log_public_action(action, username, subreddit, source_sub="", actor="Bot", n
 
     except Exception as e:
         print(f"[ERROR] log_public_action failed: {e}")
+
+
+def log_ban_event(action, moderator, user, source, propagated, total):
+    """Append ONE row per ban/unban EVENT (not per propagation target).
+
+    This is the permanent, human-readable audit record the dashboard reads:
+      "joe BANNED bob (from r/leafs) -> 8/9 subs"
+    The per-target public_ban_log.json stays as the short-lived propagation
+    troubleshooting log; this one is the durable four-column event view
+    (timestamp, moderator, user, source).
+    """
+    import os, json
+    from datetime import datetime
+    entry = {
+        "timestamp": datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S'),
+        "action": action,
+        "moderator": moderator or "unknown",
+        "user": user,
+        "source": source,
+        "propagated_to": propagated,
+        "pact_subs": total,
+    }
+    try:
+        data = []
+        if os.path.exists(PUBLIC_EVENTS_JSON):
+            try:
+                with open(PUBLIC_EVENTS_JSON) as f:
+                    data = json.load(f)
+            except json.JSONDecodeError:
+                data = []
+        data.append(entry)
+        with open(PUBLIC_EVENTS_JSON, 'w') as f:
+            json.dump(data, f, indent=2)
+        print(f"[EVENT] {moderator or 'unknown'} {action} u/{user} "
+              f"(from {source}) -> {propagated}/{total} subs")
+    except Exception as e:
+        print(f"[ERROR] log_ban_event failed: {e}")
 
 
 def flush_views():
