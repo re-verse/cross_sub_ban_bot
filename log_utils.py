@@ -63,6 +63,39 @@ def log_public_action(action, username, subreddit, source_sub="", actor="Bot", n
         print(f"[ERROR] log_public_action failed: {e}")
 
 
+def prune_public_log(days):
+    """Drop per-target propagation rows older than N days.
+
+    public_ban_log.json records one row per (ban, target sub) and exists
+    for short-lived propagation troubleshooting -- "did this ban reach
+    every sub?". It is NOT the durable record: ban_events.json (one row
+    per event, permanent) and bans.db (authoritative ban state) are.
+    Left unbounded this file grew to 33k rows / 7MB and got committed on
+    every run. Returns the number of rows removed.
+    """
+    import os
+    if not os.path.exists(PUBLIC_LOG_JSON):
+        return 0
+    try:
+        with open(PUBLIC_LOG_JSON) as f:
+            data = json.load(f)
+    except (json.JSONDecodeError, OSError) as e:
+        print(f"[PRUNE-WARN] cannot read {PUBLIC_LOG_JSON}: {e}")
+        return 0
+    cutoff = (datetime.utcnow() - timedelta(days=days)).strftime('%Y-%m-%d %H:%M:%S')
+    kept = [e for e in data if e.get('timestamp', '') >= cutoff]
+    removed = len(data) - len(kept)
+    if removed <= 0:
+        return 0
+    try:
+        with open(PUBLIC_LOG_JSON, 'w') as f:
+            json.dump(kept, f, indent=2)
+    except OSError as e:
+        print(f"[PRUNE-ERROR] cannot write {PUBLIC_LOG_JSON}: {e}")
+        return 0
+    return removed
+
+
 def log_ban_event(action, moderator, user, source, propagated, total):
     """Append ONE row per ban/unban EVENT (not per propagation target).
 

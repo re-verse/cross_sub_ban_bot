@@ -11,12 +11,13 @@ from bot_config import (
     DAILY_BAN_LIMIT,
     MAX_LOG_AGE_MINUTES,
     ROW_RETENTION_DAYS,
+    PUBLIC_LOG_RETENTION_DAYS,
     TRUSTED_SUBS,
     database,
     reddit,
     notify_owner,
 )
-from log_utils import log_public_action, flush_views, log_ban_event
+from log_utils import log_public_action, flush_views, log_ban_event, prune_public_log
 from health_utils import (
     load_health,
     save_health,
@@ -321,6 +322,11 @@ def main():
         deleted_count = database.cleanup_old_records(ROW_RETENTION_DAYS)
         if deleted_count > 0:
             print(f"[CLEANUP] Removed {deleted_count} records older than {ROW_RETENTION_DAYS} days.")
+
+        pruned = prune_public_log(PUBLIC_LOG_RETENTION_DAYS)
+        if pruned > 0:
+            print(f"[CLEANUP] Pruned {pruned} propagation-log rows older than "
+                  f"{PUBLIC_LOG_RETENTION_DAYS} days.")
 
         print("\n[PHASE 4] Refreshing public log views")
         flush_views()

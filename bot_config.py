@@ -20,6 +20,9 @@ EXEMPT_USERS = set(u.lower() for u in config.get("EXEMPT_USERS", []))
 DAILY_BAN_LIMIT = config.get("DAILY_BAN_LIMIT", 100)
 MAX_LOG_AGE_MINUTES = config.get("MAX_LOG_AGE_MINUTES", 60)
 ROW_RETENTION_DAYS = config.get("ROW_RETENTION_DAYS", 30)
+# Per-target propagation log: short-lived troubleshooting data only.
+# The durable record is the event log; this one is safe to age out.
+PUBLIC_LOG_RETENTION_DAYS = config.get("PUBLIC_LOG_RETENTION_DAYS", 30)
 USE_SQLITE = True
 
 # --- Load Trusted Subs ---
