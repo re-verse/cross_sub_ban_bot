@@ -32,6 +32,81 @@ REQUIRED_PERMS = {"access", "users"}
 ALL_PERMS = {"all"}
 RENOTIFY_AFTER_DAYS = 7
 
+# Sent once, via modmail, to a sub the moment it is auto-added to the
+# pact (i.e. the moment the bot is made a moderator of an allowlisted
+# NHL sub). Tracked in pending_subs.json under "welcomed" so it is
+# never sent twice.
+WELCOME_SUBJECT = "Welcome to the NHL Cross-Sub Ban Pact \U0001F3D2"
+
+WELCOME_BODY = """\
+Hey mods \u2014 your sub is now part of the **NHL Cross-Sub Ban Pact**, \
+because this bot (u/{bot}) was added to your mod team. Here's everything \
+you need to know. (This is the only time we'll message you unprompted.)
+
+**What the pact does**
+
+When any participating sub bans a user with the ban reason \
+`Auto XSub Pact Ban`, the bot detects it and propagates that ban to \
+every other sub in the pact. One ban protects all of us at once. The \
+goal is deterrence: when trolls know a drive-by in a rival's sub costs \
+them their home sub too, most of them just don't.
+
+**How to use it (this is the whole thing):**
+
+- **To share a ban:** ban the user as you normally would, but use the \
+  exact ban reason `Auto XSub Pact Ban`. That's the trigger. Nothing \
+  else changes about how you moderate.
+- **Normal bans are untouched:** the bot ONLY acts on that one specific \
+  reason. Every other ban you make stays local to your sub.
+- **To reverse a pact ban:** just unban the user in your sub \
+  (within a reasonable window) and the bot propagates the unban too.
+
+**Commands (via modmail to your own sub, or DM to u/{bot}):**
+
+- `/xsub help` \u2014 this guide, any time
+- `/xsub status <user>` \u2014 is a user pact-banned, and from where
+- `/xsub history <user>` \u2014 full ban/forgive history for a user
+- `/xsub pardon <user>` \u2014 reverse a pact ban for a user network-wide
+- `/xsub exempt <user>` \u2014 keep a specific user un-banned in YOUR sub \
+  even if the pact bans them elsewhere (useful for your own regulars)
+
+**You keep full control.** No loss of autonomy \u2014 you can pardon or \
+exempt anyone at any time, and leave the pact whenever you like by \
+removing the bot from your mod team.
+
+**See the pact live:** \
+https://grafana.shkn.ws/public-dashboards/e2c2f2bad9bf4804b9328f4e99b27498
+
+Questions? Just reply to this modmail or message u/re-verse. \
+Glad to have you in. \U0001F3D2
+"""
+
+
+def send_welcome(reddit, sub_name, bot_username, dry_run=False):
+    """
+    Modmail a newly-added sub the how-to guide. Best-effort: never
+    raises (a failed welcome must not abort discovery). Returns True if
+    a message was sent (or would be, in dry-run).
+    """
+    body = WELCOME_BODY.format(bot=bot_username)
+    if dry_run:
+        print(f"[DRY-RUN][WELCOME] would modmail r/{sub_name} the onboarding guide")
+        return True
+    try:
+        # Subreddit.message() sends to the target sub's MODERATORS
+        # (modmail) — the whole mod team sees it, which is what we want
+        # for onboarding. (modmail.create() only messages a single named
+        # user, so it is not usable here.)
+        reddit.subreddit(sub_name).message(
+            subject=WELCOME_SUBJECT,
+            message=body,
+        )
+        print(f"[WELCOME] sent onboarding guide to r/{sub_name} mods")
+        return True
+    except Exception as e:
+        print(f"[WELCOME-ERROR] could not modmail r/{sub_name}: {e}")
+        return False
+
 
 def _now():
     return datetime.now(timezone.utc)
@@ -180,6 +255,14 @@ def discover(reddit, bot_username, trusted, allowlist, pending_state,
             new_auto_added.append((name, sorted(perms), has_required))
             # Clean from pending if it was there
             pending_state.get("pending", {}).pop(name, None)
+            # Welcome the new sub exactly once, via modmail. Tracked in
+            # pending_state["welcomed"] so a re-run (or the sub briefly
+            # dropping and re-adding the bot) never re-sends the guide.
+            welcomed = pending_state.setdefault("welcomed", [])
+            if name not in welcomed:
+                if send_welcome(reddit, name, bot_username, dry_run=dry_run):
+                    if not dry_run:
+                        welcomed.append(name)
             continue
 
         # Non-allowlist sub. Add to pending if not already there.
