@@ -904,11 +904,15 @@
             "data": ""
           },
           "root_selector": "",
-          "filterExpression": "action == \"BANNED\"",
           "columns": [
             {
               "selector": "timestamp",
               "text": "Timestamp (UTC)",
+              "type": "string"
+            },
+            {
+              "selector": "user",
+              "text": "User",
               "type": "string"
             },
             {
@@ -917,8 +921,8 @@
               "type": "string"
             },
             {
-              "selector": "user",
-              "text": "User",
+              "selector": "action",
+              "text": "Action",
               "type": "string"
             }
           ]
@@ -937,6 +941,24 @@
       },
       "transformations": [
         {
+          "id": "filterByValue",
+          "options": {
+            "type": "include",
+            "match": "any",
+            "filters": [
+              {
+                "fieldName": "Action",
+                "config": {
+                  "id": "regex",
+                  "options": {
+                    "value": "^BANNED$"
+                  }
+                }
+              }
+            ]
+          }
+        },
+        {
           "id": "sortBy",
           "options": {
             "fields": {},
@@ -946,6 +968,16 @@
                 "desc": true
               }
             ]
+          }
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Action": true
+            },
+            "indexByName": {},
+            "renameByName": {}
           }
         }
       ]
@@ -990,11 +1022,15 @@
             "data": ""
           },
           "root_selector": "",
-          "filterExpression": "action == \"UNBANNED\" || action == \"FORGIVEN\"",
           "columns": [
             {
               "selector": "timestamp",
               "text": "Timestamp (UTC)",
+              "type": "string"
+            },
+            {
+              "selector": "user",
+              "text": "User",
               "type": "string"
             },
             {
@@ -1003,8 +1039,8 @@
               "type": "string"
             },
             {
-              "selector": "user",
-              "text": "User",
+              "selector": "action",
+              "text": "Action",
               "type": "string"
             }
           ]
@@ -1023,6 +1059,24 @@
       },
       "transformations": [
         {
+          "id": "filterByValue",
+          "options": {
+            "type": "include",
+            "match": "any",
+            "filters": [
+              {
+                "fieldName": "Action",
+                "config": {
+                  "id": "regex",
+                  "options": {
+                    "value": "^(UNBANNED|FORGIVEN)$"
+                  }
+                }
+              }
+            ]
+          }
+        },
+        {
           "id": "sortBy",
           "options": {
             "fields": {},
@@ -1032,6 +1086,16 @@
                 "desc": true
               }
             ]
+          }
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Action": true
+            },
+            "indexByName": {},
+            "renameByName": {}
           }
         }
       ]
