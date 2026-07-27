@@ -19,6 +19,30 @@ cd /opt/cross_sub_ban_bot || exit 1
 
 VENV=/opt/cross_sub_ban_bot/.venv/bin/python
 
+# --- Healthchecks.io dead-man's switch -------------------------------
+# This used to live in the GitHub Actions workflow. When the server
+# became primary, the workflow's ping got gated behind "did GitHub
+# actually do the work" (correctly — GitHub shouldn't rubber-stamp a
+# cycle it skipped), which left NOTHING pinging the check. The switch
+# then fired every night for the only reason it could: silence.
+#
+# The ping reflects whether the BOT did its job, not whether the push
+# succeeded — a failed push is already tolerated and retried next tick.
+# Fires on every exit path via trap so it can't be missed.
+HC_STATUS=1
+hc_finish() {
+  [ -z "${HEALTHCHECK_URL:-}" ] && return 0
+  if [ "$HC_STATUS" -eq 0 ]; then
+    curl -fsS -m 10 --retry 3 "$HEALTHCHECK_URL" >/dev/null 2>&1 \
+      && echo "[WRAPPER] healthcheck pinged (ok)" \
+      || echo "[WRAPPER] healthcheck ping FAILED (network?)"
+  else
+    curl -fsS -m 10 --retry 3 "${HEALTHCHECK_URL}/fail" >/dev/null 2>&1 \
+      && echo "[WRAPPER] healthcheck pinged (fail)" || true
+  fi
+}
+trap hc_finish EXIT
+
 echo "[WRAPPER] Starting bot run at $(date -u +%Y-%m-%dT%H:%M:%SZ)"
 "$VENV" cross_sub_ban_bot.py
 BOT_RC=$?
@@ -27,6 +51,10 @@ if [ "$BOT_RC" -ne 0 ]; then
   exit "$BOT_RC"
 fi
 
+
+# The bot did its job — the dead-man's switch is satisfied regardless of
+# what the git push does below.
+HC_STATUS=0
 
 # Refresh Prometheus metrics from the freshly-updated log (non-fatal).
 /opt/csbb-ops/csbb-metrics.py || echo "[WRAPPER] metrics refresh failed (non-fatal)"
