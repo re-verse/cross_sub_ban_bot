@@ -28,6 +28,16 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v5
+        with:
+          # The failover guard below searches history for the last commit
+          # authored by 'csbb-bot (shkn)'. actions/checkout defaults to
+          # fetch-depth 1 — a single commit — so that search could only
+          # ever see the newest commit. Any time the tip wasn't a server
+          # commit (right after a PR merge, for instance) the guard
+          # concluded "server silent" and GitHub ran the bot itself.
+          # Observed: 3 of 6 consecutive scheduled runs took over
+          # spuriously. Full history makes the lookup reliable.
+          fetch-depth: 0
 
       # --- Server-primary failover guard ---
       # The bot now runs primarily on shkn.ws via a systemd timer, which
