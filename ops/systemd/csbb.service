@@ -9,6 +9,10 @@ User=re-verse
 Group=re-verse
 WorkingDirectory=/opt/cross_sub_ban_bot
 
+# Creates /run/csbb owned by User=, for the run lock. Without this the
+# wrapper had nowhere writable to place it.
+RuntimeDirectory=csbb
+
 # Secrets (Reddit creds + healthcheck URL), root-owned 640, group re-verse
 EnvironmentFile=/etc/csbb/csbb.env
 

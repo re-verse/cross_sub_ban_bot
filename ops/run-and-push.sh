@@ -34,7 +34,11 @@ set -uo pipefail
 REPO=/opt/cross_sub_ban_bot
 OPS=/opt/csbb-ops
 VENV="$REPO/.venv/bin/python"
-LOCK=/var/lock/csbb-run.lock
+# systemd provides RuntimeDirectory=csbb -> /run/csbb, owned by the
+# service User. /var/lock is root-owned and the unit runs as
+# re-verse, so the original path silently failed to open. Fall back
+# to /tmp when invoked by hand outside systemd.
+LOCK="${RUNTIME_DIRECTORY:-/tmp}/csbb-run.lock"
 SNAP=$(mktemp -d /tmp/csbb-state.XXXXXX)
 PUSH_ATTEMPTS=5
 
@@ -74,10 +78,21 @@ trap cleanup EXIT
 # systemd already prevents overlapping starts of a oneshot unit, but a
 # manual `systemctl start` alongside a timer firing, or a future second
 # caller, must not interleave git operations on the same worktree.
-exec 9>"$LOCK"
+# Distinguish "someone else is running" (benign) from "the lock is
+# broken" (a bug). Conflating them is what turned a permissions error
+# into 26 hours of silent no-ops that still reported healthy.
+if ! exec 9>"$LOCK" 2>/dev/null; then
+  log "FATAL: cannot open lock file $LOCK - not running."
+  log "This is a configuration fault, not contention. Check that"
+  log "RuntimeDirectory=csbb is set on the unit and the path is writable."
+  HC_STATUS=1   # ping /fail: we did NOT do the work
+  exit 1
+fi
 if ! flock -n 9; then
   log "another run holds the lock; exiting without action"
-  HC_STATUS=0   # not a failure: the other run will ping
+  # Deliberately do NOT ping ok here - the run that holds the lock will
+  # ping when it finishes. Pinging on a path that did no work is how a
+  # broken bot looks healthy.
   exit 0
 fi
 
