@@ -19,49 +19,49 @@
     "tampabaylightning:modmail::first_failure": "2026-07-26T20:33:25+00:00",
     "winnipegjets::first_failure": "2026-05-18T18:10:53+00:00"
   },
-  "last_run": "2026-08-02T13:02:20+00:00",
+  "last_run": "2026-08-02T13:06:07+00:00",
   "subs": {
     "anaheimducks": {
       "consecutive_failures": 0,
       "last_failure": "2026-05-18T18:10:26+00:00",
-      "last_ok": "2026-08-02T13:00:33+00:00"
+      "last_ok": "2026-08-02T13:05:25+00:00"
     },
     "goldenknights": {
       "consecutive_failures": 0,
       "last_failure": "2026-05-18T18:10:21+00:00",
-      "last_ok": "2026-08-02T13:00:33+00:00"
+      "last_ok": "2026-08-02T13:05:25+00:00"
     },
     "habs": {
       "consecutive_failures": 0,
       "last_failure": "2026-05-18T18:10:02+00:00",
-      "last_ok": "2026-08-02T13:00:32+00:00"
+      "last_ok": "2026-08-02T13:05:24+00:00"
     },
     "leafs": {
       "consecutive_failures": 0,
       "last_failure": "2026-05-18T18:10:06+00:00",
-      "last_ok": "2026-08-02T13:00:32+00:00"
+      "last_ok": "2026-08-02T13:05:24+00:00"
     },
     "ottawasenators": {
       "consecutive_failures": 0,
       "last_failure": "2026-05-18T18:10:31+00:00",
-      "last_ok": "2026-08-02T13:00:34+00:00"
+      "last_ok": "2026-08-02T13:05:26+00:00"
     },
     "tampabaylightning": {
       "consecutive_failures": 0,
-      "last_ok": "2026-08-02T13:00:36+00:00"
+      "last_ok": "2026-08-02T13:05:26+00:00"
     },
     "winnipegjets": {
       "consecutive_failures": 0,
       "last_failure": "2026-05-18T18:10:16+00:00",
-      "last_ok": "2026-08-02T13:00:32+00:00"
+      "last_ok": "2026-08-02T13:05:25+00:00"
     },
     "xsubpacttest1": {
       "consecutive_failures": 0,
-      "last_ok": "2026-08-02T13:00:35+00:00"
+      "last_ok": "2026-08-02T13:05:26+00:00"
     },
     "xsubpacttest2": {
       "consecutive_failures": 0,
-      "last_ok": "2026-08-02T13:00:36+00:00"
+      "last_ok": "2026-08-02T13:05:26+00:00"
     }
   }
 }
