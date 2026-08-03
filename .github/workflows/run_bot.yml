@@ -49,19 +49,71 @@ jobs:
       - name: Check server heartbeat
         if: github.event_name == 'schedule'
         id: failover
+        env:
+          HC_API_KEY: ${{ secrets.HEALTHCHECKS_API_KEY }}
+          HC_CHECK_UUID: 6c904f3c-bd1a-4ffe-a0b9-d7c81a2788bc
         run: |
-          LAST_SERVER=$(git log -1 --format=%ct \
-            --author='csbb-bot (shkn)' origin/main 2>/dev/null || echo 0)
-          NOW=$(date +%s)
-          AGE=$(( (NOW - LAST_SERVER) / 60 ))
-          echo "Last server commit was ${AGE} min ago."
-          if [ "$LAST_SERVER" -ne 0 ] && [ "$AGE" -lt 15 ]; then
-            echo "Server healthy (committed ${AGE} min ago) — GitHub standing down."
-            echo "skip=true" >> "$GITHUB_OUTPUT"
+          # Primary signal: the healthchecks.io ping. The server pings it
+          # on EVERY run via run-and-push.sh, whether or not there was
+          # anything to commit — so it stays fresh through quiet periods.
+          #
+          # This replaced a git-commit-age check. That check assumed the
+          # server commits every cycle, which was only true because
+          # bot_health.json (a heartbeat file with per-run timestamps)
+          # was committed every 5 minutes. That produced ~288 commits and
+          # ~288 GitHub Pages rebuilds a day, and the overlapping builds
+          # intermittently failed with duplicate "github-pages" artifacts.
+          # bot_health.json is now gitignored, so the server only commits
+          # when something real happens — and git commit age is therefore
+          # no longer a valid liveness signal.
+          SKIP=false
+          DECIDED=false
+
+          if [ -n "$HC_API_KEY" ]; then
+            RESP=$(curl -fsS -m 15 \
+              -H "X-Api-Key: $HC_API_KEY" \
+              "https://healthchecks.io/api/v3/checks/$HC_CHECK_UUID" 2>/dev/null || echo "")
+            if [ -n "$RESP" ]; then
+              LAST_PING=$(echo "$RESP" | jq -r '.last_ping // empty')
+              STATUS=$(echo "$RESP" | jq -r '.status // empty')
+              if [ -n "$LAST_PING" ]; then
+                PING_TS=$(date -u -d "$LAST_PING" +%s 2>/dev/null || echo 0)
+                NOW=$(date -u +%s)
+                AGE=$(( (NOW - PING_TS) / 60 ))
+                echo "healthchecks.io: last ping ${AGE} min ago (status=${STATUS})."
+                DECIDED=true
+                # 15 min = 3 missed 5-minute cycles.
+                if [ "$PING_TS" -ne 0 ] && [ "$AGE" -lt 15 ]; then
+                  echo "Server healthy — GitHub standing down."
+                  SKIP=true
+                else
+                  echo "Server silent ${AGE} min — GitHub taking over."
+                fi
+              fi
+            fi
+            [ "$DECIDED" = "false" ] && \
+              echo "WARNING: healthchecks.io query failed; falling back to git."
           else
-            echo "Server silent ${AGE} min (or never) — GitHub taking over."
-            echo "skip=false" >> "$GITHUB_OUTPUT"
+            echo "WARNING: HEALTHCHECKS_API_KEY not set; falling back to git."
           fi
+
+          if [ "$DECIDED" = "false" ]; then
+            # Fallback only. Since the server no longer commits every
+            # cycle, commit age is a weak signal — a quiet pact looks
+            # identical to a dead server. Use a deliberately generous
+            # threshold so GitHub does not thrash during quiet periods,
+            # while still taking over if the server is genuinely gone.
+            LAST_SERVER=$(git log -1 --format=%ct \
+              --author='csbb-bot (shkn)' origin/main 2>/dev/null || echo 0)
+            NOW=$(date +%s)
+            AGE=$(( (NOW - LAST_SERVER) / 60 ))
+            echo "Fallback: last server commit ${AGE} min ago (threshold 360)."
+            if [ "$LAST_SERVER" -ne 0 ] && [ "$AGE" -lt 360 ]; then
+              SKIP=true
+            fi
+          fi
+
+          echo "skip=$SKIP" >> "$GITHUB_OUTPUT"
 
       - name: Set up Python 3.9
         if: steps.failover.outputs.skip != 'true'
@@ -95,7 +147,7 @@ jobs:
           # actually logged, so on idle runs mostly bans.db and
           # bot_health.json will see touches. -- ignores files that don't
           # exist yet (first creation) without masking other failures.
-          for f in bans.db bot_health.json public_ban_log.json public_ban_log.md public_ban_log.html trusted_subs.txt pending_subs.json; do
+          for f in bans.db public_ban_log.json public_ban_log.md public_ban_log.html trusted_subs.txt pending_subs.json; do
             if [ -e "$f" ]; then git add "$f"; fi
           done
 

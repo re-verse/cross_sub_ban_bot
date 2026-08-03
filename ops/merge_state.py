@@ -47,7 +47,7 @@ import sqlite3
 import sys
 
 OURS_WINS = (
-    "bot_health.json",
+    # bot_health.json omitted: gitignored, never in a checkout to merge.
     "trusted_subs.txt",
     "public_ban_log.md",
     "public_ban_log.html",
