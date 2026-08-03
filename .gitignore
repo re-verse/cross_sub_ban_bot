@@ -13,3 +13,11 @@ __pycache__/
 .env
 *.env
 !.env.example
+
+# Ephemeral per-run heartbeat/health state. Regenerated every run and
+# changing every run, so committing it produced ~288 commits a day
+# (and ~288 GitHub Pages rebuilds, whose overlapping builds
+# intermittently failed on duplicate artifacts). Nothing reads the git
+# copy: the internal Grafana panel reads /opt/csbb-private/sub_health.json
+# on the server, and liveness is now signalled via healthchecks.io.
+bot_health.json

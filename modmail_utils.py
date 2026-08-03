@@ -57,7 +57,7 @@ _HELP_TEXT = (
     "    /xsub remove r/subname           — remove sub from trusted list (owner only)\n\n"
     "The pact triggers on bans whose reason is exactly "
     "**Auto XSub Pact Ban**.\n\n"
-    "Public log: https://re-verse.github.io/cross_sub_ban_bot/public_ban_log.html"
+    "Live pact dashboard: https://grafana.shkn.ws/public-dashboards/e2c2f2bad9bf4804b9328f4e99b27498"
 )
 
 

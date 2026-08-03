@@ -42,9 +42,11 @@ LOCK="${RUNTIME_DIRECTORY:-/tmp}/csbb-run.lock"
 SNAP=$(mktemp -d /tmp/csbb-state.XXXXXX)
 PUSH_ATTEMPTS=5
 
+# bot_health.json is deliberately absent: it is gitignored (ephemeral
+# per-run state) and staging it would be a no-op that also reintroduces
+# the every-cycle commit churn.
 STATE_FILES=(
   bans.db
-  bot_health.json
   public_ban_log.json
   public_ban_log.md
   public_ban_log.html
