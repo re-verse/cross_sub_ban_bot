@@ -1294,5 +1294,77 @@
     "source_sub": "r/leafs",
     "actor": "Bot",
     "note": ""
+  },
+  {
+    "timestamp": "2026-08-08 16:15:18",
+    "action": "UNBANNED",
+    "username": "Zookeepergame899",
+    "subreddit": "habs",
+    "source_sub": "r/leafs",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-08-08 16:15:18",
+    "action": "UNBANNED",
+    "username": "Zookeepergame899",
+    "subreddit": "winnipegjets",
+    "source_sub": "r/leafs",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-08-08 16:15:18",
+    "action": "UNBANNED",
+    "username": "Zookeepergame899",
+    "subreddit": "goldenknights",
+    "source_sub": "r/leafs",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-08-08 16:15:18",
+    "action": "UNBANNED",
+    "username": "Zookeepergame899",
+    "subreddit": "anaheimducks",
+    "source_sub": "r/leafs",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-08-08 16:15:18",
+    "action": "UNBANNED",
+    "username": "Zookeepergame899",
+    "subreddit": "ottawasenators",
+    "source_sub": "r/leafs",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-08-08 16:15:18",
+    "action": "UNBANNED",
+    "username": "Zookeepergame899",
+    "subreddit": "xsubpacttest1",
+    "source_sub": "r/leafs",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-08-08 16:15:18",
+    "action": "UNBANNED",
+    "username": "Zookeepergame899",
+    "subreddit": "xsubpacttest2",
+    "source_sub": "r/leafs",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-08-08 16:15:19",
+    "action": "UNBANNED",
+    "username": "Zookeepergame899",
+    "subreddit": "tampabaylightning",
+    "source_sub": "r/leafs",
+    "actor": "Bot",
+    "note": ""
   }
 ]
