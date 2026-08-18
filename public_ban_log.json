@@ -1582,5 +1582,77 @@
     "source_sub": "r/habs",
     "actor": "Bot",
     "note": ""
+  },
+  {
+    "timestamp": "2026-08-18 16:20:37",
+    "action": "UNBANNED",
+    "username": "marco005",
+    "subreddit": "leafs",
+    "source_sub": "r/habs",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-08-18 16:20:37",
+    "action": "UNBANNED",
+    "username": "marco005",
+    "subreddit": "winnipegjets",
+    "source_sub": "r/habs",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-08-18 16:20:37",
+    "action": "UNBANNED",
+    "username": "marco005",
+    "subreddit": "goldenknights",
+    "source_sub": "r/habs",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-08-18 16:20:38",
+    "action": "UNBANNED",
+    "username": "marco005",
+    "subreddit": "anaheimducks",
+    "source_sub": "r/habs",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-08-18 16:20:38",
+    "action": "UNBANNED",
+    "username": "marco005",
+    "subreddit": "ottawasenators",
+    "source_sub": "r/habs",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-08-18 16:20:38",
+    "action": "UNBANNED",
+    "username": "marco005",
+    "subreddit": "xsubpacttest1",
+    "source_sub": "r/habs",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-08-18 16:20:38",
+    "action": "UNBANNED",
+    "username": "marco005",
+    "subreddit": "xsubpacttest2",
+    "source_sub": "r/habs",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-08-18 16:20:38",
+    "action": "UNBANNED",
+    "username": "marco005",
+    "subreddit": "tampabaylightning",
+    "source_sub": "r/habs",
+    "actor": "Bot",
+    "note": ""
   }
 ]
