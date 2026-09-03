@@ -1942,5 +1942,77 @@
     "source_sub": "r/leafs",
     "actor": "Bot",
     "note": ""
+  },
+  {
+    "timestamp": "2026-09-03 15:05:39",
+    "action": "BANNED",
+    "username": "Dense_Jury8980",
+    "subreddit": "habs",
+    "source_sub": "r/ottawasenators",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-09-03 15:05:39",
+    "action": "BANNED",
+    "username": "Dense_Jury8980",
+    "subreddit": "leafs",
+    "source_sub": "r/ottawasenators",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-09-03 15:05:40",
+    "action": "BANNED",
+    "username": "Dense_Jury8980",
+    "subreddit": "winnipegjets",
+    "source_sub": "r/ottawasenators",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-09-03 15:05:40",
+    "action": "BANNED",
+    "username": "Dense_Jury8980",
+    "subreddit": "goldenknights",
+    "source_sub": "r/ottawasenators",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-09-03 15:05:40",
+    "action": "BANNED",
+    "username": "Dense_Jury8980",
+    "subreddit": "anaheimducks",
+    "source_sub": "r/ottawasenators",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-09-03 15:05:41",
+    "action": "BANNED",
+    "username": "Dense_Jury8980",
+    "subreddit": "xsubpacttest1",
+    "source_sub": "r/ottawasenators",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-09-03 15:05:41",
+    "action": "BANNED",
+    "username": "Dense_Jury8980",
+    "subreddit": "xsubpacttest2",
+    "source_sub": "r/ottawasenators",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-09-03 15:05:41",
+    "action": "BANNED",
+    "username": "Dense_Jury8980",
+    "subreddit": "tampabaylightning",
+    "source_sub": "r/ottawasenators",
+    "actor": "Bot",
+    "note": ""
   }
 ]
