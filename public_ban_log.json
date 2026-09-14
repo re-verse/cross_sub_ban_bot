@@ -1726,5 +1726,77 @@
     "source_sub": "r/habs",
     "actor": "Bot",
     "note": ""
+  },
+  {
+    "timestamp": "2026-09-14 15:35:17",
+    "action": "UNBANNED",
+    "username": "Remarkable-Flight990",
+    "subreddit": "leafs",
+    "source_sub": "r/habs",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-09-14 15:35:17",
+    "action": "UNBANNED",
+    "username": "Remarkable-Flight990",
+    "subreddit": "winnipegjets",
+    "source_sub": "r/habs",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-09-14 15:35:17",
+    "action": "UNBANNED",
+    "username": "Remarkable-Flight990",
+    "subreddit": "goldenknights",
+    "source_sub": "r/habs",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-09-14 15:35:18",
+    "action": "UNBANNED",
+    "username": "Remarkable-Flight990",
+    "subreddit": "anaheimducks",
+    "source_sub": "r/habs",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-09-14 15:35:18",
+    "action": "UNBANNED",
+    "username": "Remarkable-Flight990",
+    "subreddit": "ottawasenators",
+    "source_sub": "r/habs",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-09-14 15:35:18",
+    "action": "UNBANNED",
+    "username": "Remarkable-Flight990",
+    "subreddit": "xsubpacttest1",
+    "source_sub": "r/habs",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-09-14 15:35:18",
+    "action": "UNBANNED",
+    "username": "Remarkable-Flight990",
+    "subreddit": "xsubpacttest2",
+    "source_sub": "r/habs",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-09-14 15:35:18",
+    "action": "UNBANNED",
+    "username": "Remarkable-Flight990",
+    "subreddit": "tampabaylightning",
+    "source_sub": "r/habs",
+    "actor": "Bot",
+    "note": ""
   }
 ]
