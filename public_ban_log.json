@@ -1942,5 +1942,77 @@
     "source_sub": "r/habs",
     "actor": "Bot",
     "note": ""
+  },
+  {
+    "timestamp": "2026-09-15 02:00:15",
+    "action": "BANNED",
+    "username": "Comfortable-Moose549",
+    "subreddit": "leafs",
+    "source_sub": "r/habs",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-09-15 02:00:15",
+    "action": "BANNED",
+    "username": "Comfortable-Moose549",
+    "subreddit": "winnipegjets",
+    "source_sub": "r/habs",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-09-15 02:00:15",
+    "action": "BANNED",
+    "username": "Comfortable-Moose549",
+    "subreddit": "goldenknights",
+    "source_sub": "r/habs",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-09-15 02:00:15",
+    "action": "BANNED",
+    "username": "Comfortable-Moose549",
+    "subreddit": "anaheimducks",
+    "source_sub": "r/habs",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-09-15 02:00:16",
+    "action": "BANNED",
+    "username": "Comfortable-Moose549",
+    "subreddit": "ottawasenators",
+    "source_sub": "r/habs",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-09-15 02:00:16",
+    "action": "BANNED",
+    "username": "Comfortable-Moose549",
+    "subreddit": "xsubpacttest1",
+    "source_sub": "r/habs",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-09-15 02:00:16",
+    "action": "BANNED",
+    "username": "Comfortable-Moose549",
+    "subreddit": "xsubpacttest2",
+    "source_sub": "r/habs",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-09-15 02:00:17",
+    "action": "BANNED",
+    "username": "Comfortable-Moose549",
+    "subreddit": "tampabaylightning",
+    "source_sub": "r/habs",
+    "actor": "Bot",
+    "note": ""
   }
 ]
