@@ -1222,5 +1222,77 @@
     "source_sub": "r/leafs",
     "actor": "Bot",
     "note": ""
+  },
+  {
+    "timestamp": "2026-09-30 01:50:28",
+    "action": "BANNED",
+    "username": "Historical-Royal7905",
+    "subreddit": "habs",
+    "source_sub": "r/leafs",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-09-30 01:50:28",
+    "action": "BANNED",
+    "username": "Historical-Royal7905",
+    "subreddit": "winnipegjets",
+    "source_sub": "r/leafs",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-09-30 01:50:28",
+    "action": "BANNED",
+    "username": "Historical-Royal7905",
+    "subreddit": "goldenknights",
+    "source_sub": "r/leafs",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-09-30 01:50:29",
+    "action": "BANNED",
+    "username": "Historical-Royal7905",
+    "subreddit": "anaheimducks",
+    "source_sub": "r/leafs",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-09-30 01:50:29",
+    "action": "BANNED",
+    "username": "Historical-Royal7905",
+    "subreddit": "ottawasenators",
+    "source_sub": "r/leafs",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-09-30 01:50:29",
+    "action": "BANNED",
+    "username": "Historical-Royal7905",
+    "subreddit": "xsubpacttest1",
+    "source_sub": "r/leafs",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-09-30 01:50:30",
+    "action": "BANNED",
+    "username": "Historical-Royal7905",
+    "subreddit": "xsubpacttest2",
+    "source_sub": "r/leafs",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-09-30 01:50:30",
+    "action": "BANNED",
+    "username": "Historical-Royal7905",
+    "subreddit": "tampabaylightning",
+    "source_sub": "r/leafs",
+    "actor": "Bot",
+    "note": ""
   }
 ]
