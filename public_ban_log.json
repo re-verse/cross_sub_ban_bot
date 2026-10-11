@@ -1510,5 +1510,77 @@
     "source_sub": "r/leafs",
     "actor": "Bot",
     "note": ""
+  },
+  {
+    "timestamp": "2026-10-11 02:10:33",
+    "action": "BANNED",
+    "username": "Aggravating-Gain301",
+    "subreddit": "habs",
+    "source_sub": "r/leafs",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-10-11 02:10:33",
+    "action": "BANNED",
+    "username": "Aggravating-Gain301",
+    "subreddit": "winnipegjets",
+    "source_sub": "r/leafs",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-10-11 02:10:33",
+    "action": "BANNED",
+    "username": "Aggravating-Gain301",
+    "subreddit": "goldenknights",
+    "source_sub": "r/leafs",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-10-11 02:10:33",
+    "action": "BANNED",
+    "username": "Aggravating-Gain301",
+    "subreddit": "anaheimducks",
+    "source_sub": "r/leafs",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-10-11 02:10:34",
+    "action": "BANNED",
+    "username": "Aggravating-Gain301",
+    "subreddit": "ottawasenators",
+    "source_sub": "r/leafs",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-10-11 02:10:34",
+    "action": "BANNED",
+    "username": "Aggravating-Gain301",
+    "subreddit": "xsubpacttest1",
+    "source_sub": "r/leafs",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-10-11 02:10:34",
+    "action": "BANNED",
+    "username": "Aggravating-Gain301",
+    "subreddit": "xsubpacttest2",
+    "source_sub": "r/leafs",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-10-11 02:10:34",
+    "action": "BANNED",
+    "username": "Aggravating-Gain301",
+    "subreddit": "tampabaylightning",
+    "source_sub": "r/leafs",
+    "actor": "Bot",
+    "note": ""
   }
 ]
