@@ -1582,5 +1582,77 @@
     "source_sub": "r/leafs",
     "actor": "Bot",
     "note": ""
+  },
+  {
+    "timestamp": "2026-10-11 02:15:40",
+    "action": "BANNED",
+    "username": "King-Leaf-67",
+    "subreddit": "leafs",
+    "source_sub": "r/habs",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-10-11 02:15:40",
+    "action": "BANNED",
+    "username": "King-Leaf-67",
+    "subreddit": "winnipegjets",
+    "source_sub": "r/habs",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-10-11 02:15:40",
+    "action": "BANNED",
+    "username": "King-Leaf-67",
+    "subreddit": "goldenknights",
+    "source_sub": "r/habs",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-10-11 02:15:41",
+    "action": "BANNED",
+    "username": "King-Leaf-67",
+    "subreddit": "anaheimducks",
+    "source_sub": "r/habs",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-10-11 02:15:41",
+    "action": "BANNED",
+    "username": "King-Leaf-67",
+    "subreddit": "ottawasenators",
+    "source_sub": "r/habs",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-10-11 02:15:41",
+    "action": "BANNED",
+    "username": "King-Leaf-67",
+    "subreddit": "xsubpacttest1",
+    "source_sub": "r/habs",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-10-11 02:15:42",
+    "action": "BANNED",
+    "username": "King-Leaf-67",
+    "subreddit": "xsubpacttest2",
+    "source_sub": "r/habs",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-10-11 02:15:42",
+    "action": "BANNED",
+    "username": "King-Leaf-67",
+    "subreddit": "tampabaylightning",
+    "source_sub": "r/habs",
+    "actor": "Bot",
+    "note": ""
   }
 ]
