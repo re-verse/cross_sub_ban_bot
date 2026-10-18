@@ -862,5 +862,77 @@
     "source_sub": "r/habs",
     "actor": "Bot",
     "note": ""
+  },
+  {
+    "timestamp": "2026-10-18 12:05:37",
+    "action": "BANNED",
+    "username": "Minimum-Tale-2820",
+    "subreddit": "leafs",
+    "source_sub": "r/habs",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-10-18 12:05:38",
+    "action": "BANNED",
+    "username": "Minimum-Tale-2820",
+    "subreddit": "winnipegjets",
+    "source_sub": "r/habs",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-10-18 12:05:38",
+    "action": "BANNED",
+    "username": "Minimum-Tale-2820",
+    "subreddit": "goldenknights",
+    "source_sub": "r/habs",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-10-18 12:05:38",
+    "action": "BANNED",
+    "username": "Minimum-Tale-2820",
+    "subreddit": "anaheimducks",
+    "source_sub": "r/habs",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-10-18 12:05:39",
+    "action": "BANNED",
+    "username": "Minimum-Tale-2820",
+    "subreddit": "ottawasenators",
+    "source_sub": "r/habs",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-10-18 12:05:39",
+    "action": "BANNED",
+    "username": "Minimum-Tale-2820",
+    "subreddit": "xsubpacttest1",
+    "source_sub": "r/habs",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-10-18 12:05:39",
+    "action": "BANNED",
+    "username": "Minimum-Tale-2820",
+    "subreddit": "xsubpacttest2",
+    "source_sub": "r/habs",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-10-18 12:05:39",
+    "action": "BANNED",
+    "username": "Minimum-Tale-2820",
+    "subreddit": "tampabaylightning",
+    "source_sub": "r/habs",
+    "actor": "Bot",
+    "note": ""
   }
 ]
