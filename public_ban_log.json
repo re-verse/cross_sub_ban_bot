@@ -934,5 +934,77 @@
     "source_sub": "r/habs",
     "actor": "Bot",
     "note": ""
+  },
+  {
+    "timestamp": "2026-10-21 04:30:11",
+    "action": "BANNED",
+    "username": "IndependentAlphaMale",
+    "subreddit": "habs",
+    "source_sub": "r/goldenknights",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-10-21 04:30:11",
+    "action": "BANNED",
+    "username": "IndependentAlphaMale",
+    "subreddit": "leafs",
+    "source_sub": "r/goldenknights",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-10-21 04:30:12",
+    "action": "BANNED",
+    "username": "IndependentAlphaMale",
+    "subreddit": "winnipegjets",
+    "source_sub": "r/goldenknights",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-10-21 04:30:12",
+    "action": "BANNED",
+    "username": "IndependentAlphaMale",
+    "subreddit": "anaheimducks",
+    "source_sub": "r/goldenknights",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-10-21 04:30:12",
+    "action": "BANNED",
+    "username": "IndependentAlphaMale",
+    "subreddit": "ottawasenators",
+    "source_sub": "r/goldenknights",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-10-21 04:30:12",
+    "action": "BANNED",
+    "username": "IndependentAlphaMale",
+    "subreddit": "xsubpacttest1",
+    "source_sub": "r/goldenknights",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-10-21 04:30:13",
+    "action": "BANNED",
+    "username": "IndependentAlphaMale",
+    "subreddit": "xsubpacttest2",
+    "source_sub": "r/goldenknights",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-10-21 04:30:13",
+    "action": "BANNED",
+    "username": "IndependentAlphaMale",
+    "subreddit": "tampabaylightning",
+    "source_sub": "r/goldenknights",
+    "actor": "Bot",
+    "note": ""
   }
 ]
