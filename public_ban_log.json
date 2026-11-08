@@ -1150,5 +1150,77 @@
     "source_sub": "r/leafs",
     "actor": "Bot",
     "note": ""
+  },
+  {
+    "timestamp": "2026-11-08 02:35:39",
+    "action": "BANNED",
+    "username": "crime_dog27",
+    "subreddit": "habs",
+    "source_sub": "r/leafs",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-11-08 02:35:39",
+    "action": "BANNED",
+    "username": "crime_dog27",
+    "subreddit": "winnipegjets",
+    "source_sub": "r/leafs",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-11-08 02:35:40",
+    "action": "BANNED",
+    "username": "crime_dog27",
+    "subreddit": "goldenknights",
+    "source_sub": "r/leafs",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-11-08 02:35:40",
+    "action": "BANNED",
+    "username": "crime_dog27",
+    "subreddit": "anaheimducks",
+    "source_sub": "r/leafs",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-11-08 02:35:41",
+    "action": "BANNED",
+    "username": "crime_dog27",
+    "subreddit": "ottawasenators",
+    "source_sub": "r/leafs",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-11-08 02:35:41",
+    "action": "BANNED",
+    "username": "crime_dog27",
+    "subreddit": "xsubpacttest1",
+    "source_sub": "r/leafs",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-11-08 02:35:41",
+    "action": "BANNED",
+    "username": "crime_dog27",
+    "subreddit": "xsubpacttest2",
+    "source_sub": "r/leafs",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-11-08 02:35:42",
+    "action": "BANNED",
+    "username": "crime_dog27",
+    "subreddit": "tampabaylightning",
+    "source_sub": "r/leafs",
+    "actor": "Bot",
+    "note": ""
   }
 ]
