@@ -2302,5 +2302,77 @@
     "source_sub": "r/winnipegjets",
     "actor": "Bot",
     "note": ""
+  },
+  {
+    "timestamp": "2026-11-11 01:00:13",
+    "action": "UNBANNED",
+    "username": "Few-Interest-5521",
+    "subreddit": "habs",
+    "source_sub": "r/winnipegjets",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-11-11 01:00:13",
+    "action": "UNBANNED",
+    "username": "Few-Interest-5521",
+    "subreddit": "leafs",
+    "source_sub": "r/winnipegjets",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-11-11 01:00:13",
+    "action": "UNBANNED",
+    "username": "Few-Interest-5521",
+    "subreddit": "goldenknights",
+    "source_sub": "r/winnipegjets",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-11-11 01:00:13",
+    "action": "UNBANNED",
+    "username": "Few-Interest-5521",
+    "subreddit": "anaheimducks",
+    "source_sub": "r/winnipegjets",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-11-11 01:00:13",
+    "action": "UNBANNED",
+    "username": "Few-Interest-5521",
+    "subreddit": "ottawasenators",
+    "source_sub": "r/winnipegjets",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-11-11 01:00:14",
+    "action": "UNBANNED",
+    "username": "Few-Interest-5521",
+    "subreddit": "xsubpacttest1",
+    "source_sub": "r/winnipegjets",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-11-11 01:00:14",
+    "action": "UNBANNED",
+    "username": "Few-Interest-5521",
+    "subreddit": "xsubpacttest2",
+    "source_sub": "r/winnipegjets",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-11-11 01:00:14",
+    "action": "UNBANNED",
+    "username": "Few-Interest-5521",
+    "subreddit": "tampabaylightning",
+    "source_sub": "r/winnipegjets",
+    "actor": "Bot",
+    "note": ""
   }
 ]
