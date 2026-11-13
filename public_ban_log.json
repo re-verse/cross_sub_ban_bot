@@ -3526,5 +3526,77 @@
     "source_sub": "r/leafs",
     "actor": "Bot",
     "note": ""
+  },
+  {
+    "timestamp": "2026-11-13 16:15:43",
+    "action": "UNBANNED",
+    "username": "sakicno19",
+    "subreddit": "habs",
+    "source_sub": "r/leafs",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-11-13 16:15:43",
+    "action": "UNBANNED",
+    "username": "sakicno19",
+    "subreddit": "winnipegjets",
+    "source_sub": "r/leafs",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-11-13 16:15:43",
+    "action": "UNBANNED",
+    "username": "sakicno19",
+    "subreddit": "goldenknights",
+    "source_sub": "r/leafs",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-11-13 16:15:43",
+    "action": "UNBANNED",
+    "username": "sakicno19",
+    "subreddit": "anaheimducks",
+    "source_sub": "r/leafs",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-11-13 16:15:43",
+    "action": "UNBANNED",
+    "username": "sakicno19",
+    "subreddit": "ottawasenators",
+    "source_sub": "r/leafs",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-11-13 16:15:44",
+    "action": "UNBANNED",
+    "username": "sakicno19",
+    "subreddit": "xsubpacttest1",
+    "source_sub": "r/leafs",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-11-13 16:15:44",
+    "action": "UNBANNED",
+    "username": "sakicno19",
+    "subreddit": "xsubpacttest2",
+    "source_sub": "r/leafs",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-11-13 16:15:44",
+    "action": "UNBANNED",
+    "username": "sakicno19",
+    "subreddit": "tampabaylightning",
+    "source_sub": "r/leafs",
+    "actor": "Bot",
+    "note": ""
   }
 ]
