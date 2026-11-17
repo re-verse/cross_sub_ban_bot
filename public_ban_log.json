@@ -4894,5 +4894,77 @@
     "source_sub": "r/goldenknights",
     "actor": "Bot",
     "note": ""
+  },
+  {
+    "timestamp": "2026-11-17 23:10:07",
+    "action": "BANNED",
+    "username": "SamGzzz",
+    "subreddit": "habs",
+    "source_sub": "r/leafs",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-11-17 23:10:08",
+    "action": "BANNED",
+    "username": "SamGzzz",
+    "subreddit": "winnipegjets",
+    "source_sub": "r/leafs",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-11-17 23:10:08",
+    "action": "BANNED",
+    "username": "SamGzzz",
+    "subreddit": "goldenknights",
+    "source_sub": "r/leafs",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-11-17 23:10:09",
+    "action": "BANNED",
+    "username": "SamGzzz",
+    "subreddit": "anaheimducks",
+    "source_sub": "r/leafs",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-11-17 23:10:09",
+    "action": "BANNED",
+    "username": "SamGzzz",
+    "subreddit": "ottawasenators",
+    "source_sub": "r/leafs",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-11-17 23:10:09",
+    "action": "BANNED",
+    "username": "SamGzzz",
+    "subreddit": "xsubpacttest1",
+    "source_sub": "r/leafs",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-11-17 23:10:10",
+    "action": "BANNED",
+    "username": "SamGzzz",
+    "subreddit": "xsubpacttest2",
+    "source_sub": "r/leafs",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-11-17 23:10:10",
+    "action": "BANNED",
+    "username": "SamGzzz",
+    "subreddit": "tampabaylightning",
+    "source_sub": "r/leafs",
+    "actor": "Bot",
+    "note": ""
   }
 ]
