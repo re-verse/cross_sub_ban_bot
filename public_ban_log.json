@@ -5110,5 +5110,77 @@
     "source_sub": "r/leafs",
     "actor": "Bot",
     "note": ""
+  },
+  {
+    "timestamp": "2026-11-18 06:00:38",
+    "action": "BANNED",
+    "username": "Background-Income651",
+    "subreddit": "habs",
+    "source_sub": "r/goldenknights",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-11-18 06:00:39",
+    "action": "BANNED",
+    "username": "Background-Income651",
+    "subreddit": "leafs",
+    "source_sub": "r/goldenknights",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-11-18 06:00:39",
+    "action": "BANNED",
+    "username": "Background-Income651",
+    "subreddit": "winnipegjets",
+    "source_sub": "r/goldenknights",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-11-18 06:00:39",
+    "action": "BANNED",
+    "username": "Background-Income651",
+    "subreddit": "anaheimducks",
+    "source_sub": "r/goldenknights",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-11-18 06:00:40",
+    "action": "BANNED",
+    "username": "Background-Income651",
+    "subreddit": "ottawasenators",
+    "source_sub": "r/goldenknights",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-11-18 06:00:40",
+    "action": "BANNED",
+    "username": "Background-Income651",
+    "subreddit": "xsubpacttest1",
+    "source_sub": "r/goldenknights",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-11-18 06:00:40",
+    "action": "BANNED",
+    "username": "Background-Income651",
+    "subreddit": "xsubpacttest2",
+    "source_sub": "r/goldenknights",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-11-18 06:00:41",
+    "action": "BANNED",
+    "username": "Background-Income651",
+    "subreddit": "tampabaylightning",
+    "source_sub": "r/goldenknights",
+    "actor": "Bot",
+    "note": ""
   }
 ]
