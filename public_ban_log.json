@@ -5038,5 +5038,77 @@
     "source_sub": "r/leafs",
     "actor": "Bot",
     "note": ""
+  },
+  {
+    "timestamp": "2026-11-18 02:55:26",
+    "action": "BANNED",
+    "username": "Truth_Breaker",
+    "subreddit": "habs",
+    "source_sub": "r/leafs",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-11-18 02:55:26",
+    "action": "BANNED",
+    "username": "Truth_Breaker",
+    "subreddit": "winnipegjets",
+    "source_sub": "r/leafs",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-11-18 02:55:27",
+    "action": "BANNED",
+    "username": "Truth_Breaker",
+    "subreddit": "goldenknights",
+    "source_sub": "r/leafs",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-11-18 02:55:27",
+    "action": "BANNED",
+    "username": "Truth_Breaker",
+    "subreddit": "anaheimducks",
+    "source_sub": "r/leafs",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-11-18 02:55:27",
+    "action": "BANNED",
+    "username": "Truth_Breaker",
+    "subreddit": "ottawasenators",
+    "source_sub": "r/leafs",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-11-18 02:55:28",
+    "action": "BANNED",
+    "username": "Truth_Breaker",
+    "subreddit": "xsubpacttest1",
+    "source_sub": "r/leafs",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-11-18 02:55:28",
+    "action": "BANNED",
+    "username": "Truth_Breaker",
+    "subreddit": "xsubpacttest2",
+    "source_sub": "r/leafs",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-11-18 02:55:28",
+    "action": "BANNED",
+    "username": "Truth_Breaker",
+    "subreddit": "tampabaylightning",
+    "source_sub": "r/leafs",
+    "actor": "Bot",
+    "note": ""
   }
 ]
