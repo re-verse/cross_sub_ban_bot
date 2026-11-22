@@ -6118,5 +6118,77 @@
     "source_sub": "r/leafs",
     "actor": "Bot",
     "note": ""
+  },
+  {
+    "timestamp": "2026-11-22 03:20:09",
+    "action": "BANNED",
+    "username": "flyerswinorlose",
+    "subreddit": "leafs",
+    "source_sub": "r/habs",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-11-22 03:20:09",
+    "action": "BANNED",
+    "username": "flyerswinorlose",
+    "subreddit": "winnipegjets",
+    "source_sub": "r/habs",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-11-22 03:20:10",
+    "action": "BANNED",
+    "username": "flyerswinorlose",
+    "subreddit": "goldenknights",
+    "source_sub": "r/habs",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-11-22 03:20:10",
+    "action": "BANNED",
+    "username": "flyerswinorlose",
+    "subreddit": "anaheimducks",
+    "source_sub": "r/habs",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-11-22 03:20:11",
+    "action": "BANNED",
+    "username": "flyerswinorlose",
+    "subreddit": "ottawasenators",
+    "source_sub": "r/habs",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-11-22 03:20:11",
+    "action": "BANNED",
+    "username": "flyerswinorlose",
+    "subreddit": "xsubpacttest1",
+    "source_sub": "r/habs",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-11-22 03:20:11",
+    "action": "BANNED",
+    "username": "flyerswinorlose",
+    "subreddit": "xsubpacttest2",
+    "source_sub": "r/habs",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-11-22 03:20:12",
+    "action": "BANNED",
+    "username": "flyerswinorlose",
+    "subreddit": "tampabaylightning",
+    "source_sub": "r/habs",
+    "actor": "Bot",
+    "note": ""
   }
 ]
