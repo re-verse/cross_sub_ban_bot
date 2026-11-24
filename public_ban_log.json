@@ -6190,5 +6190,77 @@
     "source_sub": "r/habs",
     "actor": "Bot",
     "note": ""
+  },
+  {
+    "timestamp": "2026-11-24 00:10:20",
+    "action": "BANNED",
+    "username": "LavishSyndrome",
+    "subreddit": "habs",
+    "source_sub": "r/leafs",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-11-24 00:10:21",
+    "action": "BANNED",
+    "username": "LavishSyndrome",
+    "subreddit": "winnipegjets",
+    "source_sub": "r/leafs",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-11-24 00:10:21",
+    "action": "BANNED",
+    "username": "LavishSyndrome",
+    "subreddit": "goldenknights",
+    "source_sub": "r/leafs",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-11-24 00:10:21",
+    "action": "BANNED",
+    "username": "LavishSyndrome",
+    "subreddit": "anaheimducks",
+    "source_sub": "r/leafs",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-11-24 00:10:22",
+    "action": "BANNED",
+    "username": "LavishSyndrome",
+    "subreddit": "ottawasenators",
+    "source_sub": "r/leafs",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-11-24 00:10:22",
+    "action": "BANNED",
+    "username": "LavishSyndrome",
+    "subreddit": "xsubpacttest1",
+    "source_sub": "r/leafs",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-11-24 00:10:22",
+    "action": "BANNED",
+    "username": "LavishSyndrome",
+    "subreddit": "xsubpacttest2",
+    "source_sub": "r/leafs",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-11-24 00:10:23",
+    "action": "BANNED",
+    "username": "LavishSyndrome",
+    "subreddit": "tampabaylightning",
+    "source_sub": "r/leafs",
+    "actor": "Bot",
+    "note": ""
   }
 ]
