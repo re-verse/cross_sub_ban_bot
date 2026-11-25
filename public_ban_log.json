@@ -6478,5 +6478,77 @@
     "source_sub": "r/habs",
     "actor": "Bot",
     "note": ""
+  },
+  {
+    "timestamp": "2026-11-25 18:00:06",
+    "action": "UNBANNED",
+    "username": "BeerLeagueSpode",
+    "subreddit": "leafs",
+    "source_sub": "r/habs",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-11-25 18:00:06",
+    "action": "UNBANNED",
+    "username": "BeerLeagueSpode",
+    "subreddit": "winnipegjets",
+    "source_sub": "r/habs",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-11-25 18:00:07",
+    "action": "UNBANNED",
+    "username": "BeerLeagueSpode",
+    "subreddit": "goldenknights",
+    "source_sub": "r/habs",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-11-25 18:00:07",
+    "action": "UNBANNED",
+    "username": "BeerLeagueSpode",
+    "subreddit": "anaheimducks",
+    "source_sub": "r/habs",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-11-25 18:00:07",
+    "action": "UNBANNED",
+    "username": "BeerLeagueSpode",
+    "subreddit": "ottawasenators",
+    "source_sub": "r/habs",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-11-25 18:00:07",
+    "action": "UNBANNED",
+    "username": "BeerLeagueSpode",
+    "subreddit": "xsubpacttest1",
+    "source_sub": "r/habs",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-11-25 18:00:07",
+    "action": "UNBANNED",
+    "username": "BeerLeagueSpode",
+    "subreddit": "xsubpacttest2",
+    "source_sub": "r/habs",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-11-25 18:00:07",
+    "action": "UNBANNED",
+    "username": "BeerLeagueSpode",
+    "subreddit": "tampabaylightning",
+    "source_sub": "r/habs",
+    "actor": "Bot",
+    "note": ""
   }
 ]
