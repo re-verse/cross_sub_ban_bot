@@ -7054,5 +7054,77 @@
     "source_sub": "r/habs",
     "actor": "Bot",
     "note": ""
+  },
+  {
+    "timestamp": "2026-11-27 23:55:10",
+    "action": "BANNED",
+    "username": "Initial_Hair_1196",
+    "subreddit": "habs",
+    "source_sub": "r/goldenknights",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-11-27 23:55:11",
+    "action": "BANNED",
+    "username": "Initial_Hair_1196",
+    "subreddit": "leafs",
+    "source_sub": "r/goldenknights",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-11-27 23:55:11",
+    "action": "BANNED",
+    "username": "Initial_Hair_1196",
+    "subreddit": "winnipegjets",
+    "source_sub": "r/goldenknights",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-11-27 23:55:11",
+    "action": "BANNED",
+    "username": "Initial_Hair_1196",
+    "subreddit": "anaheimducks",
+    "source_sub": "r/goldenknights",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-11-27 23:55:12",
+    "action": "BANNED",
+    "username": "Initial_Hair_1196",
+    "subreddit": "ottawasenators",
+    "source_sub": "r/goldenknights",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-11-27 23:55:12",
+    "action": "BANNED",
+    "username": "Initial_Hair_1196",
+    "subreddit": "xsubpacttest1",
+    "source_sub": "r/goldenknights",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-11-27 23:55:12",
+    "action": "BANNED",
+    "username": "Initial_Hair_1196",
+    "subreddit": "xsubpacttest2",
+    "source_sub": "r/goldenknights",
+    "actor": "Bot",
+    "note": ""
+  },
+  {
+    "timestamp": "2026-11-27 23:55:13",
+    "action": "BANNED",
+    "username": "Initial_Hair_1196",
+    "subreddit": "tampabaylightning",
+    "source_sub": "r/goldenknights",
+    "actor": "Bot",
+    "note": ""
   }
 ]
